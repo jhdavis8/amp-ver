@@ -1,0 +1,249 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include "../include/set.cvh"
+
+int INITIAL_SIZE = 2;
+int LIMIT = 3;
+
+int INITIAL_STAGE = 1;
+int STAGE_BOUND = 2; 
+int VALUE_BOUND = 2;
+int hash_vals[2][VALUE_BOUND];
+
+struct _set {
+  int size;
+  int stage; 
+  int *table[2];
+};
+
+typedef struct _set Set;
+
+int exp_two(int p) {
+  int r = 1;
+  for (int i = 0; i < p; i++) r = r * 2;
+  return r;
+}
+/*
+void init_hash_functions() {
+  for (int t = 0; t < 2; t++){ 
+    for (int i = 0; i < VALUE_BOUND; i++){
+      hash_vals[t][i] = -1;
+    }
+  }
+}
+*/
+void print_hashes() {
+  for (int t = 0; t < 2; t++){ 
+    printf("hashes %d\n", t);
+    for (int i = 0; i < VALUE_BOUND; i++){
+      printf("%s ", hash_vals[t][i]);
+    }
+    printf("\n");
+  }
+}
+
+Set* set_create() {
+  Set* result = (Set*) malloc(sizeof(Set));
+  result->size = INITIAL_SIZE;
+  result->stage = INITIAL_STAGE;
+  for (int i=0; i<2; i++) {
+    result->table[i] = malloc(result->size*sizeof(int));
+    for (int j=0; j<result->size; j++) {
+      result->table[i][j] = -1;
+    }
+  }
+  return result;
+}
+/*
+int hash0(Set* set, int x) {
+  if (hash_vals[0][x] == -1) {
+    int s = exp_two(set->stage);
+    int choice = $choose_int(s);
+    //printf("choice: %s\n", choice);
+    hash_vals[0][x] = choice;
+    return hash_vals[0][x];
+  }
+  else return hash_vals[0][x];
+}
+
+int hash1(Set* set, int x) {
+  if (hash_vals[1][x] == -1) {
+    int s = exp_two(set->stage);
+    //printf("s val: %s\n", s);
+    int choice = $choose_int(s);
+    //printf("choice: %s\n", choice);
+    hash_vals[1][x] = choice;
+    return hash_vals[1][x];
+  }
+  else return hash_vals[1][x]; 
+}
+*/
+
+$abstract int h0(int s, int x);
+int hash0(Set* set, int x) {
+  int r = h0(set->stage, x);
+  $assume(0 <= r && r < exp_two(set->stage));
+  return r;
+}
+
+$abstract int h1(int s, int x);
+int hash1(Set* set, int x) {
+  int r = h1(set->stage, x);
+  $assume(0 <= r && r < exp_two(set->stage));
+  return r;
+}
+
+_Bool set_destroy(Set* set) {
+  for (int i=0; i<2; i++) {
+    free(set->table[i]);
+  }
+  set->size = -1;
+  free(set);
+  return true;
+}
+
+void set_print(Set* set) {
+  for (int i=0; i<2; i++) {
+    printf("Table %d:\n", i);
+    for (int j=0; j<set->size; j++) {
+      if (set->table[i][j] == -1) printf("%d:\n", j);
+      else printf("%d: %d\n", j, set->table[i][j]);
+    }
+  }
+}
+
+_Bool set_contains(Set* set, int x) {
+  if (set->table[0][hash0(set, x)]==x)
+    return true;
+  if (set->table[1][hash1(set, x)]==x)
+    return true;
+  return false;
+}
+
+int swap_int(Set* set, int i, int j, int value) {
+  int old = set->table[i][j];
+  set->table[i][j] = value;
+  return old;
+}
+
+_Bool rehash(Set* set, int x) {
+  if (x<0)
+    return false;
+  for (int i=0; i<LIMIT; i++) {
+    if ((x = swap_int(set, 0, hash0(set, x), x)) == -1) {
+      return true;
+    } else if ((x = swap_int(set, 1, hash1(set, x), x)) == -1) {
+      return true;
+    }
+  }
+  printf("ERROR: Could not rehash %d\n", x);
+}
+
+void resize(Set* set) {
+  printf("Attempt resize\n");
+  $assume(set->stage < STAGE_BOUND);
+  printf("Begin Resize\n");
+  int *oldTable[2];
+  oldTable = set->table;
+  int oldSize = set->size;
+  set->size = oldSize * 2;
+  set->stage++;
+  print_hashes();
+  //init_hash_functions();
+  for (int i=0; i<2; i++) {
+    set->table[i] = malloc(set->size*sizeof(int));
+    for (int j=0; j<set->size; j++) {
+      set->table[i][j] = -1;
+    }
+  }
+  set_print(set);
+  for (int i=0; i<2; i++) {
+    for (int j=0; j<oldSize; j++) {
+      if (oldTable[i][j] != -1) {
+        rehash(set, oldTable[i][j]);
+      }
+    }
+  }
+  for (int i=0; i<2; i++) {
+    free(oldTable[i]);
+  }
+}
+
+_Bool set_add(Set* set, int x) {
+  if (x<0 || set_contains(set, x))
+    return false;
+  for (int i=0; i<LIMIT; i++) {
+    if ((x = swap_int(set, 0, hash0(set, x), x)) == -1) {
+      return true;
+    } else if ((x = swap_int(set, 1, hash1(set, x), x)) == -1) {
+      return true;
+    }
+  }
+  resize(set);
+  set_add(set, x);
+}
+
+_Bool set_remove(Set* set, int x) {
+  if (set->table[0][hash0(set, x)]==x) {
+    set->table[0][hash0(set, x)] = -1;
+    return true;
+  }
+  if (set->table[1][hash1(set, x)]==x) {
+    set->table[1][hash1(set, x)] = -1;
+    return true;
+  }
+  return false;
+}
+
+int test1() {
+  //init_hash_functions(); 
+  Set* s = set_create();
+  set_add(s, 0);
+  //set_print(s);
+  set_add(s, 1);
+  //set_print(s);
+  set_add(s, 2);
+  set_add(s, 5);
+  set_add(s, 4);
+  $assert(set_contains(s, 2));
+  set_remove(s, 2);
+  $assert(set_contains(s, 0));
+  $assert(set_contains(s, 1));
+  $assert(set_contains(s, 5));
+  $assert(set_contains(s, 4));
+  $assert(!set_contains(s, 2));
+  set_print(s);
+  /*
+  set_add(s, 5);
+  set_print(s);
+  set_add(s, 17);
+  set_print(s);
+  set_add(s, 32);
+  set_print(s);
+  set_add(s, 12);
+  set_print(s);
+  set_add(s, 2);
+  set_add(s, 8);
+  set_add(s, 23);
+  set_add(s, 20);
+  set_add(s, 11);
+  set_remove(s, 1);
+  set_add(s, 11);
+  set_remove(s, 8);
+  set_remove(s, 9);
+  $assert(set_contains(s, 12));
+  $assert(!set_contains(s, 100));
+  $assert(set_contains(s, 5));
+  $assert(!set_contains(s, 7));
+  $assert(!set_contains(s, 1));
+  $assert(!set_contains(s, 8));
+  set_print(s);
+  */
+  set_destroy(s);
+}
+/*
+int main() {
+  test1();
+}
+*/
