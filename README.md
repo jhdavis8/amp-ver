@@ -1,4 +1,4 @@
-# CIVL Verification of the Art of Multiprocessor Programming
+# CIVL Verification of *The Art of Multiprocessor Programming*
 
 ## Concurrent data structures implemented:
 
