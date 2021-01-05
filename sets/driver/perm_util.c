@@ -134,3 +134,29 @@ void test_1(int n, int* counts){
   perm_array = create_perm_array(n, counts, perm_array, a, indx, count);
   printf("create_perm_array(3, (2,1,1), perm_array, 0, 0, 0) = %d\n", *perm_array);
 }
+
+/*
+int main() {
+  int test_n = 4;
+  int* test_counts;
+  test_counts = (int*) malloc(sizeof(int)*test_n);
+  test_counts[0] = 1;
+  test_counts[1] = 1;
+  test_counts[2] = 2;
+  test_counts[3] = 1;
+  //test_1(test_n, test_counts);
+  int** result = compute_perms(test_n, test_counts);
+  int num_rows = calc_num_perms(test_n, test_counts);
+  int num_cols = 0;
+  for (int i = 0; i < test_n; i++) {
+    num_cols += test_counts[i];
+  }
+  for (int i = 0; i < num_rows; i++) {
+    for (int j = 0; j < num_cols; j++) {
+      printf("%d ", result[i][j]);
+    }
+    printf("\n");
+  }
+  return 0;
+}
+*/
