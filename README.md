@@ -2,57 +2,50 @@
 
 ## Concurrent data structures implemented:
 
-	naive_set.cvl: A simple boolean set
-	* 2 VAL, 2 THD, 2 STP: PASS
-	* 2 VAL, 2 THD, 3 STP: PASS
-	* 2 VAL, 3 THD, 2 STP: PASS
-	* 6 VAL, 2 THD, 2 STP: PASS
-	* LockRegistry: None, sequential algorithm
+*All page numbers taken from the Revised Reprint*
 
-	striped_set.cvl: A hash set using lock striping to control access
-	* 2 VAL, 2 THD, 2 STP: PASS
-	* 2 VAL, 2 THD, 3 STP: PASS
-	* 2 VAL, 3 THD, 2 STP: PASS
-	* 6 VAL, 2 THD, 2 STP: PASS
-	* LockRegistry: Started, locking method is out of date
+Coarse-grained List:
+* sets/coarselist/coarse_list.cvl
+* A linked list which uses a single lock to control access to the entire list.
+* AMP Chapter 9.4, page 200
 
-	coarse_set.cvl: A hash set using a single lock
-	* 2 VAL, 2 THD, 2 STP: PASS
-	* 2 VAL, 2 THD, 3 STP: PASS
-	* 2 VAL, 3 THD, 2 STP: PASS
-	* 6 VAL, 2 THD, 2 STP: PASS
-	* LockRegistry: Started, locking method is out of date
+Fine-grained List:
+* sets/finelist/fine_list.cvl
+* A linked list which uses one lock for each node of the list.
+* AMP Chapter 9.5, page 201
 
-	cuckoo_set.cvl: A hash set using which moves values between two tables
-	* 2 VAL, 2 THD, 2 STP: FAIL
-	* 2 VAL, 2 THD, 3 STP: FAIL
-	* 2 VAL, 3 THD, 2 STP: FAIL
-	* 6 VAL, 2 THD, 2 STP: FAIL
-	* LockRegistry: None, sequential algorithm
+Optimistic List:
+* sets/optimisticlist/optimistic_list.cvl
+* A linked list which allows searching the list without locking, locks when the nodes are found, and then checks that the locked nodes are correct. If a synchronization conflict causes the wrong node to be locked, the locks are released and the process restarts.
+* AMP Chapter 9.6, page 205
+* **Note**: Currently, this implementation fails to verify, I believe it needs debugging.
 
-	striped_cuckoo.cvl: A hash set using the cuckoo method along with lock striping
-	* 2 VAL, 2 THD, 2 STP: PASS
-	* 2 VAL, 2 THD, 3 STP: PASS (285.91s)
-	* 2 VAL, 3 THD, 2 STP: PASS (41.15s)
-	* 6 VAL, 2 THD, 2 STP: FAIL
-	* LockRegistry: 
+Naive Set:
+* sets/naive/naive_set.cvl
+* A minimum set implementation (created for testing the driver)
+* No corresponding AMP chapter
 
-	coarse_list.cvl: A linked list using a single lock
-	* 2 VAL, 2 THD, 2 STP: PASS (5.83)
-	* 2 VAL, 2 THD, 3 STP: PASS (14.77)
-	* 2 VAL, 3 THD, 2 STP: PASS (12.64)
-	* 6 VAL, 2 THD, 2 STP: PASS (14.62)
-	* LockRegistry: Written and tested
+Coarse-grained Hash Set:
+* sets/coarse/coarse_set.cvl
+* A closed-address hash set which uses a single lock to control access.
+* AMP Chapter 13.2.1, page 302
 
-	fine_list.cvl: A linked list using a lock for each node
-	* 2 VAL, 2 THD, 2 STP: PASS (6.95s)
-	* 2 VAL, 2 THD, 3 STP: PASS (23.22s)
-	* 2 VAL, 3 THD, 2 STP: PASS (16.94s)
-	* 6 VAL, 2 THD, 2 STP: PASS (21.01s)
-	* LockRegistry: Written and tested
+Striped Hash Set:
+* sets/striped/striped_set.cvl
+* A closed-address hash set which uses a fixed number of locks which each control access to a disjoint subet of the set's buckets.
+* AMP Chapter 13.2.2, page 303
 
-	optimistic_list.cvl: A linked list which uses the fine_list approach, but allows searching without locking
-	* (Incomplete)
+Sequential Cuckoo Hash Set:
+* sets/cuckoo/cuckoo_seq.cvl
+* An open-address hash set with (sequential access only) which demonstrates cuckoo hashing. Cuckoo hashing involves the use of two hash tables with different hash function, in which values displaced from one table are moved to the other until all items are stored.
+* AMP Chapter 13.4.1, page 316
+* **Note**: This data structure fails to verify as it has no means to prevent synchronization errors.
+
+Striped Cuckoo Hash Set:
+* sets/cuckoo/striped_cuckoo.cvl
+* An open-address hash set which combines the approaches of the cuckoo hash set and the striped hash set.
+* AMP Chapter 13.4.3, page 322
+* **Note**: This data structure fails to verify when a large value bound is used. I am not yet sure why.
 
 ## Publication Targets:
 
