@@ -117,7 +117,7 @@ Node* probe_write(Node* head, int data) {
     }
     if (current_node->data == -1) {
 	current_node->data = data; //?
-	printf("Wrote current_node->data as %s\n", current_node->data);
+	//printf("Wrote current_node->data as %s\n", current_node->data);
     }
     else printf("PROBE WRITE FAILED: No empty node found\n");
 }
@@ -186,11 +186,11 @@ _Bool probe_remove(Node* head, int data, int i, int hi, Set* set) {
 void print_nodes(Node* head) {
     Node* current_node = head;
     while (current_node != NULL/* && current_node->data != -1*/) {
-	printf("%d ", current_node->data);
+      //printf("%d ", current_node->data);
 	if (current_node->next != NULL) current_node = current_node->next;
 	else current_node = NULL;
     }
-    printf("\n");
+    //printf("\n");
 }
 
 Set* set_create() {
@@ -299,10 +299,10 @@ void lock_release(Lock * l) {
 void acquire(Set* set, int x) {
     int h0 = hash0(set, x) % INITIAL_SIZE;
     int h1 = hash1(set, x) % INITIAL_SIZE;
-    printf("Acquiring locks for x = %s...\n", x);
+    //printf("Acquiring locks for x = %s...\n", x);
     lock_acquire(&(set->locks[0][h0]));
     lock_acquire(&(set->locks[1][h1]));
-    printf("Acquired locks for x = %s!\n", x);
+    //printf("Acquired locks for x = %s!\n", x);
 }
 
 void release(Set* set, int x) {
@@ -310,7 +310,7 @@ void release(Set* set, int x) {
     int h1 = hash1(set, x) % INITIAL_SIZE;
     lock_release(&(set->locks[0][h0]));
     lock_release(&(set->locks[1][h1]));
-    printf("Released locks for x = %s!\n", x);
+    //printf("Released locks for x = %s!\n", x);
 }
 
 void set_print(Set* set) {
@@ -324,7 +324,7 @@ void set_print(Set* set) {
 }
 
 _Bool set_contains(Set* set, int x) {
-    printf("Entering set_contains function...\n");
+    //printf("Entering set_contains function...\n");
     acquire(set, x);
     Node* current_node = set->table[0][hash0(set, x)];
     //printf("Current_node = %s\n", current_node);
@@ -418,22 +418,22 @@ _Bool relocate(Set* set, int i, int hi) {
 _Bool set_add(Set* set, int x);
 
 void resize(Set* set) {
-    printf("RESIZING!!\n");
+    //printf("RESIZING!!\n");
     set_print(set);
     int old_size = set->size;
     if (set->stage == STAGE_BOUND) return;
-    printf("Acquiring all locks...\n");
+    //printf("Acquiring all locks...\n");
     for (int i = 0; i < INITIAL_SIZE; i++) {
 	lock_acquire(&(set->locks[0][i]));
 	lock_acquire(&(set->locks[1][i]));
     }
-    printf("Acquired all locks!\n");
+    //printf("Acquired all locks!\n");
     if (set->size != old_size) {
 	for (int i = 0; i < INITIAL_SIZE; i++) {
 	    lock_release(&(set->locks[0][i]));
 	    lock_release(&(set->locks[1][i]));
 	}
-	printf("Released all locks!\n");
+	//printf("Released all locks!\n");
 	return;
     }
     Node** old_table[2];
@@ -480,7 +480,7 @@ void resize(Set* set) {
 	lock_release(&(set->locks[0][i]));
 	lock_release(&(set->locks[1][i]));
     }
-    printf("Released all locks!\n");
+    //printf("Released all locks!\n");
 }
 
 _Bool set_add(Set* set, int x) {
