@@ -204,7 +204,7 @@ _Bool list_remove(List* list, int item) {
   }
 }
 
-
+/*
 void main() {
   List* list = list_create();
   
@@ -225,3 +225,4 @@ void main() {
   list_print(list);
   list_destroy(list);
 }
+*/

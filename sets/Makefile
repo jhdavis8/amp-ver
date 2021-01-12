@@ -50,3 +50,8 @@ fine_list : finelist/fine_list.cvl driver/list_max_driver.cvl \
 		driver/perm_util.c include/set.cvh
 		$(CIVL) verify -inputVAL_B=$(VAL_BND) -inputTHD_B=$(THD_BND) -inputSTP_B=$(STP_BND) \
                 driver/list_max_driver.cvl finelist/fine_list.cvl
+
+optimistic_list : optimisticlist/optimistic_list.cvl driver/list_max_driver.cvl \
+		driver/perm_util.c include/set.cvh
+		$(CIVL) verify -inputVAL_B=$(VAL_BND) -inputTHD_B=$(THD_BND) -inputSTP_B=$(STP_BND) \
+                driver/list_max_driver.cvl optimisticlist/optimistic_list.cvl
