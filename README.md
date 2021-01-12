@@ -18,7 +18,7 @@ Optimistic List:
 * sets/optimisticlist/optimistic_list.cvl
 * A linked list which allows searching the list without locking, locks when the nodes are found, and then checks that the locked nodes are correct. If a synchronization conflict causes the wrong node to be locked, the locks are released and the process restarts.
 * AMP Chapter 9.6, page 205
-* **Note**: Currently, this implementation fails to verify, I believe it needs debugging.
+* **Note**: This implementation does verify but may need further debugging.
 
 Naive Set:
 * sets/naive/naive_set.cvl
