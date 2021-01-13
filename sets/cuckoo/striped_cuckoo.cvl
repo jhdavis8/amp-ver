@@ -222,11 +222,14 @@ Set* set_create() {
   }
 */
 
+
+// Returns two to the power of input interger p
 int exp_two(int p) {
     int r = 1;
     for (int i = 0; i < p; i++) r = r * 2;
     return r;
 }
+
 //Change this to defined hash function to concrete value
 /* 
    $abstract int h0(int s, int x);

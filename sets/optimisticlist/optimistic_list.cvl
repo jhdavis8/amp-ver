@@ -1,4 +1,5 @@
-/* Concurrent fine grained list using a lock per node
+/* Concurrent list using a lock per node and an
+ * optimisitic synchronization strategy.
  * Wenhao Wu, Eric Kurtz, and Josh Davis
  * May-1-2018
  * VIP-HPC University of Delaware
