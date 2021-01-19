@@ -1,0 +1,16 @@
+// queue.cvh
+struct _queue;
+typedef struct _queue Queue;
+
+
+_Bool enq(Queue* queue, int value);
+
+int deq(Queue* queue, int value);
+
+Queue* queue_create();
+
+_Bool queue_destroy(Queue* queue); 
+
+void queue_print(Queue* queue);
+
+int queue_size(Queue* queue);

@@ -1,0 +1,58 @@
+/* Unbounded queue implementation using lazy
+ * synchronization and no locks.
+ * Josh Davis
+ * Jan-19-2020
+ * Verified Software Laboratory, University of Delaware
+ */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <limits.h>
+#include "../include/queue.cvh"
+
+typedef struct _queue Queue;
+
+struct _node {
+  int value;
+  Node* next;  // This is an AtomicReference in AMP, so updates are $atomic
+};
+
+Node* create_node(int value) {
+  new_node = (Node*) malloc(sizeof(Node));
+  new_node->value = value;
+  new_node->next = NULL;
+}
+
+typedef struct _queue Queue;
+
+struct _queue {
+  Node* head, tail;
+};
+
+Queue* create_queue() {
+  Queue* new_queue = (Queue*) malloc(sizeof(Queue));
+  Node* node = create_node(NULL);
+  new_queue->head = node;
+  new_queue->tail = node;
+}
+
+_Bool enq(Queue* queue, int value) {
+  return false;
+}
+
+int deq(Queue* queue, int value) {
+  return -1;
+}
+
+_Bool queue_destroy(Queue* queue) {
+  return false;
+}
+
+void queue_print(Queue* queue) {
+  return NULL;
+}
+
+int queue_size(Queue* queue) {
+  return -1;
+}
