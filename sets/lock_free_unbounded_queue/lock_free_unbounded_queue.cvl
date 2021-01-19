@@ -24,6 +24,19 @@ Node* create_node(int value) {
   new_node->next = NULL;
 }
 
+$atomic_f Node* get(Node* node) {
+  return node;
+}
+
+$atomic_f void compare_and_set(Node** target, Node* expect, Node* new) {
+  if (*target == expect) {
+    *target = new;
+    return;
+  } else {
+    return;
+  }
+}
+
 typedef struct _queue Queue;
 
 struct _queue {
@@ -38,21 +51,72 @@ Queue* create_queue() {
 }
 
 _Bool enq(Queue* queue, int value) {
-  return false;
-}
+  Node* node = create_node(value);
+  while (true) {
+    Node* last = get(queue->tail);
+    Node* next = get(last->next);
+    if (last == get(queue->tail)) {
+      if (next == NULL) {
+	if (compare_and_set(&(last->next), next, node)) {
+	  compare_and_set(&(queue->tail), last, node);
+	  return true;
+	}
+      } else {
+	compare_and_set(&(queue->tail), last, next);
+      }
+    }
+  }
 
 int deq(Queue* queue, int value) {
-  return -1;
+  while (true) {
+    Node first = get(queue->head);
+    Node last = get(queue->tail);
+    Node next = get(first->next);
+    if (first == get(queue->head)) {
+      if (first == last) {
+	if (next == NULL) {
+	  return -1;
+	}
+	compare_and_set(&(queue->tail), last, next);
+      } else {
+	int value = next->value;
+	if (compare_and_set(&(queue->head), first, next)) {
+	  return value;
+	}
+      }
+    }
+  }
 }
 
 _Bool queue_destroy(Queue* queue) {
-  return false;
+  Node* curr = queue->head;
+  Node* prev = NULL;
+  while (curr) {
+    prev = curr;
+    curr = curr->next;
+    free(prev);
+  }
+  free(queue);
+  return true;
 }
 
 void queue_print(Queue* queue) {
-  return NULL;
+  Node* curr = queue->head;
+  printf("{");
+  while (curr) {
+    printf(" %d ", curr->value);
+    curr = curr->next;
+  }
+  printf("}\n");
+  return;
 }
 
 int queue_size(Queue* queue) {
-  return -1;
+  Node* curr = queue->head;
+  int size = -1;  // so that sentinel node is not counted
+  while(curr) {
+    size++;
+    curr = curr->next;
+  }
+  return size;
 }
