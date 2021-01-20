@@ -1,8 +1,9 @@
 /* Unbounded queue implementation using lazy
  * synchronization and no locks.
+ * Jan-19-2021
  * Josh Davis
- * Jan-19-2020
- * Verified Software Laboratory, University of Delaware
+ * Verified Software Laboratory
+ * CIS Dept., Univ. of Delaware
  */
 
 #include <stdio.h>
@@ -28,12 +29,12 @@ $atomic_f Node* get(Node* node) {
   return node;
 }
 
-$atomic_f void compare_and_set(Node** target, Node* expect, Node* new) {
+$atomic_f _Bool compare_and_set(Node** target, Node* expect, Node* new) {
   if (*target == expect) {
     *target = new;
-    return;
+    return true;
   } else {
-    return;
+    return false;
   }
 }
 
@@ -67,7 +68,7 @@ _Bool enq(Queue* queue, int value) {
     }
   }
 
-int deq(Queue* queue, int value) {
+int deq(Queue* queue) {
   while (true) {
     Node first = get(queue->head);
     Node last = get(queue->tail);
@@ -86,6 +87,17 @@ int deq(Queue* queue, int value) {
       }
     }
   }
+}
+
+_Bool queue_contains(Queue* queue, int value) {
+  Node* curr = queue->head;
+  while (curr) {
+    if (curr->value == value) {
+      return true;
+    }
+    curr = curr->next;
+  }
+  return false;
 }
 
 _Bool queue_destroy(Queue* queue) {

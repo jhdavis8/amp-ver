@@ -5,7 +5,9 @@ typedef struct _queue Queue;
 
 _Bool enq(Queue* queue, int value);
 
-int deq(Queue* queue, int value);
+int deq(Queue* queue);
+
+_Bool queue_contains(Queue* queue, int value);
 
 Queue* queue_create();
 
