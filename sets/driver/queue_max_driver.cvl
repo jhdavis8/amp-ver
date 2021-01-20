@@ -114,8 +114,12 @@ void init() {
     
     nsteps[tid] = num_steps_local;
     for (int step = 0; step < num_steps_local; step++) {
-      ops[tid][step] = ADD;
-      vals[tid][step] = $choose_int(num_vals);
+      ops[tid][step] = (_Bool) $choose_int(2);
+      if (ops[tid][step] == ADD) {
+	vals[tid][step] = $choose_int(num_vals);
+      } else {
+	vals[tid][step] = 0;
+      }
       num_steps++;
     }
   }

@@ -13,6 +13,7 @@
 
 // Defs
 #define ADD true
+#define DEL false
 #define ACTUAL -1
 #define RESULT -2
 
@@ -114,7 +115,7 @@ void init() {
     
     nsteps[tid] = num_steps_local;
     for (int step = 0; step < num_steps_local; step++) {
-      ops[tid][step] = ADD;
+      ops[tid][step] = (_Bool) $choose_int(2);
       vals[tid][step] = $choose_int(num_vals);
       num_steps++;
     }

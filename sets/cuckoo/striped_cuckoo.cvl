@@ -21,7 +21,7 @@
 #endif
 
 #ifndef HASH_FN_OPTION
-#define HASH_FN_OPTION 0
+#define HASH_FN_OPTION 1
 #endif
 
 int THRESHOLD = PROBE_SIZE / 2;
@@ -256,7 +256,7 @@ int hash0(Set* set, int x) {
 }
 
 int hash1(Set* set, int x) {
-  return (2*x) % set->size
+  return (2*x) % set->size;
 }
 #elif HASH_FN_OPTION == 2
 int hash0(Set* set, int x) {
@@ -273,6 +273,18 @@ int hash0(Set* set, int x) {
 
 int hash1(Set* set, int x) {
   return 0;
+}
+#elif HASH_FN_OPTION == 4
+$abstract int abs_1(int x);
+
+$abstract int abs_2(int x);
+
+int hash0(Set* set, int x) {
+  return abs_1(x) % set->size;
+}
+
+int hash1(Set* set, int x) {
+  return abs_2(x) % set->size;
 }
 #endif
 
