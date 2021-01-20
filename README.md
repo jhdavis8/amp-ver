@@ -20,6 +20,11 @@ Optimistic List:
 * AMP Chapter 9.6, page 205
 * **Note**: This implementation does verify but may need further debugging.
 
+Lock-Free Unbounded Queue
+* sets/lock_free_unbounded_queue.cvl
+* A queue implementation which uses atomic compare and swap operations to maintain correctness, with a lazy/two-step add/remove process.
+* AMP Chapter 10.5, page 230
+
 Naive Set:
 * sets/naive/naive_set.cvl
 * A minimum set implementation (created for testing the driver)
