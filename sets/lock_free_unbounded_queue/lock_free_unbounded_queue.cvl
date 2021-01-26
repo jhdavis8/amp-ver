@@ -12,17 +12,17 @@
 #include <limits.h>
 #include "../include/queue.cvh"
 
-typedef struct _queue Queue;
-
-struct _node {
+typedef struct _node
+{
   int value;
-  Node* next;  // This is an AtomicReference in AMP, so updates are $atomic
-};
+  struct _node* next;  // This is an AtomicReference in AMP, so updates are $atomic
+} Node;
 
 Node* create_node(int value) {
-  new_node = (Node*) malloc(sizeof(Node));
+  Node* new_node = (Node*) malloc(sizeof(Node));
   new_node->value = value;
   new_node->next = NULL;
+  return new_node;
 }
 
 $atomic_f Node* get(Node* node) {
@@ -38,17 +38,18 @@ $atomic_f _Bool compare_and_set(Node** target, Node* expect, Node* new) {
   }
 }
 
-typedef struct _queue Queue;
+typedef struct _queue
+{
+  Node* head;
+  Node* tail;
+} Queue;
 
-struct _queue {
-  Node* head, tail;
-};
-
-Queue* create_queue() {
+Queue* queue_create() {
   Queue* new_queue = (Queue*) malloc(sizeof(Queue));
-  Node* node = create_node(NULL);
+  Node* node = create_node(-1);
   new_queue->head = node;
   new_queue->tail = node;
+  return new_queue;
 }
 
 _Bool enq(Queue* queue, int value) {
@@ -67,12 +68,13 @@ _Bool enq(Queue* queue, int value) {
       }
     }
   }
+}
 
 int deq(Queue* queue) {
   while (true) {
-    Node first = get(queue->head);
-    Node last = get(queue->tail);
-    Node next = get(first->next);
+    Node* first = get(queue->head);
+    Node* last = get(queue->tail);
+    Node* next = get(first->next);
     if (first == get(queue->head)) {
       if (first == last) {
 	if (next == NULL) {
@@ -90,7 +92,7 @@ int deq(Queue* queue) {
 }
 
 _Bool queue_contains(Queue* queue, int value) {
-  Node* curr = queue->head;
+  Node* curr = queue->head->next;
   while (curr) {
     if (curr->value == value) {
       return true;
