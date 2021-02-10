@@ -2,8 +2,7 @@
  * synchronization and no locks.
  * Jan-19-2021
  * Josh Davis
- * Verified Software Laboratory
- * CIS Dept., Univ. of Delaware
+ * VSL Lab; Dept. CIS; UDel
  */
 
 #include <stdio.h>
@@ -100,6 +99,19 @@ _Bool queue_contains(Queue* queue, int value) {
     curr = curr->next;
   }
   return false;
+}
+
+int queue_index(Queue* queue, int index) {
+  Node* curr = queue->head->next;
+  int location = 0;
+  while (curr) {
+    if (location == index) {
+      return curr->value;
+    }
+    curr = curr->next;
+    location++;
+  }
+  return -1;
 }
 
 _Bool queue_destroy(Queue* queue) {

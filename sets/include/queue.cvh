@@ -1,4 +1,7 @@
 // queue.cvh
+#ifndef QUEUE_H
+#define QUEUE_H
+
 struct _queue;
 typedef struct _queue Queue;
 
@@ -9,6 +12,8 @@ int deq(Queue* queue);
 
 _Bool queue_contains(Queue* queue, int value);
 
+int queue_index(Queue* queue, int index);
+
 Queue* queue_create();
 
 _Bool queue_destroy(Queue* queue); 
@@ -16,3 +21,5 @@ _Bool queue_destroy(Queue* queue);
 void queue_print(Queue* queue);
 
 int queue_size(Queue* queue);
+
+#endif
