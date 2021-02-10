@@ -36,10 +36,10 @@ cuckoo : cuckoo/cuckoo_seq.cvl driver/max_driver.cvl driver/perm_util.c \
 	$(CIVL) -inputVAL_B=$(VAL_BND) -inputTHD_B=$(THD_BND) -inputSTP_B=$(STP_BND) \
                 driver/max_driver.cvl cuckoo/cuckoo_seq.cvl
 
-striped_cuckoo : cuckoo/striped_cuckoo.cvl driver/max_driver.cvl \
+striped_cuckoo : striped_cuckoo/striped_cuckoo.cvl driver/max_driver.cvl \
 	          driver/perm_util.c include/set.cvh
 		$(CIVL) -inputVAL_B=$(VAL_BND) -inputTHD_B=$(THD_BND) -inputSTP_B=$(STP_BND) \
-                driver/max_driver.cvl cuckoo/striped_cuckoo.cvl
+                driver/max_driver.cvl striped_cuckoo/striped_cuckoo.cvl
 
 coarse_list : coarselist/coarse_list.cvl driver/list_max_driver.cvl \
 		driver/perm_util.c include/set.cvh

@@ -40,7 +40,7 @@ Sequential Cuckoo Hash Set:
 * **Note**: This data structure fails to verify as it has no means to prevent synchronization errors.
 
 Striped Cuckoo Hash Set:
-* sets/cuckoo/striped_cuckoo.cvl
+* sets/striped_cuckoo/striped_cuckoo.cvl
 * An open-address hash set which combines the approaches of the cuckoo hash set and the striped hash set.
 * AMP Chapter 13.4.3, page 322
 * **Note**: This data structure fails to verify when a large value bound is used. I am not yet sure why.
