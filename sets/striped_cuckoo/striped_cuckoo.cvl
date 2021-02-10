@@ -522,7 +522,7 @@ _Bool set_add(Set* set, int x) {
   int i = -1; //outer index of item to add
   int h = -1; //inner index of item to add
   _Bool must_resize = false;
-  if (x<0 || present(set, x)) {
+  if (x<0 || contains(set, x)) {
     release(set, x);
     return false;
   }
