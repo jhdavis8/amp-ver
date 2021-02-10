@@ -7,7 +7,7 @@
 // Dependencies
 #include "../include/queue.cvh"
 #include "../include/naive_queue.cvh"
-#include "driver_print_functions.c"
+//#include "driver_print_functions.c"
 #include "perm_util.c"
 #include <stdio.h>	// Printing outputs
 #include <string.h>	// Output content.
@@ -38,7 +38,7 @@ int num_perms;
 int nsteps[nthreads];
 _Bool ops[nthreads][STP_B];
 int vals[nthreads][STP_B];
-/*
+
 void print_steps() {
   for (int tid = 0; tid < nthreads; tid++) {
     printf("[STEP]\t Thread %d steps: ", tid);
@@ -112,7 +112,6 @@ void printEquivSeqInfo(int* perms, _Bool* results) {
     step_counters[tid]++;
   }
 }
-*/
 
 void init() {
   num_vals = VAL_B + 1;

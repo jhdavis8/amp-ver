@@ -34,7 +34,7 @@ int vals[nthreads][STP_B];
 
 void print_steps() {
   for (int tid = 0; tid < nthreads; tid++) {
-    printf("Thread %d steps: ", tid);
+    printf("[STEP]\tThread %d steps: ", tid);
     int m = nsteps[tid];
     for (int i = 0; i < m; i++) {
       if (i > 0) printf(", ");
@@ -47,8 +47,8 @@ void print_steps() {
 }
 
 void printInitInfo() {
-  printf("[Init]\t Num of threads: %d\n", nthreads);
-  printf("[Init]\t Num of steps: %d\n", num_steps);
+  printf("\n[INIT]\t Num of threads: %d\n", nthreads);
+  printf("[INIT]\t Num of steps: %d\n", num_steps);
   print_steps();
 }
 
@@ -94,7 +94,7 @@ void printEquivSeqInfo(int* perms, _Bool* results) {
   for (int tid = 0; tid < nthreads; tid++)
     step_counters[tid] = 0;
 
-  printf("Equivalent sequential execution: \n");
+  printf("[PASS]\t Equivalent sequential execution: \n");
   for (int step = 0; step < num_steps; step++) {
     int tid = perms[step];
     int step_local = step_counters[tid];
@@ -193,9 +193,10 @@ int main() {
     }
   }
   if (num_steps > 0 && pid >= num_perms) {
-    printf("Results of concurrent execution:");
+    printf("[FAIL]\t No matching sequentialized execution found!\n");
+    printf("[RESULT]\t Concurrent execution results:");
     printSet(actual_results);
-    printf("\nNo matching sequentialized execution found!\n");
+    printf("\n");
     $assert(false);
   }
   set_destroy(actual_set);
