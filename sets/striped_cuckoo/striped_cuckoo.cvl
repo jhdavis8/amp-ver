@@ -21,7 +21,7 @@
 #endif
 
 #ifndef HASH_FN_OPTION
-#define HASH_FN_OPTION 1
+#define HASH_FN_OPTION 4
 #endif
 
 int THRESHOLD = PROBE_SIZE / 2;
@@ -336,6 +336,12 @@ void release(Set* set, int x) {
   //printf("Released locks for x = %s!\n", x);
 }
 
+#ifdef ENABLE_PATCH
+void direct_acquire(Set* set, int table, int loc) {
+  lock_acquire(&(set->locks[table][loc]));
+}
+#endif
+
 void set_print(Set* set) {
   for (int i=0; i<2; i++) {
     //printf("Table %d:\n", i);
@@ -396,6 +402,9 @@ _Bool relocate(Set* set, int i, int hi) {
   int hj = 0;
   int j = 1 - i;
   for (int round = 0; round < LIMIT; round++) {
+#ifdef ENABLE_PATCH
+    direct_acquire(set, i, hi);
+#endif
     Node* i_probe = set->table[i][hi];
     int y = probe_get(i_probe, 0);
     switch (i) {
@@ -564,7 +573,7 @@ _Bool set_remove(Set* set, int x) {
   Node* table1 = set->table[1][h1];
   if (!probe_remove(table0, x, 0, h0, set)) {
     if (!probe_remove(table1, x, 1, h1, set)) {
-      printf("ERROR: Given x not in set!\n");
+      //printf("ERROR: Given x not in set!\n");
       release(set, x);
       return false;
     }

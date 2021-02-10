@@ -1,0 +1,123 @@
+/* Shared print routines for driver.
+ * Dec-5-2021
+ * Josh Davis, Wenhao Wu
+ * VSL Lab; Dept. CIS; UDel
+ */
+
+#include "../include/queue.cvh"
+#include "../include/set.cvh"
+#include "../include/list.cvh"
+#include <stdio.h>
+#include <string.h>
+#include <stdbool.h>
+
+#ifndef ADD
+#define ADD true
+#endif
+#ifndef ACTUAL
+#define ACTUAL -1
+#endif
+#ifndef RESULT
+#define RESULT -2
+#endif
+
+extern $input int VAL_B;
+extern $input int THD_B;
+extern $input int STP_B;
+extern $input int nthreads;
+extern int num_vals;
+extern int num_steps;
+extern int num_perms;
+extern int nsteps[nthreads];
+extern _Bool ops[nthreads][STP_B];
+extern int vals[nthreads][STP_B];
+
+void print_steps() {
+  for (int tid = 0; tid < nthreads; tid++) {
+    printf("[STEP]\t Thread %d steps: ", tid);
+    int m = nsteps[tid];
+    for (int i = 0; i < m; i++) {
+      if (i > 0) printf(", ");
+      if (ops[tid][i] == ADD) printf("ADD");
+      else printf("DEL");
+      printf(" %d", vals[tid][i]);
+    }
+    printf("\n");
+  }
+}
+
+void printInitInfo() {
+  printf("\n[INIT]\t Num of threads: %d\n", nthreads);
+  printf("[INIT]\t Num of steps: %d\n", num_steps);
+  print_steps();
+}
+
+void printQueue(_Bool* s) {
+  _Bool first = true;
+  printf("\t{");
+  for (int v = 0; v < num_vals; v++) {
+    if (s[v]) {
+      if (first) first = false;
+      else printf(", ");
+      printf("%d", v);
+    }
+  }
+  printf("}");
+}
+
+void printOpInfo(int type, int tid, _Bool op, int val, _Bool* results) {
+  if (type == RESULT) {
+    printf("[RESULT]");
+  } else if (type == ACTUAL) {
+    printf("[ACTUAL]");
+  } else {
+    printf("[PERMS%d]", type);
+  }
+  printf("\t Thread[%d] performs ", tid);
+  printf((op==ADD?"<ADD>":"<DEL>"));
+  printf(" value: %d", val);
+  printQueue(results);
+  printf("\n");
+}
+
+void printOpInfo_queue(int type, int tid, _Bool op, int val, Queue* queue) {
+  _Bool temp_results[num_vals];
+
+  for (int val = 0; val < num_vals; val++)
+    temp_results[val] = queue_contains(queue, val);
+  printOpInfo(type, tid, op, val, temp_results);
+}
+
+void printOpInfo_set(int type, int tid, _Bool op, int val, Set* set) {
+  _Bool temp_results[num_vals];
+
+  for (int val = 0; val < num_vals; val++)
+    temp_results[val] = set_contains(set, val);
+  printOpInfo(type, tid, op, val, temp_results);
+}
+
+void printOpInfo_list(int type, int tid, _Bool op, int val, List* list) {
+  _Bool temp_results[num_vals];
+
+  for (int val = 0; val < num_vals; val++)
+    temp_results[val] = list_contains(list, val);
+  printOpInfo(type, tid, op, val, temp_results);
+}
+
+void printEquivSeqInfo(int* perms, _Bool* results) {
+  int step_counters[nthreads];
+
+  for (int tid = 0; tid < nthreads; tid++)
+    step_counters[tid] = 0;
+
+  printf("[PASS]\t Equivalent sequential execution: \n");
+  for (int step = 0; step < num_steps; step++) {
+    int tid = perms[step];
+    int step_local = step_counters[tid];
+    _Bool op = ops[tid][step_local];
+    int val = vals[tid][step_local];
+
+    printOpInfo(RESULT, tid, op, val, results);
+    step_counters[tid]++;
+  }
+}

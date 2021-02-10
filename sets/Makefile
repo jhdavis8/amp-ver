@@ -1,5 +1,8 @@
-# make algorithmname_type
-# For running test driver with your algorithm interfaced
+# To running test driver with a particular data structure:
+#   make structure_name
+#
+# To specify parameters (optional):
+#   make structure_name THD_BND=3 VAL_BND=3 STP_BND=3
 
 CC = gcc
 CIVL = civl verify -checkMemoryLeak=false
