@@ -1,5 +1,5 @@
 /* Concurrent cuckoo hashset using lock striping and phasing
- * Wenhao Wu, Eric Kurtz, and Josh Davis
+ * Josh Davis, Wenhao Wu, Eric Kurtz
  * April-26-2018
  * VIP-HPC University of Delaware
  */
@@ -10,7 +10,7 @@
 #include "../include/set.cvh"
 
 #define MAX_POINTERS 64
-#define STAGE_BOUND 1
+#define STAGE_BOUND 2
 #define LIMIT 1
 #define INITIAL_STAGE 0
 #define INITIAL_CAPACITY 1
@@ -175,9 +175,7 @@ Set* set_create() {
 
 // Returns two to the power of input integer p
 int exp_two(int p) {
-  int r = 1;
-  for (int i = 0; i < p; i++) r = r * 2;
-  return r;
+  return 1 << p;
 }
 
 #if HASH_FN_OPTION == 0
@@ -286,7 +284,7 @@ void release(Set* set, int x) {
   //printf("Released locks for x = %s!\n", x);
 }
 
-#ifdef ENABLE_PATCH
+#if ENABLE_PATCH == 1
 void direct_acquire(Set* set, int table, int loc) {
   lock_acquire(&(set->locks[table][loc]));
 }
@@ -329,7 +327,7 @@ _Bool relocate(Set* set, int i, int hi) {
   int hj = 0;
   int j = 1 - i;
   for (int round = 0; round < LIMIT; round++) {
-#ifdef ENABLE_PATCH
+#if ENABLE_PATCH == 1
     direct_acquire(set, i, hi);
 #endif
     Probe* i_probe = set->table[i][hi];
@@ -338,6 +336,9 @@ _Bool relocate(Set* set, int i, int hi) {
     case 0: hj = hash1(set, y); break;
     case 1: hj = hash0(set, y); break;
     }
+#if ENABLE_PATCH == 1
+    direct_release(set, i, hi);
+#endif
     acquire(set, y);
     Probe* j_probe = set->table[j][hj];
     if (probe_remove(i_probe, y)) {
@@ -345,26 +346,22 @@ _Bool relocate(Set* set, int i, int hi) {
 	probe_write(j_probe, y);
 	release(set, y);
 	return true;
-      }
-      else if (probe_length(j_probe) < PROBE_SIZE) {
+      } else if (probe_length(j_probe) < PROBE_SIZE) {
 	//printf("Inserting above Threshold in table %d...\n", i);
 	probe_write(j_probe, y);
 	i = 1 - i;
 	hi = hj;
 	j = 1 - j;
 	release(set, y);
-      }
-      else {
+      } else {
 	probe_write(i_probe, y);
 	release(set, y);
 	return false;
       }
-    }
-    else if (probe_length(i_probe) >= THRESHOLD) {
+    } else if (probe_length(i_probe) >= THRESHOLD) {
       release(set, y);
       continue;
-    }
-    else {
+    } else {
       release(set, y);
       return true;
     }
