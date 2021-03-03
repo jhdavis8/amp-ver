@@ -1,0 +1,229 @@
+/* Unbounded queue implementation using lazy
+ * synchronization and no locks.
+ * Mar-2-2021
+ * Josh Davis
+ * VSL Lab; Dept. CIS; UDel
+ */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <limits.h>
+#include "../include/priority_queue.cvh"
+
+enum Status {EMPTY, AVAILABLE, BUSY};
+
+struct _lock
+{
+  $proc owner;
+  int count;
+};
+
+typedef struct _lock Lock;
+
+Lock* create_lock() {
+  Lock* new_lock = (Lock*) malloc(sizeof(Lock));
+  new_lock->owner = $proc_null;
+  new_lock->count = 0;
+  return new_lock;
+}
+
+void lock_acquire(Lock* l) {
+    $atomic {
+	if ($self != l->owner) {
+	    $when(l->owner == $proc_null) l->owner = $self;
+	}
+	l->count++;
+    }
+}
+
+void lock_release(Lock * l) {
+    $atomic {
+	$assert($self == l->owner);
+	l->count--;
+	if (l->count == 0) l->owner = $proc_null;
+    }
+}
+
+struct _node
+{
+  Status tag;
+  int score;
+  int item;
+  $proc owner;
+  Lock* lock;
+};
+
+typedef struct _node Node;
+
+Node* create_node() {
+  Node* new_node = (Node*) malloc(sizeof(Node));
+  new_node->tag = EMPTY;
+  new_node->lock = create_lock();
+  return new_node;
+}
+
+void init_node(Node* target, int new_item, int new_score) {
+  target->item = new_item;
+  target->score = new_score;
+  target->tag = BUSY;
+  target->owner = $self;
+}
+
+void lock_node(Node* target) {
+  lock_acquire(target->lock); 
+}
+
+void unlock_node(Node* target) {
+  lock_release(target->lock);
+}
+
+_Bool am_owner_node(Node* target) {
+  switch (target->tag) {
+  case EMPTY:
+    return false;
+  case AVAILABLE:
+    return false;
+  case BUSY:
+    return owner == $self;
+  }
+  return false; // not reached
+}
+
+/*
+typedef struct _node
+{
+  int value;
+  struct _node* next;  // This is an AtomicReference in AMP, so updates are $atomic
+} Node;
+
+Node* create_node(int value) {
+  Node* new_node = (Node*) malloc(sizeof(Node));
+  new_node->value = value;
+  new_node->next = NULL;
+  return new_node;
+}
+
+$atomic_f Node* get(Node* node) {
+  return node;
+}
+
+$atomic_f _Bool compare_and_set(Node** target, Node* expect, Node* new) {
+  if (*target == expect) {
+    *target = new;
+    return true;
+  } else {
+    return false;
+  }
+}
+
+typedef struct _queue
+{
+  Node* head;
+  Node* tail;
+} Queue;
+
+Queue* queue_create() {
+  Queue* new_queue = (Queue*) malloc(sizeof(Queue));
+  Node* node = create_node(-1);
+  new_queue->head = node;
+  new_queue->tail = node;
+  return new_queue;
+}
+
+_Bool enq(Queue* queue, int value) {
+  Node* node = create_node(value);
+  while (true) {
+    Node* last = get(queue->tail);
+    Node* next = get(last->next);
+    if (last == get(queue->tail)) {
+      if (next == NULL) {
+	if (compare_and_set(&(last->next), next, node)) {
+	  compare_and_set(&(queue->tail), last, node);
+	  return true;
+	}
+      } else {
+	compare_and_set(&(queue->tail), last, next);
+      }
+    }
+  }
+}
+
+int deq(Queue* queue) {
+  while (true) {
+    Node* first = get(queue->head);
+    Node* last = get(queue->tail);
+    Node* next = get(first->next);
+    if (first == get(queue->head)) {
+      if (first == last) {
+	if (next == NULL) {
+	  return -1;
+	}
+	compare_and_set(&(queue->tail), last, next);
+      } else {
+	int value = next->value;
+	if (compare_and_set(&(queue->head), first, next)) {
+	  return value;
+	}
+      }
+    }
+  }
+}
+
+_Bool queue_contains(Queue* queue, int value) {
+  Node* curr = queue->head->next;
+  while (curr) {
+    if (curr->value == value) {
+      return true;
+    }
+    curr = curr->next;
+  }
+  return false;
+}
+
+int queue_index(Queue* queue, int index) {
+  Node* curr = queue->head->next;
+  int location = 0;
+  while (curr) {
+    if (location == index) {
+      return curr->value;
+    }
+    curr = curr->next;
+    location++;
+  }
+  return -1;
+}
+
+_Bool queue_destroy(Queue* queue) {
+  Node* curr = queue->head;
+  Node* prev = NULL;
+  while (curr) {
+    prev = curr;
+    curr = curr->next;
+    free(prev);
+  }
+  free(queue);
+  return true;
+}
+
+void queue_print(Queue* queue) {
+  Node* curr = queue->head;
+  printf("{");
+  while (curr) {
+    printf(" %d ", curr->value);
+    curr = curr->next;
+  }
+  printf("}\n");
+  return;
+}
+
+int queue_size(Queue* queue) {
+  Node* curr = queue->head;
+  int size = -1;  // so that sentinel node is not counted
+  while(curr) {
+    size++;
+    curr = curr->next;
+  }
+  return size;
+}
+*/
