@@ -94,32 +94,32 @@ _Bool am_owner_node(Node* n) {
   return false; // not reached
 }
 
-struct _heap
+struct _priority_queue
 {
   Lock* lock;
   int next;
-  Node** list;
+  Node** heap;
 };
 
-typedef struct _heap Heap;
+typedef struct _priority_queue PriorityQueue;
 
-Heap* create_heap() {
-  new_heap = (Heap*) malloc(sizeof(Heap));
-  new_heap->lock = (Lock*) malloc(sizeof(Lock));
-  new_heap->next = ROOT;
-  new_heap->list = (Node**) malloc(sizeof(Node*)*(CAPACITY + 1));
+PriorityQueue* create_priority_queue() {
+  PriorityQueue* q = (PriorityQueue*) malloc(sizeof(PriorityQueue));
+  q->lock = (Lock*) malloc(sizeof(Lock));
+  q->next = ROOT;
+  q->heap = (Node**) malloc(sizeof(Node*)*(CAPACITY + 1));
   for (int i = 0; i < CAPACITY + 1; i++) {
-    new_heap->list[i] = (Node*) malloc(sizeof(Node));
+    q->heap[i] = (Node*) malloc(sizeof(Node));
   }
 }
 
-void destroy_heap(Heap* h) {
-  free(h->lock);
+void destroy_priority_queue(PriorityQueue* q) {
+  free(q->lock);
   for (int i = 0; i < CAPACITY + 1; i++) {
-    free(h->list[i]);
+    free(q->heap[i]);
   }
-  free(h->list);
-  free(h);
+  free(q->heap);
+  free(q);
 }
 
 /*
