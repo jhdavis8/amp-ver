@@ -65,3 +65,11 @@ lfu_queue : lock_free_unbounded_queue/lock_free_unbounded_queue.cvl \
 		$(CIVL) -inputVAL_B=$(VAL_BND) -inputTHD_B=$(THD_BND) -inputSTP_B=$(STP_BND) \
                 driver/queue_max_driver.cvl lock_free_unbounded_queue/lock_free_unbounded_queue.cvl \
 		naive/naive_queue.cvl
+
+uhb_priority_queue : unbounded_heap_based_priority_queue/unbounded_heap_based_priority_queue.cvl \
+		naive/naive_priority_queue.cvl driver/priority_queue_max_driver.cvl driver/perm_util.c \
+		include/priority_queue.cvh include/naive_priority_queue.cvh
+		$(CIVL) -inputVAL_B=$(VAL_BND) -inputTHD_B=$(THD_BND) -inputSTP_B=$(STP_BND) \
+                driver/priority_queue_max_driver.cvl unbounded_heap_based_priority_queue/unbounded_heap_based_priority_queue.cvl \
+		naive/naive_priority_queue.cvl
+
