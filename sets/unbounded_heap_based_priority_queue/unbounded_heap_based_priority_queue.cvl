@@ -11,6 +11,10 @@
 #include <limits.h>
 #include "../include/priority_queue.cvh"
 
+#define ROOT 1
+#define NO_ONE -1
+#define CAPACITY 8
+
 enum Status {EMPTY, AVAILABLE, BUSY};
 
 struct _lock
@@ -63,23 +67,23 @@ Node* create_node() {
   return new_node;
 }
 
-void init_node(Node* target, int new_item, int new_score) {
-  target->item = new_item;
-  target->score = new_score;
-  target->tag = BUSY;
-  target->owner = $self;
+void init_node(Node* n, int new_item, int new_score) {
+  n->item = new_item;
+  n->score = new_score;
+  n->tag = BUSY;
+  n->owner = $self;
 }
 
-void lock_node(Node* target) {
-  lock_acquire(target->lock); 
+void lock_node(Node* n) {
+  lock_acquire(n->lock); 
 }
 
-void unlock_node(Node* target) {
-  lock_release(target->lock);
+void unlock_node(Node* n) {
+  lock_release(n->lock);
 }
 
-_Bool am_owner_node(Node* target) {
-  switch (target->tag) {
+_Bool am_owner_node(Node* n) {
+  switch (n->tag) {
   case EMPTY:
     return false;
   case AVAILABLE:
@@ -88,6 +92,34 @@ _Bool am_owner_node(Node* target) {
     return owner == $self;
   }
   return false; // not reached
+}
+
+struct _heap
+{
+  Lock* lock;
+  int next;
+  Node** list;
+};
+
+typedef struct _heap Heap;
+
+Heap* create_heap() {
+  new_heap = (Heap*) malloc(sizeof(Heap));
+  new_heap->lock = (Lock*) malloc(sizeof(Lock));
+  new_heap->next = ROOT;
+  new_heap->list = (Node**) malloc(sizeof(Node*)*(CAPACITY + 1));
+  for (int i = 0; i < CAPACITY + 1; i++) {
+    new_heap->list[i] = (Node*) malloc(sizeof(Node));
+  }
+}
+
+void destroy_heap(Heap* h) {
+  free(h->lock);
+  for (int i = 0; i < CAPACITY + 1; i++) {
+    free(h->list[i]);
+  }
+  free(h->list);
+  free(h);
 }
 
 /*
