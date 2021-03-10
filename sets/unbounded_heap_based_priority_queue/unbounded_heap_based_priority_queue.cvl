@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <limits.h>
-#include "../include/priority_queue.cvh"
+//#include "../include/priority_queue.cvh"
 
 #define ROOT 1
 #define NO_ONE -1
@@ -17,13 +17,11 @@
 
 enum Status {EMPTY, AVAILABLE, BUSY};
 
-struct _lock
+typedef struct _lock
 {
   $proc owner;
   int count;
-};
-
-typedef struct _lock Lock;
+} Lock;
 
 Lock* create_lock() {
   Lock* new_lock = (Lock*) malloc(sizeof(Lock));
@@ -33,32 +31,30 @@ Lock* create_lock() {
 }
 
 void lock_acquire(Lock* l) {
-    $atomic {
-	if ($self != l->owner) {
-	    $when(l->owner == $proc_null) l->owner = $self;
-	}
-	l->count++;
+  $atomic {
+    if ($self != l->owner) {
+      $when(l->owner == $proc_null) l->owner = $self;
     }
+    l->count++;
+  }
 }
 
 void lock_release(Lock * l) {
-    $atomic {
-	$assert($self == l->owner);
-	l->count--;
-	if (l->count == 0) l->owner = $proc_null;
-    }
+  $atomic {
+    $assert($self == l->owner);
+    l->count--;
+    if (l->count == 0) l->owner = $proc_null;
+  }
 }
 
-struct _node
+typedef struct _node
 {
   Status tag;
   int score;
   int item;
   $proc owner;
   Lock* lock;
-};
-
-typedef struct _node Node;
+} Node;
 
 Node* create_node() {
   Node* new_node = (Node*) malloc(sizeof(Node));
@@ -94,14 +90,12 @@ _Bool am_owner_node(Node* n) {
   return false; // not reached
 }
 
-struct _priority_queue
+typedef struct _priority_queue
 {
   Lock* lock;
   int next;
   Node** heap;
-};
-
-typedef struct _priority_queue PriorityQueue;
+} PriorityQueue;
 
 PriorityQueue* create_priority_queue() {
   PriorityQueue* q = (PriorityQueue*) malloc(sizeof(PriorityQueue));
@@ -122,140 +116,187 @@ void destroy_priority_queue(PriorityQueue* q) {
   free(q);
 }
 
+void lock_heap(PriorityQueue* q) {
+  lock_acquire(q->lock); 
+}
+
+void unlock_heap(PriorityQueue* q) {
+  lock_release(q->lock);
+}
+
+void priority_queue_add(PriorityQueue* q, int item, int priority) {
+  lock_heap(q);
+  int child = q->next++;
+  lock_node(q->heap[child]);
+  unlock_heap(q);
+  init_node(q->heap[child], item, priority);
+  unlock_node(q->heap[child]);
+  while (child > ROOT) {
+    int parent = child / 2;
+    lock_node(q->heap[parent]);
+    lock_node(q->heap[child]);
+    int old_child = child;
+    if (q->heap[parent]->tag == AVAILABLE && am_owner_node(q->heap[child])) {
+      if (q->heap[child]->score < q->heap[parent]->score) {
+	swap(child, parent);
+	child = parent;
+      } else {
+	q->heap[child]->tag = AVAILABLE;
+	q->heap[child]->owner = NO_ONE;
+	unlock_node(q->heap[old_child]);
+	unlock_node(q->heap[parent]);
+	return;
+      }
+    } else if (!am_owner_node(q->heap[child])) {
+      child = parent;
+    }
+    unlock_node(q->heap[old_child]);
+    unlock_node(q->heap[parent]);
+  }
+  if (child == ROOT) {
+    lock_node(q->heap[ROOT]);
+    if (am_owner_node(q->heap[ROOT])) {
+      q->heap[ROOT]->tag = AVAILABLE;
+      q->heap[child]->owner = NO_ONE;
+    }
+    unlock_node(q->heap[ROOT]);
+  }
+}
+
 /*
-typedef struct _node
-{
+  typedef struct _node
+  {
   int value;
   struct _node* next;  // This is an AtomicReference in AMP, so updates are $atomic
-} Node;
+  } Node;
 
-Node* create_node(int value) {
+  Node* create_node(int value) {
   Node* new_node = (Node*) malloc(sizeof(Node));
   new_node->value = value;
   new_node->next = NULL;
   return new_node;
-}
-
-$atomic_f Node* get(Node* node) {
-  return node;
-}
-
-$atomic_f _Bool compare_and_set(Node** target, Node* expect, Node* new) {
-  if (*target == expect) {
-    *target = new;
-    return true;
-  } else {
-    return false;
   }
-}
 
-typedef struct _queue
-{
+  $atomic_f Node* get(Node* node) {
+  return node;
+  }
+
+  $atomic_f _Bool compare_and_set(Node** target, Node* expect, Node* new) {
+  if (*target == expect) {
+  *target = new;
+  return true;
+  } else {
+  return false;
+  }
+  }
+
+  typedef struct _queue
+  {
   Node* head;
   Node* tail;
-} Queue;
+  } Queue;
 
-Queue* queue_create() {
+  Queue* queue_create() {
   Queue* new_queue = (Queue*) malloc(sizeof(Queue));
   Node* node = create_node(-1);
   new_queue->head = node;
   new_queue->tail = node;
   return new_queue;
-}
+  }
 
-_Bool enq(Queue* queue, int value) {
+  _Bool enq(Queue* queue, int value) {
   Node* node = create_node(value);
   while (true) {
-    Node* last = get(queue->tail);
-    Node* next = get(last->next);
-    if (last == get(queue->tail)) {
-      if (next == NULL) {
-	if (compare_and_set(&(last->next), next, node)) {
-	  compare_and_set(&(queue->tail), last, node);
-	  return true;
-	}
-      } else {
-	compare_and_set(&(queue->tail), last, next);
-      }
-    }
+  Node* last = get(queue->tail);
+  Node* next = get(last->next);
+  if (last == get(queue->tail)) {
+  if (next == NULL) {
+  if (compare_and_set(&(last->next), next, node)) {
+  compare_and_set(&(queue->tail), last, node);
+  return true;
   }
-}
+  } else {
+  compare_and_set(&(queue->tail), last, next);
+  }
+  }
+  }
+  }
 
-int deq(Queue* queue) {
+  int deq(Queue* queue) {
   while (true) {
-    Node* first = get(queue->head);
-    Node* last = get(queue->tail);
-    Node* next = get(first->next);
-    if (first == get(queue->head)) {
-      if (first == last) {
-	if (next == NULL) {
-	  return -1;
-	}
-	compare_and_set(&(queue->tail), last, next);
-      } else {
-	int value = next->value;
-	if (compare_and_set(&(queue->head), first, next)) {
-	  return value;
-	}
-      }
-    }
+  Node* first = get(queue->head);
+  Node* last = get(queue->tail);
+  Node* next = get(first->next);
+  if (first == get(queue->head)) {
+  if (first == last) {
+  if (next == NULL) {
+  return -1;
   }
-}
+  compare_and_set(&(queue->tail), last, next);
+  } else {
+  int value = next->value;
+  if (compare_and_set(&(queue->head), first, next)) {
+  return value;
+  }
+  }
+  }
+  }
+  }
 
-_Bool queue_contains(Queue* queue, int value) {
+  _Bool queue_contains(Queue* queue, int value) {
   Node* curr = queue->head->next;
   while (curr) {
-    if (curr->value == value) {
-      return true;
-    }
-    curr = curr->next;
+  if (curr->value == value) {
+  return true;
+  }
+  curr = curr->next;
   }
   return false;
-}
+  }
 
-int queue_index(Queue* queue, int index) {
+  int queue_index(Queue* queue, int index) {
   Node* curr = queue->head->next;
   int location = 0;
   while (curr) {
-    if (location == index) {
-      return curr->value;
-    }
-    curr = curr->next;
-    location++;
+  if (location == index) {
+  return curr->value;
+  }
+  curr = curr->next;
+  location++;
   }
   return -1;
-}
+  }
 
-_Bool queue_destroy(Queue* queue) {
+  _Bool queue_destroy(Queue* queue) {
   Node* curr = queue->head;
   Node* prev = NULL;
   while (curr) {
-    prev = curr;
-    curr = curr->next;
-    free(prev);
+  prev = curr;
+  curr = curr->next;
+  free(prev);
   }
   free(queue);
   return true;
-}
+  }
 
-void queue_print(Queue* queue) {
+  void queue_print(Queue* queue) {
   Node* curr = queue->head;
   printf("{");
   while (curr) {
-    printf(" %d ", curr->value);
-    curr = curr->next;
+  printf(" %d ", curr->value);
+  curr = curr->next;
   }
   printf("}\n");
   return;
-}
+  }
 
-int queue_size(Queue* queue) {
+  int queue_size(Queue* queue) {
   Node* curr = queue->head;
   int size = -1;  // so that sentinel node is not counted
   while(curr) {
-    size++;
-    curr = curr->next;
+  size++;
+  curr = curr->next;
   }
   return size;
-}
+  }
 */
