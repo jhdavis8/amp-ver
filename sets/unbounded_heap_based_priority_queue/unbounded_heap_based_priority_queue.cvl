@@ -12,16 +12,32 @@
 //#include "../include/priority_queue.cvh"
 
 #define ROOT 1
-#define NO_ONE -1
+#define NO_ONE $proc_null
 #define CAPACITY 8
 
-enum Status {EMPTY, AVAILABLE, BUSY};
+typedef enum _status {EMPTY, AVAILABLE, BUSY} Status;
 
 typedef struct _lock
 {
   $proc owner;
   int count;
 } Lock;
+
+typedef struct _node
+{
+  Status tag;
+  int score;
+  int item;
+  $proc owner;
+  Lock* lock;
+} Node;
+
+typedef struct _priority_queue
+{
+  Lock* lock;
+  int next;
+  Node** heap;
+} PriorityQueue;
 
 Lock* create_lock() {
   Lock* new_lock = (Lock*) malloc(sizeof(Lock));
@@ -46,15 +62,6 @@ void lock_release(Lock * l) {
     if (l->count == 0) l->owner = $proc_null;
   }
 }
-
-typedef struct _node
-{
-  Status tag;
-  int score;
-  int item;
-  $proc owner;
-  Lock* lock;
-} Node;
 
 Node* create_node() {
   Node* new_node = (Node*) malloc(sizeof(Node));
@@ -85,17 +92,10 @@ _Bool am_owner_node(Node* n) {
   case AVAILABLE:
     return false;
   case BUSY:
-    return owner == $self;
+    return n->owner == $self;
   }
   return false; // not reached
 }
-
-typedef struct _priority_queue
-{
-  Lock* lock;
-  int next;
-  Node** heap;
-} PriorityQueue;
 
 PriorityQueue* create_priority_queue() {
   PriorityQueue* q = (PriorityQueue*) malloc(sizeof(PriorityQueue));
@@ -124,6 +124,22 @@ void unlock_heap(PriorityQueue* q) {
   lock_release(q->lock);
 }
 
+void priority_queue_swap(PriorityQueue* q, int i, int j) {
+  $proc _owner = q->heap[i]->owner;
+  q->heap[i]->owner = q->heap[j]->owner;
+  q->heap[j]->owner = _owner;
+  int _item = q->heap[i]->item;
+  q->heap[i]->item = q->heap[j]->item;
+  q->heap[j]->item = _item;
+  int _priority = q->heap[i]->score;
+  q->heap[i]->score = q->heap[j]->score;
+  q->heap[j]->score = _priority;
+  Status _tag = q->heap[i]->tag;
+  q->heap[i]->tag = q->heap[j]->tag;
+  q->heap[j]->tag = _tag;
+}
+  
+
 void priority_queue_add(PriorityQueue* q, int item, int priority) {
   lock_heap(q);
   int child = q->next++;
@@ -138,7 +154,7 @@ void priority_queue_add(PriorityQueue* q, int item, int priority) {
     int old_child = child;
     if (q->heap[parent]->tag == AVAILABLE && am_owner_node(q->heap[child])) {
       if (q->heap[child]->score < q->heap[parent]->score) {
-	swap(child, parent);
+	priority_queue_swap(q, child, parent);
 	child = parent;
       } else {
 	q->heap[child]->tag = AVAILABLE;
@@ -162,6 +178,8 @@ void priority_queue_add(PriorityQueue* q, int item, int priority) {
     unlock_node(q->heap[ROOT]);
   }
 }
+
+
 
 /*
   typedef struct _node
