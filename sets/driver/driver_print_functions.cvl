@@ -21,16 +21,16 @@
 #define RESULT -2
 #endif
 
-extern $input int VAL_B;
-extern $input int THD_B;
-extern $input int STP_B;
-extern $input int nthreads;
-extern int num_vals;
-extern int num_steps;
-extern int num_perms;
-extern int nsteps[nthreads];
-extern _Bool ops[nthreads][STP_B];
-extern int vals[nthreads][STP_B];
+$input int VAL_B = 1;
+$input int THD_B = 2;
+$input int STP_B = 2;
+$input int nthreads;
+int num_vals;
+int num_steps;
+int num_perms;
+int nsteps[nthreads];
+_Bool ops[nthreads][STP_B];
+int vals[nthreads][STP_B];
 
 void print_steps() {
   for (int tid = 0; tid < nthreads; tid++) {
