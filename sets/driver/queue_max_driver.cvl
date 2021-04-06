@@ -137,8 +137,7 @@ int main() {
     }
   }
   if (num_steps > 0 && pid >= num_perms) {
-    printf("[FAIL]\t No matching sequentialized execution found!\n");
-    printf("[RESULT]\t Concurrent execution results:");
+    printMatchFail();
     printQueue(actual_results);
     printf("\n");
     $assert(false);

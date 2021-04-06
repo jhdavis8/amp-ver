@@ -1,0 +1,23 @@
+// queue.cvh
+#ifndef NPQUEUE_H
+#define NPQUEUE_H
+
+struct _naive_priority_queue;
+typedef struct _naive_priority_queue NPQueue;
+
+
+void naive_priority_queue_add(NPQueue* q, int item, int priority);
+
+int naive_priority_queue_remove_min(NPQueue* q);
+
+_Bool naive_priority_queue_contains(NPQueue *q, int item);
+
+NPQueue* create_naive_priority_queue();
+
+void destroy_naive_priority_queue(PriortyQueue* q);
+
+int naive_priority_queue_item_index(NPQueue* q, int i);
+
+int naive_priority_queue_prt_index(NPQueue* q, int i);
+
+#endif

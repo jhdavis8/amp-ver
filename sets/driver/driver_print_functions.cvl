@@ -65,6 +65,11 @@ void printQueue(_Bool* s) {
   printf("}");
 }
 
+void printMatchFail() {
+  printf("[FAIL]\t No matching sequentialized execution found!\n");
+  printf("[RESULT]\t Concurrent execution results:");
+}
+
 void printOpInfo(int type, int tid, _Bool op, int val, _Bool* results) {
   if (type == RESULT) {
     printf("[RESULT]");
