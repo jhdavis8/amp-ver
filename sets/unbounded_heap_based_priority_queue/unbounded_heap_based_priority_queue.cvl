@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <limits.h>
-//#include "../include/priority_queue.cvh"
+#include "../include/priority_queue.cvh"
 
 #define ROOT 1
 #define NO_ONE $proc_null
@@ -229,5 +229,14 @@ int priority_queue_remove_min(PriorityQueue* q) {
   }
   unlock_node(q->heap[parent]);
   return item;
+}
+
+_Bool priority_queue_contains(PriorityQueue *q, int item) {
+  for (int i = 0; i < CAPACITY; i++) {
+    if (q->heap[i]->item == item) {
+      return true;
+    }
+  }
+  return false;
 }
 

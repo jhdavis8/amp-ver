@@ -1,11 +1,12 @@
-/* Implementation of list driver for CIVL
- * Dec-5-2017
- * Wenhao Wu
+/* Implementation of priority queue driver for CIVL
+ * Apr-5-2021
+ * Wenhao Wu, Josh Davis
  * VSL Lab; Dept. CIS; UDel
  */
 
 // Dependencies
-#include "../include/list.cvh"
+#include "../include/priority_queue.cvh"
+#include "../include/naive_priority_queue.cvh"
 #include "driver_print_functions.cvl"
 #include "perm_util.c"
 #include <stdio.h>	// Printing outputs
@@ -13,15 +14,20 @@
 #include <stdbool.h>
 
 // Defs
+#ifndef ADD
 #define ADD true
-#define DEL false
+#endif
+#ifndef ACTUAL
 #define ACTUAL -1
+#endif
+#ifndef RESULT
 #define RESULT -2
+#endif
 
 //CIVL Inputs
-$input int VAL_B = 1;	// Vals are in [0, VAL_B]
-$input int THD_B = 2;   // Maximum number of threads
-$input int STP_B = 2;	// Maximum number of total steps
+$input int VAL_B;	// Vals are in [0, VAL_B]
+$input int THD_B;   // Maximum number of threads
+$input int STP_B;	// Maximum number of total steps
 $input int nthreads;	// Actual number of threads
 $assume(1 <= nthreads && nthreads <= THD_B);
 
@@ -43,14 +49,18 @@ void init() {
     nsteps[tid] = num_steps_local;
     for (int step = 0; step < num_steps_local; step++) {
       ops[tid][step] = (_Bool) $choose_int(2);
-      vals[tid][step] = $choose_int(num_vals);
+      if (ops[tid][step] == ADD) {
+	vals[tid][step] = $choose_int(num_vals);
+      } else {
+	vals[tid][step] = 0;
+      }
       num_steps++;
     }
   }
   num_perms = calc_num_perms(nthreads, nsteps);
 }
 
-void thread(int tid, List* list) {
+void thread(int tid, PriorityQueue* queue) {
   int num_steps_local = nsteps[tid];
   
   for (int step = 0; step < num_steps_local; step++) {
@@ -58,14 +68,14 @@ void thread(int tid, List* list) {
     int val = vals[tid][step];
 
     if (op == ADD) 
-      list_add(list, val);
+      enq(queue, val);
     else
-      list_remove(list, val);
-    //printOpInfo_list(ACTUAL, tid, op, val, list);
+      deq(queue);
+    //printOpInfo_queue(ACTUAL, tid, op, val, queue);
   }
 }
 
-void permseq(int pid, int* perm, _Bool* oracle_results) {
+void permseq(int pid, int* perm, NQueue* oracle_results) {
   int step_counters[nthreads];
 
   for (int tid = 0; tid < nthreads; tid++)
@@ -78,17 +88,19 @@ void permseq(int pid, int* perm, _Bool* oracle_results) {
     int val = vals[tid][step];
 
     if (op == ADD)
-      oracle_results[val] = true;
+      //oracle_results[val] = true;
+      naive_enq(oracle_results, val);
     else 
-      oracle_results[val] = false;
+      //oracle_results[val] = false;
+      naive_deq(oracle_results);
     step_counters[tid]++;
     //printOpInfo(pid, tid, op, val, oracle_results);
   }
 }
 
-_Bool isEqual(_Bool* actual, _Bool* oracle) {
-  for (int val = 0; val < num_vals; val++)
-    if (actual[val] != oracle[val])
+_Bool isEqual(Queue* actual, NQueue* oracle) {
+  for (int i = 0; i < num_steps; i++)
+    if (naive_queue_index(oracle, i) != queue_index(actual, i))
       return false;
   return true;
 }
@@ -101,20 +113,25 @@ int main() {
   int** perms = compute_perms(nthreads, nsteps);
   _Bool actual_results[num_vals];
   _Bool oracle_results[num_vals];
-  List* actual_list = list_create();
+  NQueue* oracle_queue = naive_queue_create();
+  Queue* actual_queue = queue_create();
  
   $parfor (int tid : 0 .. nthreads-1) {
-    thread(tid, actual_list);
+    thread(tid, actual_queue);
   }
 
   for (int val = 0; val < num_vals; val++)
-    actual_results[val] = list_contains(actual_list, val);
+    actual_results[val] = queue_contains(actual_queue, val);
   
   for (pid = 0; pid < num_perms; pid++) {
-    for (int val = 0; val < num_vals; val++)
-      oracle_results[val] = false;
-    permseq(pid, perms[pid], oracle_results);
-    if (isEqual(actual_results, oracle_results) == true) {
+    //for (int val = 0; val < num_vals; val++)
+    //oracle_results[val] = false;
+    naive_queue_destroy(oracle_queue);
+    oracle_queue = naive_queue_create();
+    permseq(pid, perms[pid], oracle_queue);
+    if (isEqual(actual_queue, oracle_queue) == true) {
+      for (int val = 0; val < num_vals; val++)
+	oracle_results[val] = naive_queue_contains(oracle_queue, val);
       printEquivSeqInfo(perms[pid], oracle_results);
       break;
     }
@@ -122,11 +139,12 @@ int main() {
   if (num_steps > 0 && pid >= num_perms) {
     printf("[FAIL]\t No matching sequentialized execution found!\n");
     printf("[RESULT]\t Concurrent execution results:");
-    printList(actual_results);
+    printQueue(actual_results);
     printf("\n");
     $assert(false);
   }
-  list_destroy(actual_list);
+  queue_destroy(actual_queue);
+  naive_queue_destroy(oracle_queue);
   for (int i = 0; i < num_perms; i++)
     free(perms[i]);
   free(perms);

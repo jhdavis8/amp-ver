@@ -88,6 +88,14 @@ void printOpInfo_queue(int type, int tid, _Bool op, int val, Queue* queue) {
   printOpInfo(type, tid, op, val, temp_results);
 }
 
+void printOpInfo_priority_queue(int type, int tid, _Bool op, int val, PriorityQueue* pqueue) {
+  _Bool temp_results[num_vals];
+
+  for (int val = 0; val < num_vals; val++)
+    temp_results[val] = priority_queue_contains(queue, val);
+  printOpInfo(type, tid, op, val, temp_results);
+}
+
 void printOpInfo_set(int type, int tid, _Bool op, int val, Set* set) {
   _Bool temp_results[num_vals];
 
