@@ -240,3 +240,10 @@ _Bool priority_queue_contains(PriorityQueue *q, int item) {
   return false;
 }
 
+int priority_queue_item_index(PriorityQueue* q, int i) {
+  return q->heap[i]->item;
+}
+
+int priority_queue_score_index(PriorityQueue* q, int i) {
+  return q->heap[i]->score;
+}

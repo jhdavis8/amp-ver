@@ -12,104 +12,48 @@
 #include "../include/naive_priority_queue.cvh"
 
 #define ROOT 1
-#define NO_ONE $proc_null
 #define CAPACITY 8
-/*
-typedef enum _status {EMPTY, AVAILABLE, BUSY} Status;
 
-typedef struct _lock
-{
-  $proc owner;
-  int count;
-} Lock;
+typedef enum _status {EMPTY, AVAILABLE} Status;
 
-typedef struct _node
+typedef struct _nnode
 {
   Status tag;
   int score;
   int item;
-  $proc owner;
-  Lock* lock;
-} Node;
+} NNode;
 
-typedef struct _priority_queue
+typedef struct _npriority_queue
 {
-  Lock* lock;
   int next;
-  Node** heap;
+  NNode** heap;
   int length;
-} PriorityQueue;
+} NPQueue;
 
-Lock* create_lock() {
-  Lock* new_lock = (Lock*) malloc(sizeof(Lock));
-  new_lock->owner = $proc_null;
-  new_lock->count = 0;
-  return new_lock;
+NNode* create_naive_node() {
+  NNode* new_naive_node = (NNode*) malloc(sizeof(NNode));
+  new_naive_node->tag = EMPTY;
+  return new_naive_node;
 }
 
-void lock_acquire(Lock* l) {
-  $atomic {
-    if ($self != l->owner) {
-      $when(l->owner == $proc_null) l->owner = $self;
-    }
-    l->count++;
-  }
-}
-
-void lock_release(Lock * l) {
-  $atomic {
-    $assert($self == l->owner);
-    l->count--;
-    if (l->count == 0) l->owner = $proc_null;
-  }
-}
-
-Node* create_node() {
-  Node* new_node = (Node*) malloc(sizeof(Node));
-  new_node->tag = EMPTY;
-  new_node->lock = create_lock();
-  return new_node;
-}
-
-void init_node(Node* n, int new_item, int new_score) {
+void init_naive_node(NNode* n, int new_item, int new_score) {
   n->item = new_item;
   n->score = new_score;
-  n->tag = BUSY;
-  n->owner = $self;
+  n->tag = AVAILABLE;
 }
 
-void lock_node(Node* n) {
-  lock_acquire(n->lock); 
-}
-
-void unlock_node(Node* n) {
-  lock_release(n->lock);
-}
-
-_Bool am_owner_node(Node* n) {
-  switch (n->tag) {
-  case EMPTY:
-    return false;
-  case AVAILABLE:
-    return false;
-  case BUSY:
-    return n->owner == $self;
-  }
-  return false; // not reached
-}
-
-PriorityQueue* create_priority_queue() {
-  PriorityQueue* q = (PriorityQueue*) malloc(sizeof(PriorityQueue));
+NPQueue* create_naive_priority_queue() {
+  NPQueue* q = (NPQueue*) malloc(sizeof(NPQueue));
   q->lock = (Lock*) malloc(sizeof(Lock));
   q->next = ROOT;
-  q->heap = (Node**) malloc(sizeof(Node*)*(CAPACITY + 1));
+  q->heap = (NNode**) malloc(sizeof(NNode*)*(CAPACITY + 1));
   for (int i = 0; i < CAPACITY + 1; i++) {
-    q->heap[i] = (Node*) malloc(sizeof(Node));
+    q->heap[i] = (NNode*) malloc(sizeof(NNode));
   }
   q->length = CAPACITY;
 }
 
-void destroy_priority_queue(PriorityQueue* q) {
+void destroy_naive_priority_queue(NPQueue* q) {
   free(q->lock);
   for (int i = 0; i < CAPACITY + 1; i++) {
     free(q->heap[i]);
@@ -118,18 +62,7 @@ void destroy_priority_queue(PriorityQueue* q) {
   free(q);
 }
 
-void lock_heap(PriorityQueue* q) {
-  lock_acquire(q->lock); 
-}
-
-void unlock_heap(PriorityQueue* q) {
-  lock_release(q->lock);
-}
-
-void priority_queue_swap(PriorityQueue* q, int i, int j) {
-  $proc _owner = q->heap[i]->owner;
-  q->heap[i]->owner = q->heap[j]->owner;
-  q->heap[j]->owner = _owner;
+void naive_priority_queue_swap(NPQueue* q, int i, int j) {
   int _item = q->heap[i]->item;
   q->heap[i]->item = q->heap[j]->item;
   q->heap[j]->item = _item;
@@ -141,63 +74,36 @@ void priority_queue_swap(PriorityQueue* q, int i, int j) {
   q->heap[j]->tag = _tag;
 }
 
-void priority_queue_add(PriorityQueue* q, int item, int priority) {
-  lock_heap(q);
+void naive_priority_queue_add(NPQueue* q, int item, int priority) {
   int child = q->next++;
-  lock_node(q->heap[child]);
-  unlock_heap(q);
-  init_node(q->heap[child], item, priority);
-  unlock_node(q->heap[child]);
+  init_naive_node(q->heap[child], item, priority);
   while (child > ROOT) {
     int parent = child / 2;
-    lock_node(q->heap[parent]);
-    lock_node(q->heap[child]);
     int old_child = child;
-    if (q->heap[parent]->tag == AVAILABLE && am_owner_node(q->heap[child])) {
+    if (q->heap[parent]->tag == AVAILABLE) {
       if (q->heap[child]->score < q->heap[parent]->score) {
-	priority_queue_swap(q, child, parent);
+	naive_priority_queue_swap(q, child, parent);
 	child = parent;
       } else {
 	q->heap[child]->tag = AVAILABLE;
-	q->heap[child]->owner = NO_ONE;
-	unlock_node(q->heap[old_child]);
-	unlock_node(q->heap[parent]);
 	return;
       }
-    } else if (!am_owner_node(q->heap[child])) {
-      child = parent;
     }
-    unlock_node(q->heap[old_child]);
-    unlock_node(q->heap[parent]);
-  }
-  if (child == ROOT) {
-    lock_node(q->heap[ROOT]);
-    if (am_owner_node(q->heap[ROOT])) {
+    if (child == ROOT) {
       q->heap[ROOT]->tag = AVAILABLE;
-      q->heap[child]->owner = NO_ONE;
     }
-    unlock_node(q->heap[ROOT]);
   }
 }
 
-int priority_queue_remove_min(PriorityQueue* q) {
-  lock_heap(q);
+int naive_priority_queue_remove_min(NPQueue* q) {
   int bottom = --q->next;
-  lock_node(q->heap[bottom]);
-  lock_node(q->heap[ROOT]);
-  unlock_heap(q);
   if (q->heap[ROOT]->tag == EMPTY) {
-    unlock_node(q->heap[ROOT]);
-    unlock_node(q->heap[bottom]);
     return -1;
   }
   int item = q->heap[ROOT]->item;
   q->heap[ROOT]->tag = EMPTY;
-  priority_queue_swap(q, bottom, ROOT);
-  q->heap[bottom]->owner = NO_ONE;
-  unlock_node(q->heap[bottom]);
+  naive_priority_queue_swap(q, bottom, ROOT);
   if (q->heap[ROOT]->tag == EMPTY) {
-    unlock_node(q->heap[ROOT]);
     return item;
   }
   int child = 0;
@@ -205,33 +111,24 @@ int priority_queue_remove_min(PriorityQueue* q) {
   while (parent < q->length / 2) {
     int left = parent*2;
     int right = (parent*2) + 1;
-    lock_node(q->heap[left]);
-    lock_node(q->heap[right]);
     if (q->heap[left]->tag == EMPTY) {
-      unlock_node(q->heap[right]);
-      unlock_node(q->heap[left]);
       break;
     } else if (q->heap[right]->tag == EMPTY || q->heap[left]->score < q->heap[right]->score) {
-      unlock_node(q->heap[right]);
       child = left;
     } else {
-      unlock_node(q->heap[left]);
       child = right;
     }
     if (q->heap[child]->score < q->heap[parent]->score) {
-      priority_queue_swap(q, parent, child);
-      unlock_node(q->heap[parent]);
+      naive_priority_queue_swap(q, parent, child);
       parent = child;
     } else {
-      unlock_node(q->heap[child]);
       break;
     }
   }
-  unlock_node(q->heap[parent]);
   return item;
 }
 
-_Bool priority_queue_contains(PriorityQueue *q, int item) {
+_Bool naive_priority_queue_contains(NPQueue *q, int item) {
   for (int i = 0; i < CAPACITY; i++) {
     if (q->heap[i]->item == item) {
       return true;
@@ -240,5 +137,10 @@ _Bool priority_queue_contains(PriorityQueue *q, int item) {
   return false;
 }
 
-*/
+int naive_priority_queue_item_index(NPQueue* q, int i) {
+  return q->heap[i]->item;
+}
 
+int naive_priority_queue_score_index(NPQueue* q, int i) {
+  return q->heap[i]->score;
+}

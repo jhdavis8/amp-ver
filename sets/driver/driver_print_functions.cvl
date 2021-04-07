@@ -7,6 +7,7 @@
 #include "../include/queue.cvh"
 #include "../include/set.cvh"
 #include "../include/list.cvh"
+#include "../include/priority_queue.cvh"
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
@@ -97,7 +98,7 @@ void printOpInfo_priority_queue(int type, int tid, _Bool op, int val, PriorityQu
   _Bool temp_results[num_vals];
 
   for (int val = 0; val < num_vals; val++)
-    temp_results[val] = priority_queue_contains(queue, val);
+    temp_results[val] = priority_queue_contains(pqueue, val);
   printOpInfo(type, tid, op, val, temp_results);
 }
 

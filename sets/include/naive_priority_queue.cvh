@@ -2,8 +2,8 @@
 #ifndef NPQUEUE_H
 #define NPQUEUE_H
 
-struct _naive_priority_queue;
-typedef struct _naive_priority_queue NPQueue;
+struct _npriority_queue;
+typedef struct _npriority_queue NPQueue;
 
 
 void naive_priority_queue_add(NPQueue* q, int item, int priority);
@@ -18,6 +18,6 @@ void destroy_naive_priority_queue(PriortyQueue* q);
 
 int naive_priority_queue_item_index(NPQueue* q, int i);
 
-int naive_priority_queue_prt_index(NPQueue* q, int i);
+int naive_priority_queue_score_index(NPQueue* q, int i);
 
 #endif

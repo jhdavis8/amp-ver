@@ -38,7 +38,7 @@ int num_perms;
 int nsteps[nthreads];
 _Bool ops[nthreads][STP_B];
 int vals[nthreads][STP_B];
-int prts[nthreads][STP_B];
+int scores[nthreads][STP_B];
 
 void init() {
   num_vals = VAL_B + 1;
@@ -52,10 +52,10 @@ void init() {
       ops[tid][step] = (_Bool) $choose_int(2);
       if (ops[tid][step] == ADD) {
 	vals[tid][step] = $choose_int(num_vals);
-	prts[tid][step] = $choose_int(num_vals);
+	scores[tid][step] = $choose_int(num_vals);
       } else {
 	vals[tid][step] = 0;
-	prts[tid][step] = 0;
+	scores[tid][step] = 0;
       }
       num_steps++;
     }
@@ -69,10 +69,10 @@ void thread(int tid, PriorityQueue* queue) {
   for (int step = 0; step < num_steps_local; step++) {
     _Bool op = ops[tid][step];
     int val = vals[tid][step];
-    int prt = prts[tid][step];
+    int score = scores[tid][step];
 
     if (op == ADD) 
-      priority_queue_add(queue, val, prt);
+      priority_queue_add(queue, val, score);
     else
       priority_queue_remove_min(queue);
     //printOpInfo_queue(ACTUAL, tid, op, val, queue);
@@ -90,14 +90,14 @@ void permseq(int pid, int* perm, NPQueue* oracle_results) {
     int step = step_counters[tid];
     _Bool op = ops[tid][step];
     int val = vals[tid][step];
-    int prt = prts[tid][step];
+    int score = scores[tid][step];
 
     if (op == ADD)
       //oracle_results[val] = true;
-      naive_enq(oracle_results, val);
+      naive_priority_queue_add(oracle_results, val, score);
     else 
       //oracle_results[val] = false;
-      naive_deq(oracle_results);
+      naive_priority_queue_remove_min(oracle_results);
     step_counters[tid]++;
     //printOpInfo(pid, tid, op, val, oracle_results);
   }
@@ -106,7 +106,7 @@ void permseq(int pid, int* perm, NPQueue* oracle_results) {
 _Bool isEqual(PriorityQueue* actual, NPQueue* oracle) {
   for (int i = 0; i < num_steps; i++)
     if ((naive_queue_item_index(oracle, i) != priority_queue_item_index(actual, i))
-	|| (naive_queue_prt_index(oracle, i) != priority_queue_prt_index(actual, i))) {
+	|| (naive_queue_score_index(oracle, i) != priority_queue_score_index(actual, i))) {
       return false;
   return true;
 }
