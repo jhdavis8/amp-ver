@@ -107,6 +107,7 @@ PriorityQueue* create_priority_queue() {
     q->heap[i] = (Node*) malloc(sizeof(Node));
   }
   q->length = CAPACITY;
+  return q;
 }
 
 void destroy_priority_queue(PriorityQueue* q) {

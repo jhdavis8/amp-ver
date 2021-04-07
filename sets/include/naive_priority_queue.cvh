@@ -14,7 +14,7 @@ _Bool naive_priority_queue_contains(NPQueue *q, int item);
 
 NPQueue* create_naive_priority_queue();
 
-void destroy_naive_priority_queue(PriortyQueue* q);
+void destroy_naive_priority_queue(NPQueue* q);
 
 int naive_priority_queue_item_index(NPQueue* q, int i);
 

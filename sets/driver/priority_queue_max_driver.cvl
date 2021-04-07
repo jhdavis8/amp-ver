@@ -105,9 +105,10 @@ void permseq(int pid, int* perm, NPQueue* oracle_results) {
 
 _Bool isEqual(PriorityQueue* actual, NPQueue* oracle) {
   for (int i = 0; i < num_steps; i++)
-    if ((naive_queue_item_index(oracle, i) != priority_queue_item_index(actual, i))
-	|| (naive_queue_score_index(oracle, i) != priority_queue_score_index(actual, i))) {
+    if ((naive_priority_queue_item_index(oracle, i) != priority_queue_item_index(actual, i))
+	|| (naive_priority_queue_score_index(oracle, i) != priority_queue_score_index(actual, i))) {
       return false;
+    }
   return true;
 }
 
@@ -119,7 +120,7 @@ int main() {
   int** perms = compute_perms(nthreads, nsteps);
   _Bool actual_results[num_vals];
   _Bool oracle_results[num_vals];
-  NQueue* oracle_queue = create_naive_priority_queue();
+  NPQueue* oracle_queue = create_naive_priority_queue();
   PriorityQueue* actual_queue = create_priority_queue();
  
   $parfor (int tid : 0 .. nthreads-1) {
@@ -154,4 +155,3 @@ int main() {
     free(perms[i]);
   free(perms);
 }
-

@@ -44,17 +44,16 @@ void init_naive_node(NNode* n, int new_item, int new_score) {
 
 NPQueue* create_naive_priority_queue() {
   NPQueue* q = (NPQueue*) malloc(sizeof(NPQueue));
-  q->lock = (Lock*) malloc(sizeof(Lock));
   q->next = ROOT;
   q->heap = (NNode**) malloc(sizeof(NNode*)*(CAPACITY + 1));
   for (int i = 0; i < CAPACITY + 1; i++) {
     q->heap[i] = (NNode*) malloc(sizeof(NNode));
   }
   q->length = CAPACITY;
+  return q;
 }
 
 void destroy_naive_priority_queue(NPQueue* q) {
-  free(q->lock);
   for (int i = 0; i < CAPACITY + 1; i++) {
     free(q->heap[i]);
   }
