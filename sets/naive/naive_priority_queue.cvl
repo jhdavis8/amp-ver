@@ -129,7 +129,7 @@ int naive_priority_queue_remove_min(NPQueue* q) {
 
 _Bool naive_priority_queue_contains(NPQueue *q, int item) {
   for (int i = 0; i < CAPACITY; i++) {
-    if (q->heap[i]->item == item) {
+    if (q->heap[i]->tag != EMPTY && q->heap[i]->item == item) {
       return true;
     }
   }
