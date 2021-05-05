@@ -100,11 +100,11 @@ _Bool am_owner_node(Node* n) {
 
 PriorityQueue* create_priority_queue() {
   PriorityQueue* q = (PriorityQueue*) malloc(sizeof(PriorityQueue));
-  q->lock = (Lock*) malloc(sizeof(Lock));
+  q->lock = create_lock();
   q->next = ROOT;
   q->heap = (Node**) malloc(sizeof(Node*)*(CAPACITY + 1));
   for (int i = 0; i < CAPACITY + 1; i++) {
-    q->heap[i] = (Node*) malloc(sizeof(Node));
+    q->heap[i] = create_node();
   }
   q->length = CAPACITY;
   return q;
