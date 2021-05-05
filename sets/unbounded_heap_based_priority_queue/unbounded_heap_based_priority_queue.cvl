@@ -113,6 +113,7 @@ PriorityQueue* create_priority_queue() {
 void destroy_priority_queue(PriorityQueue* q) {
   free(q->lock);
   for (int i = 0; i < CAPACITY + 1; i++) {
+    free(q->heap[i]->lock);
     free(q->heap[i]);
   }
   free(q->heap);
@@ -184,8 +185,8 @@ void priority_queue_add(PriorityQueue* q, int item, int priority) {
 int priority_queue_remove_min(PriorityQueue* q) {
   lock_heap(q);
   int bottom = --q->next;
-  lock_node(q->heap[bottom]);
   lock_node(q->heap[ROOT]);
+  lock_node(q->heap[bottom]);
   unlock_heap(q);
   if (q->heap[ROOT]->tag == EMPTY) {
     unlock_node(q->heap[ROOT]);
@@ -249,6 +250,7 @@ int priority_queue_score_index(PriorityQueue* q, int i) {
   return q->heap[i]->score;
 }
 
+/*
 int main() {
   int n = 5;
   PriorityQueue* q = create_priority_queue();
@@ -256,16 +258,20 @@ int main() {
   int ins_pr[n];
   int outs[n];
   printf("Inputs: {");
-  for (int i = 0; i < n; i++) {
+  //for (int i = 0; i < n; i++) {
+  $parfor(int i: 0 .. n - 1) {
     ins[i] = $choose_int(n);
     ins_pr[i] = $choose_int(n);
     priority_queue_add(q, ins[i], ins_pr[i]);
     printf("%d(%d), ", ins[i], ins_pr[i]);
   }
   printf("}\nOutputs: {");
-  for (int i = 0; i < n; i++) {
+  //for (int i = 0; i < n; i++) {
+  $parfor(int i: 0 .. n - 1) {
     outs[i] = priority_queue_remove_min(q);
     printf("%d, ", outs[i]);
   }
   printf("}\n");
+  destroy_priority_queue(q);
 }
+*/
