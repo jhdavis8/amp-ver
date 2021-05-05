@@ -248,3 +248,24 @@ int priority_queue_item_index(PriorityQueue* q, int i) {
 int priority_queue_score_index(PriorityQueue* q, int i) {
   return q->heap[i]->score;
 }
+
+int main() {
+  int n = 5;
+  PriorityQueue* q = create_priority_queue();
+  int ins[n];
+  int ins_pr[n];
+  int outs[n];
+  printf("Inputs: {");
+  for (int i = 0; i < n; i++) {
+    ins[i] = $choose_int(n);
+    ins_pr[i] = $choose_int(n);
+    priority_queue_add(q, ins[i], ins_pr[i]);
+    printf("%d(%d), ", ins[i], ins_pr[i]);
+  }
+  printf("}\nOutputs: {");
+  for (int i = 0; i < n; i++) {
+    outs[i] = priority_queue_remove_min(q);
+    printf("%d, ", outs[i]);
+  }
+  printf("}\n");
+}
