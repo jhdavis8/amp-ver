@@ -84,7 +84,7 @@ void permseq(int pid, int* perm, NPQueue* oracle_results) {
 
   for (int tid = 0; tid < nthreads; tid++)
     step_counters[tid] = 0;
-
+  
   for (int step_seq = 0; step_seq < num_steps; step_seq++) {
     int tid = perm[step_seq];
     int step = step_counters[tid];
@@ -92,24 +92,44 @@ void permseq(int pid, int* perm, NPQueue* oracle_results) {
     int val = vals[tid][step];
     int score = scores[tid][step];
 
-    if (op == ADD)
+    if (op == ADD) {
       //oracle_results[val] = true;
       naive_priority_queue_add(oracle_results, val, score);
-    else 
+    } else {
       //oracle_results[val] = false;
       naive_priority_queue_remove_min(oracle_results);
+    }
     step_counters[tid]++;
     //printOpInfo(pid, tid, op, val, oracle_results);
   }
 }
 
 _Bool isEqual(PriorityQueue* actual, NPQueue* oracle) {
+  /*
   for (int i = 0; i < num_steps; i++)
     if ((naive_priority_queue_item_index(oracle, i) != priority_queue_item_index(actual, i))
 	|| (naive_priority_queue_score_index(oracle, i) != priority_queue_score_index(actual, i))) {
       return false;
     }
   return true;
+  */
+  
+  _Bool result = true;
+  PriorityQueue* actual_c = duplicate_priority_queue(actual);
+  NPQueue* oracle_c = duplicate_naive_priority_queue(oracle);
+  int actual_out;
+  int oracle_out;
+  for (int i = 0; i < num_steps; i++) {
+    actual_out = priority_queue_remove_min(actual_c);
+    oracle_out = naive_priority_queue_remove_min(oracle_c);
+    if (actual_out != oracle_out) {
+      //printf("Match failed, actual is %d but oracle got %d, at remove_min call %d\n", actual_out, oracle_out, i);
+      result = false;
+    }
+  }
+  destroy_priority_queue(actual_c);
+  destroy_naive_priority_queue(oracle_c);
+  return result;
 }
 
 int main() {
@@ -120,6 +140,7 @@ int main() {
   int** perms = compute_perms(nthreads, nsteps);
   _Bool actual_results[num_vals];
   _Bool oracle_results[num_vals];
+  _Bool found_match = false;
   NPQueue* oracle_queue = create_naive_priority_queue();
   PriorityQueue* actual_queue = create_priority_queue();
  
@@ -136,16 +157,25 @@ int main() {
     destroy_naive_priority_queue(oracle_queue);
     oracle_queue = create_naive_priority_queue();
     permseq(pid, perms[pid], oracle_queue);
-    if (isEqual(actual_queue, oracle_queue) == true) {
-      for (int val = 0; val < num_vals; val++)
+    if (isEqual(actual_queue, oracle_queue)) {
+      /*
+      for (int val = 0; val < num_vals; val++) {
 	oracle_results[val] = naive_priority_queue_contains(oracle_queue, val);
-      printEquivSeqInfo(perms[pid], oracle_results);
+      }
+      */
+      printEquivSeqInfo_naive_priority_queue(perms[pid], oracle_queue);
+      found_match = true;
       break;
     }
+    /*else {
+      printf("Failed match:\n");
+      printNPQueue(oracle_queue);
+    }
+    */
   }
-  if (num_steps > 0 && pid >= num_perms) {
+  if (num_steps > 0 && found_match == false) {
     printMatchFail();
-    printQueue(actual_results);
+    printBoolResults(actual_results);
     printf("\n");
     $assert(false);
   }

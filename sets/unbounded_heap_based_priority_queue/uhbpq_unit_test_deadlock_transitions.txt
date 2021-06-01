@@ -1,0 +1,3155 @@
+CIVL v1.20+ of 2019-09-27 -- http://vsl.cis.udel.edu/civl
+
+Running random simulation with seed 1620223820484 ...
+
+Initial state:
+
+State (id=9)
+| Path condition
+| | true
+| Dynamic scopes
+| | dyscope d0 (parent=NULL, static=1)
+| | | variables
+| | | | _civl_root = NULL
+| Process states
+| | process 0
+| | | call stack
+| | | | Frame[function=main, location=0, unbounded_heap_based_priority_queue.cvl:253.0-275.0 "int main() {\n  ... }", dyscope=d0]
+
+Executed by p0 from State (id=9)
+  0->1: _civl_root=(scope_t(0)) at unbounded_heap_based_priority_queue.cvl:253.0-275.0 "int main() {\n  ... }"
+  1->2: n=5 at unbounded_heap_based_priority_queue.cvl:254.2-10 "int n = 5"
+--> State (id=14)
+
+Step 1: Executed by p0 from State (id=14)
+  2->108: q=create_priority_queue() at unbounded_heap_based_priority_queue.cvl:255.2-43 "PriorityQueue* q = create_priority_queue()"
+--> State (id=18)
+
+Step 2: Executed by p0 from State (id=18)
+  108->109: q=(struct _priority_queue*)$malloc((scope_t(0)), CIVL_SIZEOF(285)) [q:=&<d0>heap.malloc2[0][0]] at unbounded_heap_based_priority_queue.cvl:102.2-66 "PriorityQueue* q = (PriorityQueue ... )"
+--> State (id=26)
+
+Step 3: Executed by p0 from State (id=26)
+  109->127: (*(&<d0>heap.malloc2[0][0])).lock=create_lock() at unbounded_heap_based_priority_queue.cvl:103.2-24 "q->lock = create_lock()"
+--> State (id=33)
+
+Step 4: Executed by p0 from State (id=33)
+  127->128: new_lock=(struct _lock*)$malloc((scope_t(0)), CIVL_SIZEOF(282)) [new_lock:=&<d0>heap.malloc0[0][0]] at unbounded_heap_based_priority_queue.cvl:44.2-46 "Lock* new_lock = (Lock ... )"
+--> State (id=41)
+
+Step 5: Executed by p0 from State (id=41)
+  128->129: (*(&<d0>heap.malloc0[0][0])).owner=$proc_null at unbounded_heap_based_priority_queue.cvl:45.2-29 "new_lock->owner = $proc_null"
+--> State (id=47)
+
+Step 6: Executed by p0 from State (id=47)
+  129->130: (*(&<d0>heap.malloc0[0][0])).count=0 at unbounded_heap_based_priority_queue.cvl:46.2-20 "new_lock->count = 0"
+--> State (id=52)
+
+Step 7: Executed by p0 from State (id=52)
+  130->RET: create_lock(...) return &<d0>heap.malloc0[0][0] [(*(&<d0>heap.malloc2[0][0])).lock:=&<d0>heap.malloc0[0][0]] at unbounded_heap_based_priority_queue.cvl:47.2-17 "return new_lock;"
+--> State (id=59)
+
+Step 8: Executed by p0 from State (id=59)
+  110->111: (*(&<d0>heap.malloc2[0][0])).next=1 at unbounded_heap_based_priority_queue.cvl:104.2-14.13 "q->next = 1"
+--> State (id=64)
+
+Step 9: Executed by p0 from State (id=64)
+  111->112: (*(&<d0>heap.malloc2[0][0])).heap=((struct _node)**)$malloc((scope_t(0)), CIVL_SIZEOF(104)*(8+1)) [(*(&<d0>heap.malloc2[0][0])).heap:=&<d0>heap.malloc3[0][0]] at unbounded_heap_based_priority_queue.cvl:105.2-56 "q->heap = (Node* ... )"
+  112->113: i=0 at unbounded_heap_based_priority_queue.cvl:106.7-15 "int i = 0"
+--> State (id=75)
+
+Step 10: Executed by p0 from State (id=75)
+  113->114: LOOP_BODY_ENTER (guard: 0<(8+1)) at unbounded_heap_based_priority_queue.cvl:106.18-33 "i < 8 + 1"
+--> State (id=80)
+
+Step 11: Executed by p0 from State (id=80)
+  114->144: *(&<d0>heap.malloc3[0][0]+i)=create_node() at unbounded_heap_based_priority_queue.cvl:107.4-29 "q->heap[i] =  ... )"
+--> State (id=86)
+
+Step 12: Executed by p0 from State (id=86)
+  144->145: new_node=(struct _node*)$malloc((scope_t(0)), CIVL_SIZEOF(280)) [new_node:=&<d0>heap.malloc1[0][0]] at unbounded_heap_based_priority_queue.cvl:68.2-46 "Node* new_node = (Node ... )"
+--> State (id=94)
+
+Step 13: Executed by p0 from State (id=94)
+  145->146: (*(&<d0>heap.malloc1[0][0])).tag=0 at unbounded_heap_based_priority_queue.cvl:69.2-22 "new_node->tag = EMPTY"
+--> State (id=100)
+
+Step 14: Executed by p0 from State (id=100)
+  146->127: (*(&<d0>heap.malloc1[0][0])).lock=create_lock() at unbounded_heap_based_priority_queue.cvl:70.2-31 "new_node->lock = create_lock()"
+--> State (id=106)
+
+Step 15: Executed by p0 from State (id=106)
+  127->128: new_lock=(struct _lock*)$malloc((scope_t(0)), CIVL_SIZEOF(282)) [new_lock:=&<d0>heap.malloc0[1][0]] at unbounded_heap_based_priority_queue.cvl:44.2-46 "Lock* new_lock = (Lock ... )"
+--> State (id=114)
+
+Step 16: Executed by p0 from State (id=114)
+  128->129: (*(&<d0>heap.malloc0[1][0])).owner=$proc_null at unbounded_heap_based_priority_queue.cvl:45.2-29 "new_lock->owner = $proc_null"
+--> State (id=120)
+
+Step 17: Executed by p0 from State (id=120)
+  129->130: (*(&<d0>heap.malloc0[1][0])).count=0 at unbounded_heap_based_priority_queue.cvl:46.2-20 "new_lock->count = 0"
+--> State (id=125)
+
+Step 18: Executed by p0 from State (id=125)
+  130->RET: create_lock(...) return &<d0>heap.malloc0[1][0] [(*(&<d0>heap.malloc1[0][0])).lock:=&<d0>heap.malloc0[1][0]] at unbounded_heap_based_priority_queue.cvl:47.2-17 "return new_lock;"
+--> State (id=132)
+
+Step 19: Executed by p0 from State (id=132)
+  147->RET: create_node(...) return &<d0>heap.malloc1[0][0] [*(&<d0>heap.malloc3[0][0]+i):=&<d0>heap.malloc1[0][0]] at unbounded_heap_based_priority_queue.cvl:71.2-17 "return new_node;"
+  115->113: i=0+1 [i:=1] at unbounded_heap_based_priority_queue.cvl:106.36 "i"
+--> State (id=141)
+
+Step 20: Executed by p0 from State (id=141)
+  113->114: LOOP_BODY_ENTER (guard: 1<(8+1)) at unbounded_heap_based_priority_queue.cvl:106.18-33 "i < 8 + 1"
+--> State (id=145)
+
+Step 21: Executed by p0 from State (id=145)
+  114->144: *(&<d0>heap.malloc3[0][0]+i)=create_node() at unbounded_heap_based_priority_queue.cvl:107.4-29 "q->heap[i] =  ... )"
+--> State (id=151)
+
+Step 22: Executed by p0 from State (id=151)
+  144->145: new_node=(struct _node*)$malloc((scope_t(0)), CIVL_SIZEOF(280)) [new_node:=&<d0>heap.malloc1[1][0]] at unbounded_heap_based_priority_queue.cvl:68.2-46 "Node* new_node = (Node ... )"
+--> State (id=159)
+
+Step 23: Executed by p0 from State (id=159)
+  145->146: (*(&<d0>heap.malloc1[1][0])).tag=0 at unbounded_heap_based_priority_queue.cvl:69.2-22 "new_node->tag = EMPTY"
+--> State (id=165)
+
+Step 24: Executed by p0 from State (id=165)
+  146->127: (*(&<d0>heap.malloc1[1][0])).lock=create_lock() at unbounded_heap_based_priority_queue.cvl:70.2-31 "new_node->lock = create_lock()"
+--> State (id=171)
+
+Step 25: Executed by p0 from State (id=171)
+  127->128: new_lock=(struct _lock*)$malloc((scope_t(0)), CIVL_SIZEOF(282)) [new_lock:=&<d0>heap.malloc0[2][0]] at unbounded_heap_based_priority_queue.cvl:44.2-46 "Lock* new_lock = (Lock ... )"
+--> State (id=179)
+
+Step 26: Executed by p0 from State (id=179)
+  128->129: (*(&<d0>heap.malloc0[2][0])).owner=$proc_null at unbounded_heap_based_priority_queue.cvl:45.2-29 "new_lock->owner = $proc_null"
+--> State (id=185)
+
+Step 27: Executed by p0 from State (id=185)
+  129->130: (*(&<d0>heap.malloc0[2][0])).count=0 at unbounded_heap_based_priority_queue.cvl:46.2-20 "new_lock->count = 0"
+--> State (id=190)
+
+Step 28: Executed by p0 from State (id=190)
+  130->RET: create_lock(...) return &<d0>heap.malloc0[2][0] [(*(&<d0>heap.malloc1[1][0])).lock:=&<d0>heap.malloc0[2][0]] at unbounded_heap_based_priority_queue.cvl:47.2-17 "return new_lock;"
+--> State (id=197)
+
+Step 29: Executed by p0 from State (id=197)
+  147->RET: create_node(...) return &<d0>heap.malloc1[1][0] [*(&<d0>heap.malloc3[0][0]+i):=&<d0>heap.malloc1[1][0]] at unbounded_heap_based_priority_queue.cvl:71.2-17 "return new_node;"
+  115->113: i=1+1 [i:=2] at unbounded_heap_based_priority_queue.cvl:106.36 "i"
+--> State (id=206)
+
+Step 30: Executed by p0 from State (id=206)
+  113->114: LOOP_BODY_ENTER (guard: 2<(8+1)) at unbounded_heap_based_priority_queue.cvl:106.18-33 "i < 8 + 1"
+--> State (id=210)
+
+Step 31: Executed by p0 from State (id=210)
+  114->144: *(&<d0>heap.malloc3[0][0]+i)=create_node() at unbounded_heap_based_priority_queue.cvl:107.4-29 "q->heap[i] =  ... )"
+--> State (id=216)
+
+Step 32: Executed by p0 from State (id=216)
+  144->145: new_node=(struct _node*)$malloc((scope_t(0)), CIVL_SIZEOF(280)) [new_node:=&<d0>heap.malloc1[2][0]] at unbounded_heap_based_priority_queue.cvl:68.2-46 "Node* new_node = (Node ... )"
+--> State (id=224)
+
+Step 33: Executed by p0 from State (id=224)
+  145->146: (*(&<d0>heap.malloc1[2][0])).tag=0 at unbounded_heap_based_priority_queue.cvl:69.2-22 "new_node->tag = EMPTY"
+--> State (id=230)
+
+Step 34: Executed by p0 from State (id=230)
+  146->127: (*(&<d0>heap.malloc1[2][0])).lock=create_lock() at unbounded_heap_based_priority_queue.cvl:70.2-31 "new_node->lock = create_lock()"
+--> State (id=236)
+
+Step 35: Executed by p0 from State (id=236)
+  127->128: new_lock=(struct _lock*)$malloc((scope_t(0)), CIVL_SIZEOF(282)) [new_lock:=&<d0>heap.malloc0[3][0]] at unbounded_heap_based_priority_queue.cvl:44.2-46 "Lock* new_lock = (Lock ... )"
+--> State (id=244)
+
+Step 36: Executed by p0 from State (id=244)
+  128->129: (*(&<d0>heap.malloc0[3][0])).owner=$proc_null at unbounded_heap_based_priority_queue.cvl:45.2-29 "new_lock->owner = $proc_null"
+--> State (id=250)
+
+Step 37: Executed by p0 from State (id=250)
+  129->130: (*(&<d0>heap.malloc0[3][0])).count=0 at unbounded_heap_based_priority_queue.cvl:46.2-20 "new_lock->count = 0"
+--> State (id=255)
+
+Step 38: Executed by p0 from State (id=255)
+  130->RET: create_lock(...) return &<d0>heap.malloc0[3][0] [(*(&<d0>heap.malloc1[2][0])).lock:=&<d0>heap.malloc0[3][0]] at unbounded_heap_based_priority_queue.cvl:47.2-17 "return new_lock;"
+--> State (id=262)
+
+Step 39: Executed by p0 from State (id=262)
+  147->RET: create_node(...) return &<d0>heap.malloc1[2][0] [*(&<d0>heap.malloc3[0][0]+i):=&<d0>heap.malloc1[2][0]] at unbounded_heap_based_priority_queue.cvl:71.2-17 "return new_node;"
+  115->113: i=2+1 [i:=3] at unbounded_heap_based_priority_queue.cvl:106.36 "i"
+--> State (id=271)
+
+Step 40: Executed by p0 from State (id=271)
+  113->114: LOOP_BODY_ENTER (guard: 3<(8+1)) at unbounded_heap_based_priority_queue.cvl:106.18-33 "i < 8 + 1"
+--> State (id=275)
+
+Step 41: Executed by p0 from State (id=275)
+  114->144: *(&<d0>heap.malloc3[0][0]+i)=create_node() at unbounded_heap_based_priority_queue.cvl:107.4-29 "q->heap[i] =  ... )"
+--> State (id=281)
+
+Step 42: Executed by p0 from State (id=281)
+  144->145: new_node=(struct _node*)$malloc((scope_t(0)), CIVL_SIZEOF(280)) [new_node:=&<d0>heap.malloc1[3][0]] at unbounded_heap_based_priority_queue.cvl:68.2-46 "Node* new_node = (Node ... )"
+--> State (id=289)
+
+Step 43: Executed by p0 from State (id=289)
+  145->146: (*(&<d0>heap.malloc1[3][0])).tag=0 at unbounded_heap_based_priority_queue.cvl:69.2-22 "new_node->tag = EMPTY"
+--> State (id=295)
+
+Step 44: Executed by p0 from State (id=295)
+  146->127: (*(&<d0>heap.malloc1[3][0])).lock=create_lock() at unbounded_heap_based_priority_queue.cvl:70.2-31 "new_node->lock = create_lock()"
+--> State (id=301)
+
+Step 45: Executed by p0 from State (id=301)
+  127->128: new_lock=(struct _lock*)$malloc((scope_t(0)), CIVL_SIZEOF(282)) [new_lock:=&<d0>heap.malloc0[4][0]] at unbounded_heap_based_priority_queue.cvl:44.2-46 "Lock* new_lock = (Lock ... )"
+--> State (id=309)
+
+Step 46: Executed by p0 from State (id=309)
+  128->129: (*(&<d0>heap.malloc0[4][0])).owner=$proc_null at unbounded_heap_based_priority_queue.cvl:45.2-29 "new_lock->owner = $proc_null"
+--> State (id=315)
+
+Step 47: Executed by p0 from State (id=315)
+  129->130: (*(&<d0>heap.malloc0[4][0])).count=0 at unbounded_heap_based_priority_queue.cvl:46.2-20 "new_lock->count = 0"
+--> State (id=320)
+
+Step 48: Executed by p0 from State (id=320)
+  130->RET: create_lock(...) return &<d0>heap.malloc0[4][0] [(*(&<d0>heap.malloc1[3][0])).lock:=&<d0>heap.malloc0[4][0]] at unbounded_heap_based_priority_queue.cvl:47.2-17 "return new_lock;"
+--> State (id=327)
+
+Step 49: Executed by p0 from State (id=327)
+  147->RET: create_node(...) return &<d0>heap.malloc1[3][0] [*(&<d0>heap.malloc3[0][0]+i):=&<d0>heap.malloc1[3][0]] at unbounded_heap_based_priority_queue.cvl:71.2-17 "return new_node;"
+  115->113: i=3+1 [i:=4] at unbounded_heap_based_priority_queue.cvl:106.36 "i"
+--> State (id=336)
+
+Step 50: Executed by p0 from State (id=336)
+  113->114: LOOP_BODY_ENTER (guard: 4<(8+1)) at unbounded_heap_based_priority_queue.cvl:106.18-33 "i < 8 + 1"
+--> State (id=340)
+
+Step 51: Executed by p0 from State (id=340)
+  114->144: *(&<d0>heap.malloc3[0][0]+i)=create_node() at unbounded_heap_based_priority_queue.cvl:107.4-29 "q->heap[i] =  ... )"
+--> State (id=346)
+
+Step 52: Executed by p0 from State (id=346)
+  144->145: new_node=(struct _node*)$malloc((scope_t(0)), CIVL_SIZEOF(280)) [new_node:=&<d0>heap.malloc1[4][0]] at unbounded_heap_based_priority_queue.cvl:68.2-46 "Node* new_node = (Node ... )"
+--> State (id=354)
+
+Step 53: Executed by p0 from State (id=354)
+  145->146: (*(&<d0>heap.malloc1[4][0])).tag=0 at unbounded_heap_based_priority_queue.cvl:69.2-22 "new_node->tag = EMPTY"
+--> State (id=360)
+
+Step 54: Executed by p0 from State (id=360)
+  146->127: (*(&<d0>heap.malloc1[4][0])).lock=create_lock() at unbounded_heap_based_priority_queue.cvl:70.2-31 "new_node->lock = create_lock()"
+--> State (id=366)
+
+Step 55: Executed by p0 from State (id=366)
+  127->128: new_lock=(struct _lock*)$malloc((scope_t(0)), CIVL_SIZEOF(282)) [new_lock:=&<d0>heap.malloc0[5][0]] at unbounded_heap_based_priority_queue.cvl:44.2-46 "Lock* new_lock = (Lock ... )"
+--> State (id=374)
+
+Step 56: Executed by p0 from State (id=374)
+  128->129: (*(&<d0>heap.malloc0[5][0])).owner=$proc_null at unbounded_heap_based_priority_queue.cvl:45.2-29 "new_lock->owner = $proc_null"
+--> State (id=380)
+
+Step 57: Executed by p0 from State (id=380)
+  129->130: (*(&<d0>heap.malloc0[5][0])).count=0 at unbounded_heap_based_priority_queue.cvl:46.2-20 "new_lock->count = 0"
+--> State (id=385)
+
+Step 58: Executed by p0 from State (id=385)
+  130->RET: create_lock(...) return &<d0>heap.malloc0[5][0] [(*(&<d0>heap.malloc1[4][0])).lock:=&<d0>heap.malloc0[5][0]] at unbounded_heap_based_priority_queue.cvl:47.2-17 "return new_lock;"
+--> State (id=392)
+
+Step 59: Executed by p0 from State (id=392)
+  147->RET: create_node(...) return &<d0>heap.malloc1[4][0] [*(&<d0>heap.malloc3[0][0]+i):=&<d0>heap.malloc1[4][0]] at unbounded_heap_based_priority_queue.cvl:71.2-17 "return new_node;"
+  115->113: i=4+1 [i:=5] at unbounded_heap_based_priority_queue.cvl:106.36 "i"
+--> State (id=401)
+
+Step 60: Executed by p0 from State (id=401)
+  113->114: LOOP_BODY_ENTER (guard: 5<(8+1)) at unbounded_heap_based_priority_queue.cvl:106.18-33 "i < 8 + 1"
+--> State (id=405)
+
+Step 61: Executed by p0 from State (id=405)
+  114->144: *(&<d0>heap.malloc3[0][0]+i)=create_node() at unbounded_heap_based_priority_queue.cvl:107.4-29 "q->heap[i] =  ... )"
+--> State (id=411)
+
+Step 62: Executed by p0 from State (id=411)
+  144->145: new_node=(struct _node*)$malloc((scope_t(0)), CIVL_SIZEOF(280)) [new_node:=&<d0>heap.malloc1[5][0]] at unbounded_heap_based_priority_queue.cvl:68.2-46 "Node* new_node = (Node ... )"
+--> State (id=419)
+
+Step 63: Executed by p0 from State (id=419)
+  145->146: (*(&<d0>heap.malloc1[5][0])).tag=0 at unbounded_heap_based_priority_queue.cvl:69.2-22 "new_node->tag = EMPTY"
+--> State (id=425)
+
+Step 64: Executed by p0 from State (id=425)
+  146->127: (*(&<d0>heap.malloc1[5][0])).lock=create_lock() at unbounded_heap_based_priority_queue.cvl:70.2-31 "new_node->lock = create_lock()"
+--> State (id=431)
+
+Step 65: Executed by p0 from State (id=431)
+  127->128: new_lock=(struct _lock*)$malloc((scope_t(0)), CIVL_SIZEOF(282)) [new_lock:=&<d0>heap.malloc0[6][0]] at unbounded_heap_based_priority_queue.cvl:44.2-46 "Lock* new_lock = (Lock ... )"
+--> State (id=439)
+
+Step 66: Executed by p0 from State (id=439)
+  128->129: (*(&<d0>heap.malloc0[6][0])).owner=$proc_null at unbounded_heap_based_priority_queue.cvl:45.2-29 "new_lock->owner = $proc_null"
+--> State (id=445)
+
+Step 67: Executed by p0 from State (id=445)
+  129->130: (*(&<d0>heap.malloc0[6][0])).count=0 at unbounded_heap_based_priority_queue.cvl:46.2-20 "new_lock->count = 0"
+--> State (id=450)
+
+Step 68: Executed by p0 from State (id=450)
+  130->RET: create_lock(...) return &<d0>heap.malloc0[6][0] [(*(&<d0>heap.malloc1[5][0])).lock:=&<d0>heap.malloc0[6][0]] at unbounded_heap_based_priority_queue.cvl:47.2-17 "return new_lock;"
+--> State (id=457)
+
+Step 69: Executed by p0 from State (id=457)
+  147->RET: create_node(...) return &<d0>heap.malloc1[5][0] [*(&<d0>heap.malloc3[0][0]+i):=&<d0>heap.malloc1[5][0]] at unbounded_heap_based_priority_queue.cvl:71.2-17 "return new_node;"
+  115->113: i=5+1 [i:=6] at unbounded_heap_based_priority_queue.cvl:106.36 "i"
+--> State (id=466)
+
+Step 70: Executed by p0 from State (id=466)
+  113->114: LOOP_BODY_ENTER (guard: 6<(8+1)) at unbounded_heap_based_priority_queue.cvl:106.18-33 "i < 8 + 1"
+--> State (id=470)
+
+Step 71: Executed by p0 from State (id=470)
+  114->144: *(&<d0>heap.malloc3[0][0]+i)=create_node() at unbounded_heap_based_priority_queue.cvl:107.4-29 "q->heap[i] =  ... )"
+--> State (id=476)
+
+Step 72: Executed by p0 from State (id=476)
+  144->145: new_node=(struct _node*)$malloc((scope_t(0)), CIVL_SIZEOF(280)) [new_node:=&<d0>heap.malloc1[6][0]] at unbounded_heap_based_priority_queue.cvl:68.2-46 "Node* new_node = (Node ... )"
+--> State (id=484)
+
+Step 73: Executed by p0 from State (id=484)
+  145->146: (*(&<d0>heap.malloc1[6][0])).tag=0 at unbounded_heap_based_priority_queue.cvl:69.2-22 "new_node->tag = EMPTY"
+--> State (id=490)
+
+Step 74: Executed by p0 from State (id=490)
+  146->127: (*(&<d0>heap.malloc1[6][0])).lock=create_lock() at unbounded_heap_based_priority_queue.cvl:70.2-31 "new_node->lock = create_lock()"
+--> State (id=496)
+
+Step 75: Executed by p0 from State (id=496)
+  127->128: new_lock=(struct _lock*)$malloc((scope_t(0)), CIVL_SIZEOF(282)) [new_lock:=&<d0>heap.malloc0[7][0]] at unbounded_heap_based_priority_queue.cvl:44.2-46 "Lock* new_lock = (Lock ... )"
+--> State (id=504)
+
+Step 76: Executed by p0 from State (id=504)
+  128->129: (*(&<d0>heap.malloc0[7][0])).owner=$proc_null at unbounded_heap_based_priority_queue.cvl:45.2-29 "new_lock->owner = $proc_null"
+--> State (id=510)
+
+Step 77: Executed by p0 from State (id=510)
+  129->130: (*(&<d0>heap.malloc0[7][0])).count=0 at unbounded_heap_based_priority_queue.cvl:46.2-20 "new_lock->count = 0"
+--> State (id=515)
+
+Step 78: Executed by p0 from State (id=515)
+  130->RET: create_lock(...) return &<d0>heap.malloc0[7][0] [(*(&<d0>heap.malloc1[6][0])).lock:=&<d0>heap.malloc0[7][0]] at unbounded_heap_based_priority_queue.cvl:47.2-17 "return new_lock;"
+--> State (id=522)
+
+Step 79: Executed by p0 from State (id=522)
+  147->RET: create_node(...) return &<d0>heap.malloc1[6][0] [*(&<d0>heap.malloc3[0][0]+i):=&<d0>heap.malloc1[6][0]] at unbounded_heap_based_priority_queue.cvl:71.2-17 "return new_node;"
+  115->113: i=6+1 [i:=7] at unbounded_heap_based_priority_queue.cvl:106.36 "i"
+--> State (id=531)
+
+Step 80: Executed by p0 from State (id=531)
+  113->114: LOOP_BODY_ENTER (guard: 7<(8+1)) at unbounded_heap_based_priority_queue.cvl:106.18-33 "i < 8 + 1"
+--> State (id=535)
+
+Step 81: Executed by p0 from State (id=535)
+  114->144: *(&<d0>heap.malloc3[0][0]+i)=create_node() at unbounded_heap_based_priority_queue.cvl:107.4-29 "q->heap[i] =  ... )"
+--> State (id=541)
+
+Step 82: Executed by p0 from State (id=541)
+  144->145: new_node=(struct _node*)$malloc((scope_t(0)), CIVL_SIZEOF(280)) [new_node:=&<d0>heap.malloc1[7][0]] at unbounded_heap_based_priority_queue.cvl:68.2-46 "Node* new_node = (Node ... )"
+--> State (id=549)
+
+Step 83: Executed by p0 from State (id=549)
+  145->146: (*(&<d0>heap.malloc1[7][0])).tag=0 at unbounded_heap_based_priority_queue.cvl:69.2-22 "new_node->tag = EMPTY"
+--> State (id=555)
+
+Step 84: Executed by p0 from State (id=555)
+  146->127: (*(&<d0>heap.malloc1[7][0])).lock=create_lock() at unbounded_heap_based_priority_queue.cvl:70.2-31 "new_node->lock = create_lock()"
+--> State (id=561)
+
+Step 85: Executed by p0 from State (id=561)
+  127->128: new_lock=(struct _lock*)$malloc((scope_t(0)), CIVL_SIZEOF(282)) [new_lock:=&<d0>heap.malloc0[8][0]] at unbounded_heap_based_priority_queue.cvl:44.2-46 "Lock* new_lock = (Lock ... )"
+--> State (id=569)
+
+Step 86: Executed by p0 from State (id=569)
+  128->129: (*(&<d0>heap.malloc0[8][0])).owner=$proc_null at unbounded_heap_based_priority_queue.cvl:45.2-29 "new_lock->owner = $proc_null"
+--> State (id=575)
+
+Step 87: Executed by p0 from State (id=575)
+  129->130: (*(&<d0>heap.malloc0[8][0])).count=0 at unbounded_heap_based_priority_queue.cvl:46.2-20 "new_lock->count = 0"
+--> State (id=580)
+
+Step 88: Executed by p0 from State (id=580)
+  130->RET: create_lock(...) return &<d0>heap.malloc0[8][0] [(*(&<d0>heap.malloc1[7][0])).lock:=&<d0>heap.malloc0[8][0]] at unbounded_heap_based_priority_queue.cvl:47.2-17 "return new_lock;"
+--> State (id=587)
+
+Step 89: Executed by p0 from State (id=587)
+  147->RET: create_node(...) return &<d0>heap.malloc1[7][0] [*(&<d0>heap.malloc3[0][0]+i):=&<d0>heap.malloc1[7][0]] at unbounded_heap_based_priority_queue.cvl:71.2-17 "return new_node;"
+  115->113: i=7+1 [i:=8] at unbounded_heap_based_priority_queue.cvl:106.36 "i"
+--> State (id=596)
+
+Step 90: Executed by p0 from State (id=596)
+  113->114: LOOP_BODY_ENTER (guard: 8<(8+1)) at unbounded_heap_based_priority_queue.cvl:106.18-33 "i < 8 + 1"
+--> State (id=600)
+
+Step 91: Executed by p0 from State (id=600)
+  114->144: *(&<d0>heap.malloc3[0][0]+i)=create_node() at unbounded_heap_based_priority_queue.cvl:107.4-29 "q->heap[i] =  ... )"
+--> State (id=606)
+
+Step 92: Executed by p0 from State (id=606)
+  144->145: new_node=(struct _node*)$malloc((scope_t(0)), CIVL_SIZEOF(280)) [new_node:=&<d0>heap.malloc1[8][0]] at unbounded_heap_based_priority_queue.cvl:68.2-46 "Node* new_node = (Node ... )"
+--> State (id=614)
+
+Step 93: Executed by p0 from State (id=614)
+  145->146: (*(&<d0>heap.malloc1[8][0])).tag=0 at unbounded_heap_based_priority_queue.cvl:69.2-22 "new_node->tag = EMPTY"
+--> State (id=620)
+
+Step 94: Executed by p0 from State (id=620)
+  146->127: (*(&<d0>heap.malloc1[8][0])).lock=create_lock() at unbounded_heap_based_priority_queue.cvl:70.2-31 "new_node->lock = create_lock()"
+--> State (id=626)
+
+Step 95: Executed by p0 from State (id=626)
+  127->128: new_lock=(struct _lock*)$malloc((scope_t(0)), CIVL_SIZEOF(282)) [new_lock:=&<d0>heap.malloc0[9][0]] at unbounded_heap_based_priority_queue.cvl:44.2-46 "Lock* new_lock = (Lock ... )"
+--> State (id=634)
+
+Step 96: Executed by p0 from State (id=634)
+  128->129: (*(&<d0>heap.malloc0[9][0])).owner=$proc_null at unbounded_heap_based_priority_queue.cvl:45.2-29 "new_lock->owner = $proc_null"
+--> State (id=640)
+
+Step 97: Executed by p0 from State (id=640)
+  129->130: (*(&<d0>heap.malloc0[9][0])).count=0 at unbounded_heap_based_priority_queue.cvl:46.2-20 "new_lock->count = 0"
+--> State (id=645)
+
+Step 98: Executed by p0 from State (id=645)
+  130->RET: create_lock(...) return &<d0>heap.malloc0[9][0] [(*(&<d0>heap.malloc1[8][0])).lock:=&<d0>heap.malloc0[9][0]] at unbounded_heap_based_priority_queue.cvl:47.2-17 "return new_lock;"
+--> State (id=652)
+
+Step 99: Executed by p0 from State (id=652)
+  147->RET: create_node(...) return &<d0>heap.malloc1[8][0] [*(&<d0>heap.malloc3[0][0]+i):=&<d0>heap.malloc1[8][0]] at unbounded_heap_based_priority_queue.cvl:71.2-17 "return new_node;"
+  115->113: i=8+1 [i:=9] at unbounded_heap_based_priority_queue.cvl:106.36 "i"
+--> State (id=661)
+
+Step 100: Executed by p0 from State (id=661)
+  113->116: LOOP_BODY_EXIT (guard: ! (9<(8+1))) at unbounded_heap_based_priority_queue.cvl:106.18-33 "i < 8 + 1"
+--> State (id=666)
+
+Step 101: Executed by p0 from State (id=666)
+  116->117: (*(&<d0>heap.malloc2[0][0])).length=8 at unbounded_heap_based_priority_queue.cvl:109.2-16.17 "q->length = 8"
+--> State (id=671)
+
+Step 102: Executed by p0 from State (id=671)
+  117->RET: create_priority_queue(...) return &<d0>heap.malloc2[0][0] [q:=&<d0>heap.malloc2[0][0]] at unbounded_heap_based_priority_queue.cvl:110.2-10 "return q;"
+  3->4: ins=InitialValue(ins) [ins:=Y0] at unbounded_heap_based_priority_queue.cvl:256.2-11 "int ins[n]"
+  4->5: ins_pr=InitialValue(ins_pr) [ins_pr:=Y1] at unbounded_heap_based_priority_queue.cvl:257.2-14 "int ins_pr[n]"
+  5->6: outs=InitialValue(outs) [outs:=Y2] at unbounded_heap_based_priority_queue.cvl:258.2-12 "int outs[n]"
+--> State (id=687)
+
+Step 103: Inputs: {Executed by p0 from State (id=687)
+  6->7: printf("Inputs: { ") at unbounded_heap_based_priority_queue.cvl:259.2-20 "printf("Inputs: {")"
+--> State (id=695)
+
+Step 104: Executed by p0 from State (id=695)
+  7->8: $elaborate_domain(($domain(1))(0..4#1)) [$assume(true)] at unbounded_heap_based_priority_queue.cvl:261.17-26 "0 .. n - 1"
+  8->9: $parfor(i0: ($domain(1))(0..4#1)) $spawn _par_proc0(i0) at unbounded_heap_based_priority_queue.cvl:261.2-8 "$parfor"
+  9->10: _civl_ir1=0 at unbounded_heap_based_priority_queue.cvl:266.2 "}"
+--> State (id=721)
+
+Step 105: Executed by p5 from State (id=721)
+  179->180: ins[4]=2 at unbounded_heap_based_priority_queue.cvl:262.25 "n"
+--> State (id=726)
+
+Step 106: Executed by p2 from State (id=726)
+  179->180: ins[1]=1 at unbounded_heap_based_priority_queue.cvl:262.25 "n"
+--> State (id=731)
+
+Step 107: Executed by p5 from State (id=731)
+  180->181: ins_pr[4]=0 at unbounded_heap_based_priority_queue.cvl:263.28 "n"
+--> State (id=736)
+
+Step 108: Executed by p3 from State (id=736)
+  179->180: ins[2]=1 at unbounded_heap_based_priority_queue.cvl:262.25 "n"
+--> State (id=741)
+
+Step 109: Executed by p0 from State (id=741)
+  10->11: LOOP_BODY_ENTER (guard: 0<_dom_size0) at unbounded_heap_based_priority_queue.cvl:266.2 "}"
+--> State (id=746)
+
+Step 110: Executed by p3 from State (id=746)
+  180->181: ins_pr[2]=0 at unbounded_heap_based_priority_queue.cvl:263.28 "n"
+--> State (id=751)
+
+Step 111: Executed by p4 from State (id=751)
+  179->180: ins[3]=4 at unbounded_heap_based_priority_queue.cvl:262.25 "n"
+--> State (id=756)
+
+Step 112: Executed by p1 from State (id=756)
+  179->180: ins[0]=4 at unbounded_heap_based_priority_queue.cvl:262.25 "n"
+--> State (id=761)
+
+Step 113: Executed by p1 from State (id=761)
+  180->181: ins_pr[0]=1 at unbounded_heap_based_priority_queue.cvl:263.28 "n"
+--> State (id=766)
+
+Step 114: Executed by p4 from State (id=766)
+  180->181: ins_pr[3]=0 at unbounded_heap_based_priority_queue.cvl:263.28 "n"
+--> State (id=771)
+
+Step 115: Executed by p1 from State (id=771)
+  181->25: priority_queue_add(&<d0>heap.malloc2[0][0], 4, 1) at unbounded_heap_based_priority_queue.cvl:264.4-43 "priority_queue_add(q, ins[i] ... )"
+--> State (id=777)
+
+Step 116: Executed by p5 from State (id=777)
+  181->25: priority_queue_add(&<d0>heap.malloc2[0][0], 2, 0) at unbounded_heap_based_priority_queue.cvl:264.4-43 "priority_queue_add(q, ins[i] ... )"
+--> State (id=783)
+
+Step 117: Executed by p2 from State (id=783)
+  180->181: ins_pr[1]=4 at unbounded_heap_based_priority_queue.cvl:263.28 "n"
+--> State (id=788)
+
+Step 118: Executed by p4 from State (id=788)
+  181->25: priority_queue_add(&<d0>heap.malloc2[0][0], 4, 0) at unbounded_heap_based_priority_queue.cvl:264.4-43 "priority_queue_add(q, ins[i] ... )"
+--> State (id=794)
+
+Step 119: Executed by p5 from State (id=794)
+  25->162: lock_heap(&<d0>heap.malloc2[0][0]) at unbounded_heap_based_priority_queue.cvl:147.2-13 "lock_heap(q)"
+--> State (id=799)
+
+Step 120: Executed by p5 from State (id=799)
+  162->131: lock_acquire(&<d0>heap.malloc0[0][0]) at unbounded_heap_based_priority_queue.cvl:124.2-22 "lock_acquire(q->lock)"
+--> State (id=804)
+
+Step 121: Executed by p4 from State (id=804)
+  25->162: lock_heap(&<d0>heap.malloc2[0][0]) at unbounded_heap_based_priority_queue.cvl:147.2-13 "lock_heap(q)"
+--> State (id=810)
+
+Step 122: Executed by p4 from State (id=810)
+  162->131: lock_acquire(&<d0>heap.malloc0[0][0]) at unbounded_heap_based_priority_queue.cvl:124.2-22 "lock_acquire(q->lock)"
+--> State (id=816)
+
+Step 123: Executed by p1 from State (id=816)
+  25->162: lock_heap(&<d0>heap.malloc2[0][0]) at unbounded_heap_based_priority_queue.cvl:147.2-13 "lock_heap(q)"
+--> State (id=822)
+
+Step 124: Executed by p5 from State (id=822)
+  131->132: ENTER_ATOMIC [_atomic_lock_var:=p5, p5.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:51.2-8 "$atomic"
+  132->133: TRUE_BRANCH_IF (guard: p5!=(*(l)).0) at unbounded_heap_based_priority_queue.cvl:52.27 "{"
+--> State (id=831)
+
+Step 125: Executed by p1 from State (id=831)
+  162->131: lock_acquire(&<d0>heap.malloc0[0][0]) at unbounded_heap_based_priority_queue.cvl:124.2-22 "lock_acquire(q->lock)"
+--> State (id=837)
+
+Step 126: Executed by p3 from State (id=837)
+  181->25: priority_queue_add(&<d0>heap.malloc2[0][0], 1, 0) at unbounded_heap_based_priority_queue.cvl:264.4-43 "priority_queue_add(q, ins[i] ... )"
+--> State (id=843)
+
+Step 127: Executed by p3 from State (id=843)
+  25->162: lock_heap(&<d0>heap.malloc2[0][0]) at unbounded_heap_based_priority_queue.cvl:147.2-13 "lock_heap(q)"
+--> State (id=849)
+
+Step 128: Executed by p5 from State (id=849)
+  133->134: (*(&<d0>heap.malloc0[0][0])).owner=$self [(*(&<d0>heap.malloc0[0][0])).owner:=p5] at unbounded_heap_based_priority_queue.cvl:53.36-51 "l->owner = $self"
+  134->135: (*(&<d0>heap.malloc0[0][0])).count=0+1 [(*(&<d0>heap.malloc0[0][0])).count:=1] at unbounded_heap_based_priority_queue.cvl:55.4-11 "l->count"
+  135->136: LEAVE_ATOMIC [_atomic_lock_var:=$proc_null, p5.atomicCount:=0] at unbounded_heap_based_priority_queue.cvl:56.2 "}"
+  136->RET: lock_acquire(...) return at unbounded_heap_based_priority_queue.cvl:57.0 "}"
+  163->RET: lock_heap(...) return at unbounded_heap_based_priority_queue.cvl:125.0 "}"
+--> State (id=866)
+
+Step 129: Executed by p4 from State (id=866)
+  131->132: ENTER_ATOMIC [_atomic_lock_var:=p4, p4.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:51.2-8 "$atomic"
+  132->133: TRUE_BRANCH_IF (guard: p4!=(*(l)).0) at unbounded_heap_based_priority_queue.cvl:52.27 "{"
+--> State (id=875)
+
+Step 130: Executed by p2 from State (id=875)
+  181->25: priority_queue_add(&<d0>heap.malloc2[0][0], 1, 4) at unbounded_heap_based_priority_queue.cvl:264.4-43 "priority_queue_add(q, ins[i] ... )"
+--> State (id=881)
+
+Step 131: Executed by p1 from State (id=881)
+  131->132: ENTER_ATOMIC [_atomic_lock_var:=p1, p1.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:51.2-8 "$atomic"
+  132->133: TRUE_BRANCH_IF (guard: p1!=(*(l)).0) at unbounded_heap_based_priority_queue.cvl:52.27 "{"
+--> State (id=890)
+
+Step 132: Executed by p3 from State (id=890)
+  162->131: lock_acquire(&<d0>heap.malloc0[0][0]) at unbounded_heap_based_priority_queue.cvl:124.2-22 "lock_acquire(q->lock)"
+--> State (id=896)
+
+Step 133: Executed by p3 from State (id=896)
+  131->132: ENTER_ATOMIC [_atomic_lock_var:=p3, p3.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:51.2-8 "$atomic"
+  132->133: TRUE_BRANCH_IF (guard: p3!=(*(l)).0) at unbounded_heap_based_priority_queue.cvl:52.27 "{"
+--> State (id=905)
+
+Step 134: Executed by p2 from State (id=905)
+  25->162: lock_heap(&<d0>heap.malloc2[0][0]) at unbounded_heap_based_priority_queue.cvl:147.2-13 "lock_heap(q)"
+--> State (id=911)
+
+Step 135: Executed by p2 from State (id=911)
+  162->131: lock_acquire(&<d0>heap.malloc0[0][0]) at unbounded_heap_based_priority_queue.cvl:124.2-22 "lock_acquire(q->lock)"
+--> State (id=917)
+
+Step 136: Executed by p2 from State (id=917)
+  131->132: ENTER_ATOMIC [_atomic_lock_var:=p2, p2.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:51.2-8 "$atomic"
+  132->133: TRUE_BRANCH_IF (guard: p2!=(*(l)).0) at unbounded_heap_based_priority_queue.cvl:52.27 "{"
+--> State (id=926)
+
+Step 137: Executed by p5 from State (id=926)
+  26->27: $sef$1=1 at unbounded_heap_based_priority_queue.cvl:148.14-20 "q->next"
+--> State (id=931)
+
+Step 138: Executed by p5 from State (id=931)
+  27->28: (*(&<d0>heap.malloc2[0][0])).next=1+1 [(*(&<d0>heap.malloc2[0][0])).next:=2] at unbounded_heap_based_priority_queue.cvl:148.14-20 "q->next"
+  28->29: child=1 at unbounded_heap_based_priority_queue.cvl:148.2-20 "int child = q->next"
+--> State (id=938)
+
+Step 139: Executed by p5 from State (id=938)
+  29->153: lock_node(* (&<d0>heap.malloc3[0][0]+child)) at unbounded_heap_based_priority_queue.cvl:149.2-26 "lock_node(q->heap[child])"
+--> State (id=943)
+
+Step 140: Executed by p5 from State (id=943)
+  153->131: lock_acquire(&<d0>heap.malloc0[2][0]) at unbounded_heap_based_priority_queue.cvl:82.2-22 "lock_acquire(n->lock)"
+--> State (id=948)
+
+Step 141: Executed by p5 from State (id=948)
+  131->132: ENTER_ATOMIC [_atomic_lock_var:=p5, p5.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:51.2-8 "$atomic"
+  132->133: TRUE_BRANCH_IF (guard: p5!=(*(l)).0) at unbounded_heap_based_priority_queue.cvl:52.27 "{"
+--> State (id=957)
+
+Step 142: Executed by p5 from State (id=957)
+  133->134: (*(&<d0>heap.malloc0[2][0])).owner=$self [(*(&<d0>heap.malloc0[2][0])).owner:=p5] at unbounded_heap_based_priority_queue.cvl:53.36-51 "l->owner = $self"
+  134->135: (*(&<d0>heap.malloc0[2][0])).count=0+1 [(*(&<d0>heap.malloc0[2][0])).count:=1] at unbounded_heap_based_priority_queue.cvl:55.4-11 "l->count"
+  135->136: LEAVE_ATOMIC [_atomic_lock_var:=$proc_null, p5.atomicCount:=0] at unbounded_heap_based_priority_queue.cvl:56.2 "}"
+  136->RET: lock_acquire(...) return at unbounded_heap_based_priority_queue.cvl:57.0 "}"
+  154->RET: lock_node(...) return at unbounded_heap_based_priority_queue.cvl:83.0 "}"
+--> State (id=974)
+
+Step 143: Executed by p5 from State (id=974)
+  30->164: unlock_heap(&<d0>heap.malloc2[0][0]) at unbounded_heap_based_priority_queue.cvl:150.2-15 "unlock_heap(q)"
+--> State (id=979)
+
+Step 144: Executed by p5 from State (id=979)
+  164->137: lock_release(&<d0>heap.malloc0[0][0]) at unbounded_heap_based_priority_queue.cvl:128.2-22 "lock_release(q->lock)"
+--> State (id=984)
+
+Step 145: Executed by p5 from State (id=984)
+  137->138: ENTER_ATOMIC [_atomic_lock_var:=p5, p5.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:60.2-8 "$atomic"
+  138->139: $assert(p5==(*(l)).0) at unbounded_heap_based_priority_queue.cvl:61.4-29 "$assert($self == l->owner)"
+  139->140: (*(&<d0>heap.malloc0[0][0])).count=1-1 [(*(&<d0>heap.malloc0[0][0])).count:=0] at unbounded_heap_based_priority_queue.cvl:62.4-11 "l->count"
+  140->141: TRUE_BRANCH_IF (guard: 0==0) at unbounded_heap_based_priority_queue.cvl:63.23 "l"
+  141->142: (*(&<d0>heap.malloc0[0][0])).owner=$proc_null at unbounded_heap_based_priority_queue.cvl:63.23-43 "l->owner = $proc_null"
+  142->143: LEAVE_ATOMIC [_atomic_lock_var:=$proc_null, p5.atomicCount:=0] at unbounded_heap_based_priority_queue.cvl:64.2 "}"
+  143->RET: lock_release(...) return at unbounded_heap_based_priority_queue.cvl:65.0 "}"
+  165->RET: unlock_heap(...) return at unbounded_heap_based_priority_queue.cvl:129.0 "}"
+--> State (id=1006)
+
+Step 146: Executed by p2 from State (id=1006)
+  133->134: (*(&<d0>heap.malloc0[0][0])).owner=$self [(*(&<d0>heap.malloc0[0][0])).owner:=p2] at unbounded_heap_based_priority_queue.cvl:53.36-51 "l->owner = $self"
+  134->135: (*(&<d0>heap.malloc0[0][0])).count=0+1 [(*(&<d0>heap.malloc0[0][0])).count:=1] at unbounded_heap_based_priority_queue.cvl:55.4-11 "l->count"
+  135->136: LEAVE_ATOMIC [_atomic_lock_var:=$proc_null, p2.atomicCount:=0] at unbounded_heap_based_priority_queue.cvl:56.2 "}"
+  136->RET: lock_acquire(...) return at unbounded_heap_based_priority_queue.cvl:57.0 "}"
+  163->RET: lock_heap(...) return at unbounded_heap_based_priority_queue.cvl:125.0 "}"
+--> State (id=1023)
+
+Step 147: Executed by p2 from State (id=1023)
+  26->27: $sef$1=2 at unbounded_heap_based_priority_queue.cvl:148.14-20 "q->next"
+--> State (id=1028)
+
+Step 148: Executed by p5 from State (id=1028)
+  31->148: init_node(* (&<d0>heap.malloc3[0][0]+child), 2, 0) at unbounded_heap_based_priority_queue.cvl:151.2-42 "init_node(q->heap[child], ... )"
+--> State (id=1033)
+
+Step 149: Executed by p5 from State (id=1033)
+  148->149: (*(&<d0>heap.malloc1[1][0])).item=2 at unbounded_heap_based_priority_queue.cvl:75.2-19 "n->item = new_item"
+--> State (id=1038)
+
+Step 150: Executed by p5 from State (id=1038)
+  149->150: (*(&<d0>heap.malloc1[1][0])).score=0 at unbounded_heap_based_priority_queue.cvl:76.2-21 "n->score = new_score"
+--> State (id=1043)
+
+Step 151: Executed by p5 from State (id=1043)
+  150->151: (*(&<d0>heap.malloc1[1][0])).tag=2 at unbounded_heap_based_priority_queue.cvl:77.2-14 "n->tag = BUSY"
+--> State (id=1048)
+
+Step 152: Executed by p2 from State (id=1048)
+  27->28: (*(&<d0>heap.malloc2[0][0])).next=2+1 [(*(&<d0>heap.malloc2[0][0])).next:=3] at unbounded_heap_based_priority_queue.cvl:148.14-20 "q->next"
+  28->29: child=2 at unbounded_heap_based_priority_queue.cvl:148.2-20 "int child = q->next"
+--> State (id=1055)
+
+Step 153: Executed by p2 from State (id=1055)
+  29->153: lock_node(* (&<d0>heap.malloc3[0][0]+child)) at unbounded_heap_based_priority_queue.cvl:149.2-26 "lock_node(q->heap[child])"
+--> State (id=1061)
+
+Step 154: Executed by p2 from State (id=1061)
+  153->131: lock_acquire(&<d0>heap.malloc0[3][0]) at unbounded_heap_based_priority_queue.cvl:82.2-22 "lock_acquire(n->lock)"
+--> State (id=1067)
+
+Step 155: Executed by p5 from State (id=1067)
+  151->152: (*(&<d0>heap.malloc1[1][0])).owner=$self [(*(&<d0>heap.malloc1[1][0])).owner:=p5] at unbounded_heap_based_priority_queue.cvl:78.2-17 "n->owner = $self"
+  152->RET: init_node(...) return at unbounded_heap_based_priority_queue.cvl:79.0 "}"
+--> State (id=1075)
+
+Step 156: Executed by p2 from State (id=1075)
+  131->132: ENTER_ATOMIC [_atomic_lock_var:=p2, p2.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:51.2-8 "$atomic"
+  132->133: TRUE_BRANCH_IF (guard: p2!=(*(l)).0) at unbounded_heap_based_priority_queue.cvl:52.27 "{"
+--> State (id=1084)
+
+Step 157: Executed by p2 from State (id=1084)
+  133->134: (*(&<d0>heap.malloc0[3][0])).owner=$self [(*(&<d0>heap.malloc0[3][0])).owner:=p2] at unbounded_heap_based_priority_queue.cvl:53.36-51 "l->owner = $self"
+  134->135: (*(&<d0>heap.malloc0[3][0])).count=0+1 [(*(&<d0>heap.malloc0[3][0])).count:=1] at unbounded_heap_based_priority_queue.cvl:55.4-11 "l->count"
+  135->136: LEAVE_ATOMIC [_atomic_lock_var:=$proc_null, p2.atomicCount:=0] at unbounded_heap_based_priority_queue.cvl:56.2 "}"
+  136->RET: lock_acquire(...) return at unbounded_heap_based_priority_queue.cvl:57.0 "}"
+  154->RET: lock_node(...) return at unbounded_heap_based_priority_queue.cvl:83.0 "}"
+--> State (id=1101)
+
+Step 158: Executed by p5 from State (id=1101)
+  32->155: unlock_node(* (&<d0>heap.malloc3[0][0]+child)) at unbounded_heap_based_priority_queue.cvl:152.2-28 "unlock_node(q->heap[child])"
+--> State (id=1106)
+
+Step 159: Executed by p2 from State (id=1106)
+  30->164: unlock_heap(&<d0>heap.malloc2[0][0]) at unbounded_heap_based_priority_queue.cvl:150.2-15 "unlock_heap(q)"
+--> State (id=1112)
+
+Step 160: Executed by p2 from State (id=1112)
+  164->137: lock_release(&<d0>heap.malloc0[0][0]) at unbounded_heap_based_priority_queue.cvl:128.2-22 "lock_release(q->lock)"
+--> State (id=1118)
+
+Step 161: Executed by p5 from State (id=1118)
+  155->137: lock_release(&<d0>heap.malloc0[2][0]) at unbounded_heap_based_priority_queue.cvl:86.2-22 "lock_release(n->lock)"
+--> State (id=1123)
+
+Step 162: Executed by p2 from State (id=1123)
+  137->138: ENTER_ATOMIC [_atomic_lock_var:=p2, p2.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:60.2-8 "$atomic"
+  138->139: $assert(p2==(*(l)).0) at unbounded_heap_based_priority_queue.cvl:61.4-29 "$assert($self == l->owner)"
+  139->140: (*(&<d0>heap.malloc0[0][0])).count=1-1 [(*(&<d0>heap.malloc0[0][0])).count:=0] at unbounded_heap_based_priority_queue.cvl:62.4-11 "l->count"
+  140->141: TRUE_BRANCH_IF (guard: 0==0) at unbounded_heap_based_priority_queue.cvl:63.23 "l"
+  141->142: (*(&<d0>heap.malloc0[0][0])).owner=$proc_null at unbounded_heap_based_priority_queue.cvl:63.23-43 "l->owner = $proc_null"
+  142->143: LEAVE_ATOMIC [_atomic_lock_var:=$proc_null, p2.atomicCount:=0] at unbounded_heap_based_priority_queue.cvl:64.2 "}"
+  143->RET: lock_release(...) return at unbounded_heap_based_priority_queue.cvl:65.0 "}"
+  165->RET: unlock_heap(...) return at unbounded_heap_based_priority_queue.cvl:129.0 "}"
+--> State (id=1145)
+
+Step 163: Executed by p5 from State (id=1145)
+  137->138: ENTER_ATOMIC [_atomic_lock_var:=p5, p5.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:60.2-8 "$atomic"
+  138->139: $assert(p5==(*(l)).0) at unbounded_heap_based_priority_queue.cvl:61.4-29 "$assert($self == l->owner)"
+  139->140: (*(&<d0>heap.malloc0[2][0])).count=1-1 [(*(&<d0>heap.malloc0[2][0])).count:=0] at unbounded_heap_based_priority_queue.cvl:62.4-11 "l->count"
+  140->141: TRUE_BRANCH_IF (guard: 0==0) at unbounded_heap_based_priority_queue.cvl:63.23 "l"
+  141->142: (*(&<d0>heap.malloc0[2][0])).owner=$proc_null at unbounded_heap_based_priority_queue.cvl:63.23-43 "l->owner = $proc_null"
+  142->143: LEAVE_ATOMIC [_atomic_lock_var:=$proc_null, p5.atomicCount:=0] at unbounded_heap_based_priority_queue.cvl:64.2 "}"
+  143->RET: lock_release(...) return at unbounded_heap_based_priority_queue.cvl:65.0 "}"
+  156->RET: unlock_node(...) return at unbounded_heap_based_priority_queue.cvl:87.0 "}"
+--> State (id=1167)
+
+Step 164: Executed by p2 from State (id=1167)
+  31->148: init_node(* (&<d0>heap.malloc3[0][0]+child), 1, 4) at unbounded_heap_based_priority_queue.cvl:151.2-42 "init_node(q->heap[child], ... )"
+--> State (id=1173)
+
+Step 165: Executed by p5 from State (id=1173)
+  33->55: LOOP_BODY_EXIT (guard: ! (1<child)) at unbounded_heap_based_priority_queue.cvl:153.9-14.13 "child > 1"
+  55->56: TRUE_BRANCH_IF (guard: 1==1) at unbounded_heap_based_priority_queue.cvl:175.21 "{"
+--> State (id=1179)
+
+Step 166: Executed by p2 from State (id=1179)
+  148->149: (*(&<d0>heap.malloc1[2][0])).item=1 at unbounded_heap_based_priority_queue.cvl:75.2-19 "n->item = new_item"
+--> State (id=1184)
+
+Step 167: Executed by p3 from State (id=1184)
+  133->134: (*(&<d0>heap.malloc0[0][0])).owner=$self [(*(&<d0>heap.malloc0[0][0])).owner:=p3] at unbounded_heap_based_priority_queue.cvl:53.36-51 "l->owner = $self"
+  134->135: (*(&<d0>heap.malloc0[0][0])).count=0+1 [(*(&<d0>heap.malloc0[0][0])).count:=1] at unbounded_heap_based_priority_queue.cvl:55.4-11 "l->count"
+  135->136: LEAVE_ATOMIC [_atomic_lock_var:=$proc_null, p3.atomicCount:=0] at unbounded_heap_based_priority_queue.cvl:56.2 "}"
+  136->RET: lock_acquire(...) return at unbounded_heap_based_priority_queue.cvl:57.0 "}"
+  163->RET: lock_heap(...) return at unbounded_heap_based_priority_queue.cvl:125.0 "}"
+--> State (id=1201)
+
+Step 168: Executed by p2 from State (id=1201)
+  149->150: (*(&<d0>heap.malloc1[2][0])).score=4 at unbounded_heap_based_priority_queue.cvl:76.2-21 "n->score = new_score"
+--> State (id=1206)
+
+Step 169: Executed by p3 from State (id=1206)
+  26->27: $sef$1=3 at unbounded_heap_based_priority_queue.cvl:148.14-20 "q->next"
+--> State (id=1211)
+
+Step 170: Executed by p5 from State (id=1211)
+  56->153: lock_node(* (&<d0>heap.malloc3[0][0]+1)) at unbounded_heap_based_priority_queue.cvl:176.4-27 "lock_node(q->heap[1])"
+--> State (id=1216)
+
+Step 171: Executed by p5 from State (id=1216)
+  153->131: lock_acquire(&<d0>heap.malloc0[2][0]) at unbounded_heap_based_priority_queue.cvl:82.2-22 "lock_acquire(n->lock)"
+--> State (id=1221)
+
+Step 172: Executed by p3 from State (id=1221)
+  27->28: (*(&<d0>heap.malloc2[0][0])).next=3+1 [(*(&<d0>heap.malloc2[0][0])).next:=4] at unbounded_heap_based_priority_queue.cvl:148.14-20 "q->next"
+  28->29: child=3 at unbounded_heap_based_priority_queue.cvl:148.2-20 "int child = q->next"
+--> State (id=1228)
+
+Step 173: Executed by p2 from State (id=1228)
+  150->151: (*(&<d0>heap.malloc1[2][0])).tag=2 at unbounded_heap_based_priority_queue.cvl:77.2-14 "n->tag = BUSY"
+--> State (id=1233)
+
+Step 174: Executed by p5 from State (id=1233)
+  131->132: ENTER_ATOMIC [_atomic_lock_var:=p5, p5.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:51.2-8 "$atomic"
+  132->133: TRUE_BRANCH_IF (guard: p5!=(*(l)).0) at unbounded_heap_based_priority_queue.cvl:52.27 "{"
+--> State (id=1242)
+
+Step 175: Executed by p3 from State (id=1242)
+  29->153: lock_node(* (&<d0>heap.malloc3[0][0]+child)) at unbounded_heap_based_priority_queue.cvl:149.2-26 "lock_node(q->heap[child])"
+--> State (id=1248)
+
+Step 176: Executed by p5 from State (id=1248)
+  133->134: (*(&<d0>heap.malloc0[2][0])).owner=$self [(*(&<d0>heap.malloc0[2][0])).owner:=p5] at unbounded_heap_based_priority_queue.cvl:53.36-51 "l->owner = $self"
+  134->135: (*(&<d0>heap.malloc0[2][0])).count=0+1 [(*(&<d0>heap.malloc0[2][0])).count:=1] at unbounded_heap_based_priority_queue.cvl:55.4-11 "l->count"
+  135->136: LEAVE_ATOMIC [_atomic_lock_var:=$proc_null, p5.atomicCount:=0] at unbounded_heap_based_priority_queue.cvl:56.2 "}"
+  136->RET: lock_acquire(...) return at unbounded_heap_based_priority_queue.cvl:57.0 "}"
+  154->RET: lock_node(...) return at unbounded_heap_based_priority_queue.cvl:83.0 "}"
+--> State (id=1265)
+
+Step 177: Executed by p2 from State (id=1265)
+  151->152: (*(&<d0>heap.malloc1[2][0])).owner=$self [(*(&<d0>heap.malloc1[2][0])).owner:=p2] at unbounded_heap_based_priority_queue.cvl:78.2-17 "n->owner = $self"
+  152->RET: init_node(...) return at unbounded_heap_based_priority_queue.cvl:79.0 "}"
+--> State (id=1273)
+
+Step 178: Executed by p2 from State (id=1273)
+  32->155: unlock_node(* (&<d0>heap.malloc3[0][0]+child)) at unbounded_heap_based_priority_queue.cvl:152.2-28 "unlock_node(q->heap[child])"
+--> State (id=1279)
+
+Step 179: Executed by p5 from State (id=1279)
+  57->157: $sef$3=am_owner_node(* (&<d0>heap.malloc3[0][0]+1)) at unbounded_heap_based_priority_queue.cvl:177.8-35 "am_owner_node(q->heap[1])"
+--> State (id=1284)
+
+Step 180: Executed by p3 from State (id=1284)
+  153->131: lock_acquire(&<d0>heap.malloc0[4][0]) at unbounded_heap_based_priority_queue.cvl:82.2-22 "lock_acquire(n->lock)"
+--> State (id=1290)
+
+Step 181: Executed by p2 from State (id=1290)
+  155->137: lock_release(&<d0>heap.malloc0[3][0]) at unbounded_heap_based_priority_queue.cvl:86.2-22 "lock_release(n->lock)"
+--> State (id=1296)
+
+Step 182: Executed by p3 from State (id=1296)
+  131->132: ENTER_ATOMIC [_atomic_lock_var:=p3, p3.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:51.2-8 "$atomic"
+  132->133: TRUE_BRANCH_IF (guard: p3!=(*(l)).0) at unbounded_heap_based_priority_queue.cvl:52.27 "{"
+--> State (id=1305)
+
+Step 183: Executed by p2 from State (id=1305)
+  137->138: ENTER_ATOMIC [_atomic_lock_var:=p2, p2.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:60.2-8 "$atomic"
+  138->139: $assert(p2==(*(l)).0) at unbounded_heap_based_priority_queue.cvl:61.4-29 "$assert($self == l->owner)"
+  139->140: (*(&<d0>heap.malloc0[3][0])).count=1-1 [(*(&<d0>heap.malloc0[3][0])).count:=0] at unbounded_heap_based_priority_queue.cvl:62.4-11 "l->count"
+  140->141: TRUE_BRANCH_IF (guard: 0==0) at unbounded_heap_based_priority_queue.cvl:63.23 "l"
+  141->142: (*(&<d0>heap.malloc0[3][0])).owner=$proc_null at unbounded_heap_based_priority_queue.cvl:63.23-43 "l->owner = $proc_null"
+  142->143: LEAVE_ATOMIC [_atomic_lock_var:=$proc_null, p2.atomicCount:=0] at unbounded_heap_based_priority_queue.cvl:64.2 "}"
+  143->RET: lock_release(...) return at unbounded_heap_based_priority_queue.cvl:65.0 "}"
+  156->RET: unlock_node(...) return at unbounded_heap_based_priority_queue.cvl:87.0 "}"
+--> State (id=1327)
+
+Step 184: Executed by p2 from State (id=1327)
+  33->34: LOOP_BODY_ENTER (guard: 1<child) at unbounded_heap_based_priority_queue.cvl:153.9-14.13 "child > 1"
+  34->35: parent=2/2 [parent:=1] at unbounded_heap_based_priority_queue.cvl:154.4-25 "int parent = child / ... 2"
+--> State (id=1334)
+
+Step 185: Executed by p3 from State (id=1334)
+  133->134: (*(&<d0>heap.malloc0[4][0])).owner=$self [(*(&<d0>heap.malloc0[4][0])).owner:=p3] at unbounded_heap_based_priority_queue.cvl:53.36-51 "l->owner = $self"
+  134->135: (*(&<d0>heap.malloc0[4][0])).count=0+1 [(*(&<d0>heap.malloc0[4][0])).count:=1] at unbounded_heap_based_priority_queue.cvl:55.4-11 "l->count"
+  135->136: LEAVE_ATOMIC [_atomic_lock_var:=$proc_null, p3.atomicCount:=0] at unbounded_heap_based_priority_queue.cvl:56.2 "}"
+  136->RET: lock_acquire(...) return at unbounded_heap_based_priority_queue.cvl:57.0 "}"
+  154->RET: lock_node(...) return at unbounded_heap_based_priority_queue.cvl:83.0 "}"
+--> State (id=1351)
+
+Step 186: Executed by p3 from State (id=1351)
+  30->164: unlock_heap(&<d0>heap.malloc2[0][0]) at unbounded_heap_based_priority_queue.cvl:150.2-15 "unlock_heap(q)"
+--> State (id=1357)
+
+Step 187: Executed by p5 from State (id=1357)
+  157->160: CASE_2 (guard: 2==2) at unbounded_heap_based_priority_queue.cvl:95.2-96.28 "case BUSY:\n     ... ;"
+--> State (id=1361)
+
+Step 188: Executed by p2 from State (id=1361)
+  35->153: lock_node(* (&<d0>heap.malloc3[0][0]+parent)) at unbounded_heap_based_priority_queue.cvl:155.4-29 "lock_node(q->heap[parent])"
+--> State (id=1367)
+
+Step 189: Executed by p5 from State (id=1367)
+  160->161: am_owner_node(...) return p5==$self [$sef$3:=true] at unbounded_heap_based_priority_queue.cvl:96.4-28 "return n->owner == $self;"
+  58->59: TRUE_BRANCH_IF (guard: true) at unbounded_heap_based_priority_queue.cvl:177.38 "{"
+--> State (id=1375)
+
+Step 190: Executed by p2 from State (id=1375)
+  153->131: lock_acquire(&<d0>heap.malloc0[2][0]) at unbounded_heap_based_priority_queue.cvl:82.2-22 "lock_acquire(n->lock)"
+--> State (id=1381)
+
+Step 191: Executed by p5 from State (id=1381)
+  59->60: (*(* (&<d0>heap.malloc3[0][0]+1))).tag=1 at unbounded_heap_based_priority_queue.cvl:178.6-35 "q->heap[1]->tag  ... AVAILABLE"
+--> State (id=1386)
+
+Step 192: Executed by p3 from State (id=1386)
+  164->137: lock_release(&<d0>heap.malloc0[0][0]) at unbounded_heap_based_priority_queue.cvl:128.2-22 "lock_release(q->lock)"
+--> State (id=1392)
+
+Step 193: Executed by p5 from State (id=1392)
+  60->61: (*(* (&<d0>heap.malloc3[0][0]+child))).owner=$proc_null at unbounded_heap_based_priority_queue.cvl:179.6-15.24 "q->heap[child]->owner  ... $proc_null"
+--> State (id=1397)
+
+Step 194: Executed by p3 from State (id=1397)
+  137->138: ENTER_ATOMIC [_atomic_lock_var:=p3, p3.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:60.2-8 "$atomic"
+  138->139: $assert(p3==(*(l)).0) at unbounded_heap_based_priority_queue.cvl:61.4-29 "$assert($self == l->owner)"
+  139->140: (*(&<d0>heap.malloc0[0][0])).count=1-1 [(*(&<d0>heap.malloc0[0][0])).count:=0] at unbounded_heap_based_priority_queue.cvl:62.4-11 "l->count"
+  140->141: TRUE_BRANCH_IF (guard: 0==0) at unbounded_heap_based_priority_queue.cvl:63.23 "l"
+  141->142: (*(&<d0>heap.malloc0[0][0])).owner=$proc_null at unbounded_heap_based_priority_queue.cvl:63.23-43 "l->owner = $proc_null"
+  142->143: LEAVE_ATOMIC [_atomic_lock_var:=$proc_null, p3.atomicCount:=0] at unbounded_heap_based_priority_queue.cvl:64.2 "}"
+  143->RET: lock_release(...) return at unbounded_heap_based_priority_queue.cvl:65.0 "}"
+  165->RET: unlock_heap(...) return at unbounded_heap_based_priority_queue.cvl:129.0 "}"
+--> State (id=1419)
+
+Step 195: Executed by p1 from State (id=1419)
+  133->134: (*(&<d0>heap.malloc0[0][0])).owner=$self [(*(&<d0>heap.malloc0[0][0])).owner:=p1] at unbounded_heap_based_priority_queue.cvl:53.36-51 "l->owner = $self"
+  134->135: (*(&<d0>heap.malloc0[0][0])).count=0+1 [(*(&<d0>heap.malloc0[0][0])).count:=1] at unbounded_heap_based_priority_queue.cvl:55.4-11 "l->count"
+  135->136: LEAVE_ATOMIC [_atomic_lock_var:=$proc_null, p1.atomicCount:=0] at unbounded_heap_based_priority_queue.cvl:56.2 "}"
+  136->RET: lock_acquire(...) return at unbounded_heap_based_priority_queue.cvl:57.0 "}"
+  163->RET: lock_heap(...) return at unbounded_heap_based_priority_queue.cvl:125.0 "}"
+--> State (id=1436)
+
+Step 196: Executed by p3 from State (id=1436)
+  31->148: init_node(* (&<d0>heap.malloc3[0][0]+child), 1, 0) at unbounded_heap_based_priority_queue.cvl:151.2-42 "init_node(q->heap[child], ... )"
+--> State (id=1442)
+
+Step 197: Executed by p5 from State (id=1442)
+  61->155: unlock_node(* (&<d0>heap.malloc3[0][0]+1)) at unbounded_heap_based_priority_queue.cvl:181.4-29 "unlock_node(q->heap[1])"
+--> State (id=1447)
+
+Step 198: Executed by p1 from State (id=1447)
+  26->27: $sef$1=4 at unbounded_heap_based_priority_queue.cvl:148.14-20 "q->next"
+--> State (id=1452)
+
+Step 199: Executed by p1 from State (id=1452)
+  27->28: (*(&<d0>heap.malloc2[0][0])).next=4+1 [(*(&<d0>heap.malloc2[0][0])).next:=5] at unbounded_heap_based_priority_queue.cvl:148.14-20 "q->next"
+  28->29: child=4 at unbounded_heap_based_priority_queue.cvl:148.2-20 "int child = q->next"
+--> State (id=1459)
+
+Step 200: Executed by p1 from State (id=1459)
+  29->153: lock_node(* (&<d0>heap.malloc3[0][0]+child)) at unbounded_heap_based_priority_queue.cvl:149.2-26 "lock_node(q->heap[child])"
+--> State (id=1465)
+
+Step 201: Executed by p5 from State (id=1465)
+  155->137: lock_release(&<d0>heap.malloc0[2][0]) at unbounded_heap_based_priority_queue.cvl:86.2-22 "lock_release(n->lock)"
+--> State (id=1470)
+
+Step 202: Executed by p1 from State (id=1470)
+  153->131: lock_acquire(&<d0>heap.malloc0[5][0]) at unbounded_heap_based_priority_queue.cvl:82.2-22 "lock_acquire(n->lock)"
+--> State (id=1476)
+
+Step 203: Executed by p3 from State (id=1476)
+  148->149: (*(&<d0>heap.malloc1[3][0])).item=1 at unbounded_heap_based_priority_queue.cvl:75.2-19 "n->item = new_item"
+--> State (id=1481)
+
+Step 204: Executed by p3 from State (id=1481)
+  149->150: (*(&<d0>heap.malloc1[3][0])).score=0 at unbounded_heap_based_priority_queue.cvl:76.2-21 "n->score = new_score"
+--> State (id=1486)
+
+Step 205: Executed by p1 from State (id=1486)
+  131->132: ENTER_ATOMIC [_atomic_lock_var:=p1, p1.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:51.2-8 "$atomic"
+  132->133: TRUE_BRANCH_IF (guard: p1!=(*(l)).0) at unbounded_heap_based_priority_queue.cvl:52.27 "{"
+--> State (id=1495)
+
+Step 206: Executed by p3 from State (id=1495)
+  150->151: (*(&<d0>heap.malloc1[3][0])).tag=2 at unbounded_heap_based_priority_queue.cvl:77.2-14 "n->tag = BUSY"
+--> State (id=1500)
+
+Step 207: Executed by p1 from State (id=1500)
+  133->134: (*(&<d0>heap.malloc0[5][0])).owner=$self [(*(&<d0>heap.malloc0[5][0])).owner:=p1] at unbounded_heap_based_priority_queue.cvl:53.36-51 "l->owner = $self"
+  134->135: (*(&<d0>heap.malloc0[5][0])).count=0+1 [(*(&<d0>heap.malloc0[5][0])).count:=1] at unbounded_heap_based_priority_queue.cvl:55.4-11 "l->count"
+  135->136: LEAVE_ATOMIC [_atomic_lock_var:=$proc_null, p1.atomicCount:=0] at unbounded_heap_based_priority_queue.cvl:56.2 "}"
+  136->RET: lock_acquire(...) return at unbounded_heap_based_priority_queue.cvl:57.0 "}"
+  154->RET: lock_node(...) return at unbounded_heap_based_priority_queue.cvl:83.0 "}"
+--> State (id=1517)
+
+Step 208: Executed by p3 from State (id=1517)
+  151->152: (*(&<d0>heap.malloc1[3][0])).owner=$self [(*(&<d0>heap.malloc1[3][0])).owner:=p3] at unbounded_heap_based_priority_queue.cvl:78.2-17 "n->owner = $self"
+  152->RET: init_node(...) return at unbounded_heap_based_priority_queue.cvl:79.0 "}"
+--> State (id=1525)
+
+Step 209: Executed by p2 from State (id=1525)
+  131->132: ENTER_ATOMIC [_atomic_lock_var:=p2, p2.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:51.2-8 "$atomic"
+  132->133: TRUE_BRANCH_IF (guard: p2!=(*(l)).0) at unbounded_heap_based_priority_queue.cvl:52.27 "{"
+--> State (id=1534)
+
+Step 210: Executed by p5 from State (id=1534)
+  137->138: ENTER_ATOMIC [_atomic_lock_var:=p5, p5.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:60.2-8 "$atomic"
+  138->139: $assert(p5==(*(l)).0) at unbounded_heap_based_priority_queue.cvl:61.4-29 "$assert($self == l->owner)"
+  139->140: (*(&<d0>heap.malloc0[2][0])).count=1-1 [(*(&<d0>heap.malloc0[2][0])).count:=0] at unbounded_heap_based_priority_queue.cvl:62.4-11 "l->count"
+  140->141: TRUE_BRANCH_IF (guard: 0==0) at unbounded_heap_based_priority_queue.cvl:63.23 "l"
+  141->142: (*(&<d0>heap.malloc0[2][0])).owner=$proc_null at unbounded_heap_based_priority_queue.cvl:63.23-43 "l->owner = $proc_null"
+  142->143: LEAVE_ATOMIC [_atomic_lock_var:=$proc_null, p5.atomicCount:=0] at unbounded_heap_based_priority_queue.cvl:64.2 "}"
+  143->RET: lock_release(...) return at unbounded_heap_based_priority_queue.cvl:65.0 "}"
+  156->RET: unlock_node(...) return at unbounded_heap_based_priority_queue.cvl:87.0 "}"
+--> State (id=1556)
+
+Step 211: Executed by p2 from State (id=1556)
+  133->134: (*(&<d0>heap.malloc0[2][0])).owner=$self [(*(&<d0>heap.malloc0[2][0])).owner:=p2] at unbounded_heap_based_priority_queue.cvl:53.36-51 "l->owner = $self"
+  134->135: (*(&<d0>heap.malloc0[2][0])).count=0+1 [(*(&<d0>heap.malloc0[2][0])).count:=1] at unbounded_heap_based_priority_queue.cvl:55.4-11 "l->count"
+  135->136: LEAVE_ATOMIC [_atomic_lock_var:=$proc_null, p2.atomicCount:=0] at unbounded_heap_based_priority_queue.cvl:56.2 "}"
+  136->RET: lock_acquire(...) return at unbounded_heap_based_priority_queue.cvl:57.0 "}"
+  154->RET: lock_node(...) return at unbounded_heap_based_priority_queue.cvl:83.0 "}"
+--> State (id=1573)
+
+Step 212: Executed by p3 from State (id=1573)
+  32->155: unlock_node(* (&<d0>heap.malloc3[0][0]+child)) at unbounded_heap_based_priority_queue.cvl:152.2-28 "unlock_node(q->heap[child])"
+--> State (id=1579)
+
+Step 213: Executed by p2 from State (id=1579)
+  36->153: lock_node(* (&<d0>heap.malloc3[0][0]+child)) at unbounded_heap_based_priority_queue.cvl:156.4-28 "lock_node(q->heap[child])"
+--> State (id=1585)
+
+Step 214: Executed by p5 from State (id=1585)
+  62->RET: priority_queue_add(...) return at unbounded_heap_based_priority_queue.cvl:183.0 "}"
+--> State (id=1591)
+
+Step 215: Executed by p3 from State (id=1591)
+  155->137: lock_release(&<d0>heap.malloc0[4][0]) at unbounded_heap_based_priority_queue.cvl:86.2-22 "lock_release(n->lock)"
+--> State (id=1597)
+
+Step 216: Executed by p2 from State (id=1597)
+  153->131: lock_acquire(&<d0>heap.malloc0[3][0]) at unbounded_heap_based_priority_queue.cvl:82.2-22 "lock_acquire(n->lock)"
+--> State (id=1603)
+
+Step 217: Executed by p1 from State (id=1603)
+  30->164: unlock_heap(&<d0>heap.malloc2[0][0]) at unbounded_heap_based_priority_queue.cvl:150.2-15 "unlock_heap(q)"
+--> State (id=1609)
+
+Step 218: 2(0), Executed by p5 from State (id=1609)
+  182->183: printf("%d(%d),  ", 2, 0) at unbounded_heap_based_priority_queue.cvl:265.4-40 "printf("%d(%d), ", ins[i] ... )"
+  183->RET: _par_proc0(...) return at unbounded_heap_based_priority_queue.cvl:266.2 "}"
+--> State (id=1615)
+
+Step 219: Executed by p2 from State (id=1615)
+  131->132: ENTER_ATOMIC [_atomic_lock_var:=p2, p2.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:51.2-8 "$atomic"
+  132->133: TRUE_BRANCH_IF (guard: p2!=(*(l)).0) at unbounded_heap_based_priority_queue.cvl:52.27 "{"
+--> State (id=1624)
+
+Step 220: Executed by p3 from State (id=1624)
+  137->138: ENTER_ATOMIC [_atomic_lock_var:=p3, p3.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:60.2-8 "$atomic"
+  138->139: $assert(p3==(*(l)).0) at unbounded_heap_based_priority_queue.cvl:61.4-29 "$assert($self == l->owner)"
+  139->140: (*(&<d0>heap.malloc0[4][0])).count=1-1 [(*(&<d0>heap.malloc0[4][0])).count:=0] at unbounded_heap_based_priority_queue.cvl:62.4-11 "l->count"
+  140->141: TRUE_BRANCH_IF (guard: 0==0) at unbounded_heap_based_priority_queue.cvl:63.23 "l"
+  141->142: (*(&<d0>heap.malloc0[4][0])).owner=$proc_null at unbounded_heap_based_priority_queue.cvl:63.23-43 "l->owner = $proc_null"
+  142->143: LEAVE_ATOMIC [_atomic_lock_var:=$proc_null, p3.atomicCount:=0] at unbounded_heap_based_priority_queue.cvl:64.2 "}"
+  143->RET: lock_release(...) return at unbounded_heap_based_priority_queue.cvl:65.0 "}"
+  156->RET: unlock_node(...) return at unbounded_heap_based_priority_queue.cvl:87.0 "}"
+--> State (id=1646)
+
+Step 221: Executed by p1 from State (id=1646)
+  164->137: lock_release(&<d0>heap.malloc0[0][0]) at unbounded_heap_based_priority_queue.cvl:128.2-22 "lock_release(q->lock)"
+--> State (id=1652)
+
+Step 222: Executed by p2 from State (id=1652)
+  133->134: (*(&<d0>heap.malloc0[3][0])).owner=$self [(*(&<d0>heap.malloc0[3][0])).owner:=p2] at unbounded_heap_based_priority_queue.cvl:53.36-51 "l->owner = $self"
+  134->135: (*(&<d0>heap.malloc0[3][0])).count=0+1 [(*(&<d0>heap.malloc0[3][0])).count:=1] at unbounded_heap_based_priority_queue.cvl:55.4-11 "l->count"
+  135->136: LEAVE_ATOMIC [_atomic_lock_var:=$proc_null, p2.atomicCount:=0] at unbounded_heap_based_priority_queue.cvl:56.2 "}"
+  136->RET: lock_acquire(...) return at unbounded_heap_based_priority_queue.cvl:57.0 "}"
+  154->RET: lock_node(...) return at unbounded_heap_based_priority_queue.cvl:83.0 "}"
+  37->38: old_child=2 at unbounded_heap_based_priority_queue.cvl:157.4-24 "int old_child = child"
+--> State (id=1671)
+
+Step 223: Executed by p2 from State (id=1671)
+  38->54: FALSE_BRANCH_IF (guard: !! (1==1)) at unbounded_heap_based_priority_queue.cvl:158.73 ")"
+--> State (id=1675)
+
+Step 224: Executed by p1 from State (id=1675)
+  137->138: ENTER_ATOMIC [_atomic_lock_var:=p1, p1.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:60.2-8 "$atomic"
+  138->139: $assert(p1==(*(l)).0) at unbounded_heap_based_priority_queue.cvl:61.4-29 "$assert($self == l->owner)"
+  139->140: (*(&<d0>heap.malloc0[0][0])).count=1-1 [(*(&<d0>heap.malloc0[0][0])).count:=0] at unbounded_heap_based_priority_queue.cvl:62.4-11 "l->count"
+  140->141: TRUE_BRANCH_IF (guard: 0==0) at unbounded_heap_based_priority_queue.cvl:63.23 "l"
+  141->142: (*(&<d0>heap.malloc0[0][0])).owner=$proc_null at unbounded_heap_based_priority_queue.cvl:63.23-43 "l->owner = $proc_null"
+  142->143: LEAVE_ATOMIC [_atomic_lock_var:=$proc_null, p1.atomicCount:=0] at unbounded_heap_based_priority_queue.cvl:64.2 "}"
+  143->RET: lock_release(...) return at unbounded_heap_based_priority_queue.cvl:65.0 "}"
+  165->RET: unlock_heap(...) return at unbounded_heap_based_priority_queue.cvl:129.0 "}"
+--> State (id=1697)
+
+Step 225: Executed by p3 from State (id=1697)
+  33->34: LOOP_BODY_ENTER (guard: 1<child) at unbounded_heap_based_priority_queue.cvl:153.9-14.13 "child > 1"
+  34->35: parent=3/2 [parent:=1] at unbounded_heap_based_priority_queue.cvl:154.4-25 "int parent = child / ... 2"
+--> State (id=1704)
+
+Step 226: Executed by p2 from State (id=1704)
+  54->157: $sef$0=am_owner_node(* (&<d0>heap.malloc3[0][0]+child)) at unbounded_heap_based_priority_queue.cvl:158.45-73 "am_owner_node(q->heap[child])"
+--> State (id=1710)
+
+Step 227: Executed by p3 from State (id=1710)
+  35->153: lock_node(* (&<d0>heap.malloc3[0][0]+parent)) at unbounded_heap_based_priority_queue.cvl:155.4-29 "lock_node(q->heap[parent])"
+--> State (id=1716)
+
+Step 228: Executed by p1 from State (id=1716)
+  31->148: init_node(* (&<d0>heap.malloc3[0][0]+child), 4, 1) at unbounded_heap_based_priority_queue.cvl:151.2-42 "init_node(q->heap[child], ... )"
+--> State (id=1722)
+
+Step 229: Executed by p2 from State (id=1722)
+  157->160: CASE_2 (guard: 2==2) at unbounded_heap_based_priority_queue.cvl:95.2-96.28 "case BUSY:\n     ... ;"
+--> State (id=1726)
+
+Step 230: Executed by p3 from State (id=1726)
+  153->131: lock_acquire(&<d0>heap.malloc0[2][0]) at unbounded_heap_based_priority_queue.cvl:82.2-22 "lock_acquire(n->lock)"
+--> State (id=1732)
+
+Step 231: Executed by p3 from State (id=1732)
+  131->132: ENTER_ATOMIC [_atomic_lock_var:=p3, p3.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:51.2-8 "$atomic"
+  132->133: TRUE_BRANCH_IF (guard: p3!=(*(l)).0) at unbounded_heap_based_priority_queue.cvl:52.27 "{"
+--> State (id=1741)
+
+Step 232: Executed by p2 from State (id=1741)
+  160->161: am_owner_node(...) return p2==$self [$sef$0:=true] at unbounded_heap_based_priority_queue.cvl:96.4-28 "return n->owner == $self;"
+--> State (id=1748)
+
+Step 233: Executed by p4 from State (id=1748)
+  133->134: (*(&<d0>heap.malloc0[0][0])).owner=$self [(*(&<d0>heap.malloc0[0][0])).owner:=p4] at unbounded_heap_based_priority_queue.cvl:53.36-51 "l->owner = $self"
+  134->135: (*(&<d0>heap.malloc0[0][0])).count=0+1 [(*(&<d0>heap.malloc0[0][0])).count:=1] at unbounded_heap_based_priority_queue.cvl:55.4-11 "l->count"
+  135->136: LEAVE_ATOMIC [_atomic_lock_var:=$proc_null, p4.atomicCount:=0] at unbounded_heap_based_priority_queue.cvl:56.2 "}"
+  136->RET: lock_acquire(...) return at unbounded_heap_based_priority_queue.cvl:57.0 "}"
+  163->RET: lock_heap(...) return at unbounded_heap_based_priority_queue.cvl:125.0 "}"
+--> State (id=1765)
+
+Step 234: Executed by p2 from State (id=1765)
+  40->41: TRUE_BRANCH_IF (guard: true) at unbounded_heap_based_priority_queue.cvl:158.76 "{"
+--> State (id=1769)
+
+Step 235: Executed by p1 from State (id=1769)
+  148->149: (*(&<d0>heap.malloc1[4][0])).item=4 at unbounded_heap_based_priority_queue.cvl:75.2-19 "n->item = new_item"
+--> State (id=1774)
+
+Step 236: Executed by p4 from State (id=1774)
+  26->27: $sef$1=5 at unbounded_heap_based_priority_queue.cvl:148.14-20 "q->next"
+--> State (id=1779)
+
+Step 237: Executed by p2 from State (id=1779)
+  41->46: FALSE_BRANCH_IF (guard: ! (4<(*(*(((*(q)).2+parent)))).1)) at unbounded_heap_based_priority_queue.cvl:168.6 "}"
+--> State (id=1783)
+
+Step 238: Executed by p4 from State (id=1783)
+  27->28: (*(&<d0>heap.malloc2[0][0])).next=5+1 [(*(&<d0>heap.malloc2[0][0])).next:=6] at unbounded_heap_based_priority_queue.cvl:148.14-20 "q->next"
+  28->29: child=5 at unbounded_heap_based_priority_queue.cvl:148.2-20 "int child = q->next"
+--> State (id=1790)
+
+Step 239: Executed by p1 from State (id=1790)
+  149->150: (*(&<d0>heap.malloc1[4][0])).score=1 at unbounded_heap_based_priority_queue.cvl:76.2-21 "n->score = new_score"
+--> State (id=1795)
+
+Step 240: Executed by p2 from State (id=1795)
+  46->47: (*(* (&<d0>heap.malloc3[0][0]+child))).tag=1 at unbounded_heap_based_priority_queue.cvl:163.1-31 "q->heap[child]->tag  ... AVAILABLE"
+--> State (id=1800)
+
+Step 241: Executed by p4 from State (id=1800)
+  29->153: lock_node(* (&<d0>heap.malloc3[0][0]+child)) at unbounded_heap_based_priority_queue.cvl:149.2-26 "lock_node(q->heap[child])"
+--> State (id=1805)
+
+Step 242: Executed by p1 from State (id=1805)
+  150->151: (*(&<d0>heap.malloc1[4][0])).tag=2 at unbounded_heap_based_priority_queue.cvl:77.2-14 "n->tag = BUSY"
+--> State (id=1810)
+
+Step 243: Executed by p2 from State (id=1810)
+  47->48: (*(* (&<d0>heap.malloc3[0][0]+child))).owner=$proc_null at unbounded_heap_based_priority_queue.cvl:164.1-15.24 "q->heap[child]->owner  ... $proc_null"
+--> State (id=1815)
+
+Step 244: Executed by p1 from State (id=1815)
+  151->152: (*(&<d0>heap.malloc1[4][0])).owner=$self [(*(&<d0>heap.malloc1[4][0])).owner:=p1] at unbounded_heap_based_priority_queue.cvl:78.2-17 "n->owner = $self"
+  152->RET: init_node(...) return at unbounded_heap_based_priority_queue.cvl:79.0 "}"
+--> State (id=1823)
+
+Step 245: Executed by p2 from State (id=1823)
+  48->155: unlock_node(* (&<d0>heap.malloc3[0][0]+old_child)) at unbounded_heap_based_priority_queue.cvl:165.1-31 "unlock_node(q->heap[old_child])"
+--> State (id=1829)
+
+Step 246: Executed by p4 from State (id=1829)
+  153->131: lock_acquire(&<d0>heap.malloc0[6][0]) at unbounded_heap_based_priority_queue.cvl:82.2-22 "lock_acquire(n->lock)"
+--> State (id=1834)
+
+Step 247: Executed by p2 from State (id=1834)
+  155->137: lock_release(&<d0>heap.malloc0[3][0]) at unbounded_heap_based_priority_queue.cvl:86.2-22 "lock_release(n->lock)"
+--> State (id=1840)
+
+Step 248: Executed by p4 from State (id=1840)
+  131->132: ENTER_ATOMIC [_atomic_lock_var:=p4, p4.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:51.2-8 "$atomic"
+  132->133: TRUE_BRANCH_IF (guard: p4!=(*(l)).0) at unbounded_heap_based_priority_queue.cvl:52.27 "{"
+--> State (id=1849)
+
+Step 249: Executed by p1 from State (id=1849)
+  32->155: unlock_node(* (&<d0>heap.malloc3[0][0]+child)) at unbounded_heap_based_priority_queue.cvl:152.2-28 "unlock_node(q->heap[child])"
+--> State (id=1855)
+
+Step 250: Executed by p1 from State (id=1855)
+  155->137: lock_release(&<d0>heap.malloc0[5][0]) at unbounded_heap_based_priority_queue.cvl:86.2-22 "lock_release(n->lock)"
+--> State (id=1861)
+
+Step 251: Executed by p2 from State (id=1861)
+  137->138: ENTER_ATOMIC [_atomic_lock_var:=p2, p2.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:60.2-8 "$atomic"
+  138->139: $assert(p2==(*(l)).0) at unbounded_heap_based_priority_queue.cvl:61.4-29 "$assert($self == l->owner)"
+  139->140: (*(&<d0>heap.malloc0[3][0])).count=1-1 [(*(&<d0>heap.malloc0[3][0])).count:=0] at unbounded_heap_based_priority_queue.cvl:62.4-11 "l->count"
+  140->141: TRUE_BRANCH_IF (guard: 0==0) at unbounded_heap_based_priority_queue.cvl:63.23 "l"
+  141->142: (*(&<d0>heap.malloc0[3][0])).owner=$proc_null at unbounded_heap_based_priority_queue.cvl:63.23-43 "l->owner = $proc_null"
+  142->143: LEAVE_ATOMIC [_atomic_lock_var:=$proc_null, p2.atomicCount:=0] at unbounded_heap_based_priority_queue.cvl:64.2 "}"
+  143->RET: lock_release(...) return at unbounded_heap_based_priority_queue.cvl:65.0 "}"
+  156->RET: unlock_node(...) return at unbounded_heap_based_priority_queue.cvl:87.0 "}"
+--> State (id=1883)
+
+Step 252: Executed by p2 from State (id=1883)
+  49->155: unlock_node(* (&<d0>heap.malloc3[0][0]+parent)) at unbounded_heap_based_priority_queue.cvl:166.1-28 "unlock_node(q->heap[parent])"
+--> State (id=1889)
+
+Step 253: Executed by p2 from State (id=1889)
+  155->137: lock_release(&<d0>heap.malloc0[2][0]) at unbounded_heap_based_priority_queue.cvl:86.2-22 "lock_release(n->lock)"
+--> State (id=1895)
+
+Step 254: Executed by p4 from State (id=1895)
+  133->134: (*(&<d0>heap.malloc0[6][0])).owner=$self [(*(&<d0>heap.malloc0[6][0])).owner:=p4] at unbounded_heap_based_priority_queue.cvl:53.36-51 "l->owner = $self"
+  134->135: (*(&<d0>heap.malloc0[6][0])).count=0+1 [(*(&<d0>heap.malloc0[6][0])).count:=1] at unbounded_heap_based_priority_queue.cvl:55.4-11 "l->count"
+  135->136: LEAVE_ATOMIC [_atomic_lock_var:=$proc_null, p4.atomicCount:=0] at unbounded_heap_based_priority_queue.cvl:56.2 "}"
+  136->RET: lock_acquire(...) return at unbounded_heap_based_priority_queue.cvl:57.0 "}"
+  154->RET: lock_node(...) return at unbounded_heap_based_priority_queue.cvl:83.0 "}"
+--> State (id=1912)
+
+Step 255: Executed by p4 from State (id=1912)
+  30->164: unlock_heap(&<d0>heap.malloc2[0][0]) at unbounded_heap_based_priority_queue.cvl:150.2-15 "unlock_heap(q)"
+--> State (id=1917)
+
+Step 256: Executed by p1 from State (id=1917)
+  137->138: ENTER_ATOMIC [_atomic_lock_var:=p1, p1.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:60.2-8 "$atomic"
+  138->139: $assert(p1==(*(l)).0) at unbounded_heap_based_priority_queue.cvl:61.4-29 "$assert($self == l->owner)"
+  139->140: (*(&<d0>heap.malloc0[5][0])).count=1-1 [(*(&<d0>heap.malloc0[5][0])).count:=0] at unbounded_heap_based_priority_queue.cvl:62.4-11 "l->count"
+  140->141: TRUE_BRANCH_IF (guard: 0==0) at unbounded_heap_based_priority_queue.cvl:63.23 "l"
+  141->142: (*(&<d0>heap.malloc0[5][0])).owner=$proc_null at unbounded_heap_based_priority_queue.cvl:63.23-43 "l->owner = $proc_null"
+  142->143: LEAVE_ATOMIC [_atomic_lock_var:=$proc_null, p1.atomicCount:=0] at unbounded_heap_based_priority_queue.cvl:64.2 "}"
+  143->RET: lock_release(...) return at unbounded_heap_based_priority_queue.cvl:65.0 "}"
+  156->RET: unlock_node(...) return at unbounded_heap_based_priority_queue.cvl:87.0 "}"
+--> State (id=1939)
+
+Step 257: Executed by p4 from State (id=1939)
+  164->137: lock_release(&<d0>heap.malloc0[0][0]) at unbounded_heap_based_priority_queue.cvl:128.2-22 "lock_release(q->lock)"
+--> State (id=1944)
+
+Step 258: Executed by p1 from State (id=1944)
+  33->34: LOOP_BODY_ENTER (guard: 1<child) at unbounded_heap_based_priority_queue.cvl:153.9-14.13 "child > 1"
+  34->35: parent=4/2 [parent:=2] at unbounded_heap_based_priority_queue.cvl:154.4-25 "int parent = child / ... 2"
+--> State (id=1951)
+
+Step 259: Executed by p1 from State (id=1951)
+  35->153: lock_node(* (&<d0>heap.malloc3[0][0]+parent)) at unbounded_heap_based_priority_queue.cvl:155.4-29 "lock_node(q->heap[parent])"
+--> State (id=1957)
+
+Step 260: Executed by p4 from State (id=1957)
+  137->138: ENTER_ATOMIC [_atomic_lock_var:=p4, p4.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:60.2-8 "$atomic"
+  138->139: $assert(p4==(*(l)).0) at unbounded_heap_based_priority_queue.cvl:61.4-29 "$assert($self == l->owner)"
+  139->140: (*(&<d0>heap.malloc0[0][0])).count=1-1 [(*(&<d0>heap.malloc0[0][0])).count:=0] at unbounded_heap_based_priority_queue.cvl:62.4-11 "l->count"
+  140->141: TRUE_BRANCH_IF (guard: 0==0) at unbounded_heap_based_priority_queue.cvl:63.23 "l"
+  141->142: (*(&<d0>heap.malloc0[0][0])).owner=$proc_null at unbounded_heap_based_priority_queue.cvl:63.23-43 "l->owner = $proc_null"
+  142->143: LEAVE_ATOMIC [_atomic_lock_var:=$proc_null, p4.atomicCount:=0] at unbounded_heap_based_priority_queue.cvl:64.2 "}"
+  143->RET: lock_release(...) return at unbounded_heap_based_priority_queue.cvl:65.0 "}"
+  165->RET: unlock_heap(...) return at unbounded_heap_based_priority_queue.cvl:129.0 "}"
+--> State (id=1979)
+
+Step 261: Executed by p1 from State (id=1979)
+  153->131: lock_acquire(&<d0>heap.malloc0[3][0]) at unbounded_heap_based_priority_queue.cvl:82.2-22 "lock_acquire(n->lock)"
+--> State (id=1985)
+
+Step 262: Executed by p1 from State (id=1985)
+  131->132: ENTER_ATOMIC [_atomic_lock_var:=p1, p1.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:51.2-8 "$atomic"
+  132->133: TRUE_BRANCH_IF (guard: p1!=(*(l)).0) at unbounded_heap_based_priority_queue.cvl:52.27 "{"
+--> State (id=1994)
+
+Step 263: Executed by p1 from State (id=1994)
+  133->134: (*(&<d0>heap.malloc0[3][0])).owner=$self [(*(&<d0>heap.malloc0[3][0])).owner:=p1] at unbounded_heap_based_priority_queue.cvl:53.36-51 "l->owner = $self"
+  134->135: (*(&<d0>heap.malloc0[3][0])).count=0+1 [(*(&<d0>heap.malloc0[3][0])).count:=1] at unbounded_heap_based_priority_queue.cvl:55.4-11 "l->count"
+  135->136: LEAVE_ATOMIC [_atomic_lock_var:=$proc_null, p1.atomicCount:=0] at unbounded_heap_based_priority_queue.cvl:56.2 "}"
+  136->RET: lock_acquire(...) return at unbounded_heap_based_priority_queue.cvl:57.0 "}"
+  154->RET: lock_node(...) return at unbounded_heap_based_priority_queue.cvl:83.0 "}"
+--> State (id=2011)
+
+Step 264: Executed by p4 from State (id=2011)
+  31->148: init_node(* (&<d0>heap.malloc3[0][0]+child), 4, 0) at unbounded_heap_based_priority_queue.cvl:151.2-42 "init_node(q->heap[child], ... )"
+--> State (id=2016)
+
+Step 265: Executed by p1 from State (id=2016)
+  36->153: lock_node(* (&<d0>heap.malloc3[0][0]+child)) at unbounded_heap_based_priority_queue.cvl:156.4-28 "lock_node(q->heap[child])"
+--> State (id=2022)
+
+Step 266: Executed by p4 from State (id=2022)
+  148->149: (*(&<d0>heap.malloc1[5][0])).item=4 at unbounded_heap_based_priority_queue.cvl:75.2-19 "n->item = new_item"
+--> State (id=2027)
+
+Step 267: Executed by p1 from State (id=2027)
+  153->131: lock_acquire(&<d0>heap.malloc0[5][0]) at unbounded_heap_based_priority_queue.cvl:82.2-22 "lock_acquire(n->lock)"
+--> State (id=2033)
+
+Step 268: Executed by p4 from State (id=2033)
+  149->150: (*(&<d0>heap.malloc1[5][0])).score=0 at unbounded_heap_based_priority_queue.cvl:76.2-21 "n->score = new_score"
+--> State (id=2038)
+
+Step 269: Executed by p2 from State (id=2038)
+  137->138: ENTER_ATOMIC [_atomic_lock_var:=p2, p2.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:60.2-8 "$atomic"
+  138->139: $assert(p2==(*(l)).0) at unbounded_heap_based_priority_queue.cvl:61.4-29 "$assert($self == l->owner)"
+  139->140: (*(&<d0>heap.malloc0[2][0])).count=1-1 [(*(&<d0>heap.malloc0[2][0])).count:=0] at unbounded_heap_based_priority_queue.cvl:62.4-11 "l->count"
+  140->141: TRUE_BRANCH_IF (guard: 0==0) at unbounded_heap_based_priority_queue.cvl:63.23 "l"
+  141->142: (*(&<d0>heap.malloc0[2][0])).owner=$proc_null at unbounded_heap_based_priority_queue.cvl:63.23-43 "l->owner = $proc_null"
+  142->143: LEAVE_ATOMIC [_atomic_lock_var:=$proc_null, p2.atomicCount:=0] at unbounded_heap_based_priority_queue.cvl:64.2 "}"
+  143->RET: lock_release(...) return at unbounded_heap_based_priority_queue.cvl:65.0 "}"
+  156->RET: unlock_node(...) return at unbounded_heap_based_priority_queue.cvl:87.0 "}"
+  50->44: priority_queue_add(...) return at unbounded_heap_based_priority_queue.cvl:167.1-7 "return;"
+--> State (id=2062)
+
+Step 270: 1(4), Executed by p2 from State (id=2062)
+  182->183: printf("%d(%d),  ", 1, 4) at unbounded_heap_based_priority_queue.cvl:265.4-40 "printf("%d(%d), ", ins[i] ... )"
+  183->RET: _par_proc0(...) return at unbounded_heap_based_priority_queue.cvl:266.2 "}"
+--> State (id=2068)
+
+Step 271: Executed by p1 from State (id=2068)
+  131->132: ENTER_ATOMIC [_atomic_lock_var:=p1, p1.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:51.2-8 "$atomic"
+  132->133: TRUE_BRANCH_IF (guard: p1!=(*(l)).0) at unbounded_heap_based_priority_queue.cvl:52.27 "{"
+--> State (id=2077)
+
+Step 272: Executed by p1 from State (id=2077)
+  133->134: (*(&<d0>heap.malloc0[5][0])).owner=$self [(*(&<d0>heap.malloc0[5][0])).owner:=p1] at unbounded_heap_based_priority_queue.cvl:53.36-51 "l->owner = $self"
+  134->135: (*(&<d0>heap.malloc0[5][0])).count=0+1 [(*(&<d0>heap.malloc0[5][0])).count:=1] at unbounded_heap_based_priority_queue.cvl:55.4-11 "l->count"
+  135->136: LEAVE_ATOMIC [_atomic_lock_var:=$proc_null, p1.atomicCount:=0] at unbounded_heap_based_priority_queue.cvl:56.2 "}"
+  136->RET: lock_acquire(...) return at unbounded_heap_based_priority_queue.cvl:57.0 "}"
+  154->RET: lock_node(...) return at unbounded_heap_based_priority_queue.cvl:83.0 "}"
+  37->38: old_child=4 at unbounded_heap_based_priority_queue.cvl:157.4-24 "int old_child = child"
+--> State (id=2096)
+
+Step 273: Executed by p1 from State (id=2096)
+  38->54: FALSE_BRANCH_IF (guard: !! (1==1)) at unbounded_heap_based_priority_queue.cvl:158.73 ")"
+--> State (id=2100)
+
+Step 274: Executed by p1 from State (id=2100)
+  54->157: $sef$0=am_owner_node(* (&<d0>heap.malloc3[0][0]+child)) at unbounded_heap_based_priority_queue.cvl:158.45-73 "am_owner_node(q->heap[child])"
+--> State (id=2106)
+
+Step 275: Executed by p4 from State (id=2106)
+  150->151: (*(&<d0>heap.malloc1[5][0])).tag=2 at unbounded_heap_based_priority_queue.cvl:77.2-14 "n->tag = BUSY"
+--> State (id=2111)
+
+Step 276: Executed by p3 from State (id=2111)
+  133->134: (*(&<d0>heap.malloc0[2][0])).owner=$self [(*(&<d0>heap.malloc0[2][0])).owner:=p3] at unbounded_heap_based_priority_queue.cvl:53.36-51 "l->owner = $self"
+  134->135: (*(&<d0>heap.malloc0[2][0])).count=0+1 [(*(&<d0>heap.malloc0[2][0])).count:=1] at unbounded_heap_based_priority_queue.cvl:55.4-11 "l->count"
+  135->136: LEAVE_ATOMIC [_atomic_lock_var:=$proc_null, p3.atomicCount:=0] at unbounded_heap_based_priority_queue.cvl:56.2 "}"
+  136->RET: lock_acquire(...) return at unbounded_heap_based_priority_queue.cvl:57.0 "}"
+  154->RET: lock_node(...) return at unbounded_heap_based_priority_queue.cvl:83.0 "}"
+--> State (id=2128)
+
+Step 277: Executed by p4 from State (id=2128)
+  151->152: (*(&<d0>heap.malloc1[5][0])).owner=$self [(*(&<d0>heap.malloc1[5][0])).owner:=p4] at unbounded_heap_based_priority_queue.cvl:78.2-17 "n->owner = $self"
+  152->RET: init_node(...) return at unbounded_heap_based_priority_queue.cvl:79.0 "}"
+--> State (id=2136)
+
+Step 278: Executed by p4 from State (id=2136)
+  32->155: unlock_node(* (&<d0>heap.malloc3[0][0]+child)) at unbounded_heap_based_priority_queue.cvl:152.2-28 "unlock_node(q->heap[child])"
+--> State (id=2141)
+
+Step 279: Executed by p1 from State (id=2141)
+  157->160: CASE_2 (guard: 2==2) at unbounded_heap_based_priority_queue.cvl:95.2-96.28 "case BUSY:\n     ... ;"
+--> State (id=2145)
+
+Step 280: Executed by p4 from State (id=2145)
+  155->137: lock_release(&<d0>heap.malloc0[6][0]) at unbounded_heap_based_priority_queue.cvl:86.2-22 "lock_release(n->lock)"
+--> State (id=2150)
+
+Step 281: Executed by p1 from State (id=2150)
+  160->161: am_owner_node(...) return p1==$self [$sef$0:=true] at unbounded_heap_based_priority_queue.cvl:96.4-28 "return n->owner == $self;"
+--> State (id=2157)
+
+Step 282: Executed by p3 from State (id=2157)
+  36->153: lock_node(* (&<d0>heap.malloc3[0][0]+child)) at unbounded_heap_based_priority_queue.cvl:156.4-28 "lock_node(q->heap[child])"
+--> State (id=2163)
+
+Step 283: Executed by p4 from State (id=2163)
+  137->138: ENTER_ATOMIC [_atomic_lock_var:=p4, p4.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:60.2-8 "$atomic"
+  138->139: $assert(p4==(*(l)).0) at unbounded_heap_based_priority_queue.cvl:61.4-29 "$assert($self == l->owner)"
+  139->140: (*(&<d0>heap.malloc0[6][0])).count=1-1 [(*(&<d0>heap.malloc0[6][0])).count:=0] at unbounded_heap_based_priority_queue.cvl:62.4-11 "l->count"
+  140->141: TRUE_BRANCH_IF (guard: 0==0) at unbounded_heap_based_priority_queue.cvl:63.23 "l"
+  141->142: (*(&<d0>heap.malloc0[6][0])).owner=$proc_null at unbounded_heap_based_priority_queue.cvl:63.23-43 "l->owner = $proc_null"
+  142->143: LEAVE_ATOMIC [_atomic_lock_var:=$proc_null, p4.atomicCount:=0] at unbounded_heap_based_priority_queue.cvl:64.2 "}"
+  143->RET: lock_release(...) return at unbounded_heap_based_priority_queue.cvl:65.0 "}"
+  156->RET: unlock_node(...) return at unbounded_heap_based_priority_queue.cvl:87.0 "}"
+--> State (id=2185)
+
+Step 284: Executed by p3 from State (id=2185)
+  153->131: lock_acquire(&<d0>heap.malloc0[4][0]) at unbounded_heap_based_priority_queue.cvl:82.2-22 "lock_acquire(n->lock)"
+--> State (id=2191)
+
+Step 285: Executed by p3 from State (id=2191)
+  131->132: ENTER_ATOMIC [_atomic_lock_var:=p3, p3.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:51.2-8 "$atomic"
+  132->133: TRUE_BRANCH_IF (guard: p3!=(*(l)).0) at unbounded_heap_based_priority_queue.cvl:52.27 "{"
+--> State (id=2200)
+
+Step 286: Executed by p1 from State (id=2200)
+  40->41: TRUE_BRANCH_IF (guard: true) at unbounded_heap_based_priority_queue.cvl:158.76 "{"
+--> State (id=2204)
+
+Step 287: Executed by p4 from State (id=2204)
+  33->34: LOOP_BODY_ENTER (guard: 1<child) at unbounded_heap_based_priority_queue.cvl:153.9-14.13 "child > 1"
+  34->35: parent=5/2 [parent:=2] at unbounded_heap_based_priority_queue.cvl:154.4-25 "int parent = child / ... 2"
+--> State (id=2211)
+
+Step 288: Executed by p4 from State (id=2211)
+  35->153: lock_node(* (&<d0>heap.malloc3[0][0]+parent)) at unbounded_heap_based_priority_queue.cvl:155.4-29 "lock_node(q->heap[parent])"
+--> State (id=2216)
+
+Step 289: Executed by p3 from State (id=2216)
+  133->134: (*(&<d0>heap.malloc0[4][0])).owner=$self [(*(&<d0>heap.malloc0[4][0])).owner:=p3] at unbounded_heap_based_priority_queue.cvl:53.36-51 "l->owner = $self"
+  134->135: (*(&<d0>heap.malloc0[4][0])).count=0+1 [(*(&<d0>heap.malloc0[4][0])).count:=1] at unbounded_heap_based_priority_queue.cvl:55.4-11 "l->count"
+  135->136: LEAVE_ATOMIC [_atomic_lock_var:=$proc_null, p3.atomicCount:=0] at unbounded_heap_based_priority_queue.cvl:56.2 "}"
+  136->RET: lock_acquire(...) return at unbounded_heap_based_priority_queue.cvl:57.0 "}"
+  154->RET: lock_node(...) return at unbounded_heap_based_priority_queue.cvl:83.0 "}"
+  37->38: old_child=3 at unbounded_heap_based_priority_queue.cvl:157.4-24 "int old_child = child"
+--> State (id=2235)
+
+Step 290: Executed by p3 from State (id=2235)
+  38->54: FALSE_BRANCH_IF (guard: !! (1==1)) at unbounded_heap_based_priority_queue.cvl:158.73 ")"
+--> State (id=2239)
+
+Step 291: Executed by p4 from State (id=2239)
+  153->131: lock_acquire(&<d0>heap.malloc0[3][0]) at unbounded_heap_based_priority_queue.cvl:82.2-22 "lock_acquire(n->lock)"
+--> State (id=2244)
+
+Step 292: Executed by p4 from State (id=2244)
+  131->132: ENTER_ATOMIC [_atomic_lock_var:=p4, p4.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:51.2-8 "$atomic"
+  132->133: TRUE_BRANCH_IF (guard: p4!=(*(l)).0) at unbounded_heap_based_priority_queue.cvl:52.27 "{"
+--> State (id=2253)
+
+Step 293: Executed by p1 from State (id=2253)
+  41->42: TRUE_BRANCH_IF (guard: 1<(*(*(((*(q)).2+parent)))).1) at unbounded_heap_based_priority_queue.cvl:159.58 "{"
+--> State (id=2257)
+
+Step 294: Executed by p1 from State (id=2257)
+  42->166: priority_queue_swap(&<d0>heap.malloc2[0][0], 4, 2) at unbounded_heap_based_priority_queue.cvl:160.1-37 "priority_queue_swap(q, child, parent)"
+--> State (id=2263)
+
+Step 295: Executed by p3 from State (id=2263)
+  54->157: $sef$0=am_owner_node(* (&<d0>heap.malloc3[0][0]+child)) at unbounded_heap_based_priority_queue.cvl:158.45-73 "am_owner_node(q->heap[child])"
+--> State (id=2269)
+
+Step 296: Executed by p3 from State (id=2269)
+  157->160: CASE_2 (guard: 2==2) at unbounded_heap_based_priority_queue.cvl:95.2-96.28 "case BUSY:\n     ... ;"
+--> State (id=2273)
+
+Step 297: Executed by p3 from State (id=2273)
+  160->161: am_owner_node(...) return p3==$self [$sef$0:=true] at unbounded_heap_based_priority_queue.cvl:96.4-28 "return n->owner == $self;"
+--> State (id=2280)
+
+Step 298: Executed by p1 from State (id=2280)
+  166->167: _owner=p1 at unbounded_heap_based_priority_queue.cvl:132.2-33 "$proc _owner = q->heap ... owner"
+--> State (id=2285)
+
+Step 299: Executed by p1 from State (id=2285)
+  167->168: (*(* (&<d0>heap.malloc3[0][0]+i))).owner=$proc_null at unbounded_heap_based_priority_queue.cvl:133.2-38 "q->heap[i]->owner  ... owner"
+--> State (id=2290)
+
+Step 300: Executed by p3 from State (id=2290)
+  40->41: TRUE_BRANCH_IF (guard: true) at unbounded_heap_based_priority_queue.cvl:158.76 "{"
+--> State (id=2294)
+
+Step 301: Executed by p1 from State (id=2294)
+  168->169: (*(* (&<d0>heap.malloc3[0][0]+j))).owner=p1 at unbounded_heap_based_priority_queue.cvl:134.2-27 "q->heap[j]->owner  ... _owner"
+--> State (id=2299)
+
+Step 302: Executed by p3 from State (id=2299)
+  41->46: FALSE_BRANCH_IF (guard: ! (0<(*(*(((*(q)).2+parent)))).1)) at unbounded_heap_based_priority_queue.cvl:168.6 "}"
+--> State (id=2303)
+
+Step 303: Executed by p3 from State (id=2303)
+  46->47: (*(* (&<d0>heap.malloc3[0][0]+child))).tag=1 at unbounded_heap_based_priority_queue.cvl:163.1-31 "q->heap[child]->tag  ... AVAILABLE"
+--> State (id=2308)
+
+Step 304: Executed by p1 from State (id=2308)
+  169->170: _item=4 at unbounded_heap_based_priority_queue.cvl:135.2-29 "int _item = q->heap ... item"
+--> State (id=2313)
+
+Step 305: Executed by p3 from State (id=2313)
+  47->48: (*(* (&<d0>heap.malloc3[0][0]+child))).owner=$proc_null at unbounded_heap_based_priority_queue.cvl:164.1-15.24 "q->heap[child]->owner  ... $proc_null"
+--> State (id=2318)
+
+Step 306: Executed by p1 from State (id=2318)
+  170->171: (*(* (&<d0>heap.malloc3[0][0]+i))).item=1 at unbounded_heap_based_priority_queue.cvl:136.2-36 "q->heap[i]->item  ... item"
+--> State (id=2323)
+
+Step 307: Executed by p3 from State (id=2323)
+  48->155: unlock_node(* (&<d0>heap.malloc3[0][0]+old_child)) at unbounded_heap_based_priority_queue.cvl:165.1-31 "unlock_node(q->heap[old_child])"
+--> State (id=2329)
+
+Step 308: Executed by p1 from State (id=2329)
+  171->172: (*(* (&<d0>heap.malloc3[0][0]+j))).item=4 at unbounded_heap_based_priority_queue.cvl:137.2-25 "q->heap[j]->item  ... _item"
+--> State (id=2334)
+
+Step 309: Executed by p1 from State (id=2334)
+  172->173: _priority=1 at unbounded_heap_based_priority_queue.cvl:138.2-34 "int _priority = q->heap ... score"
+--> State (id=2339)
+
+Step 310: Executed by p3 from State (id=2339)
+  155->137: lock_release(&<d0>heap.malloc0[4][0]) at unbounded_heap_based_priority_queue.cvl:86.2-22 "lock_release(n->lock)"
+--> State (id=2345)
+
+Step 311: Executed by p1 from State (id=2345)
+  173->174: (*(* (&<d0>heap.malloc3[0][0]+i))).score=4 at unbounded_heap_based_priority_queue.cvl:139.2-38 "q->heap[i]->score  ... score"
+--> State (id=2350)
+
+Step 312: Executed by p3 from State (id=2350)
+  137->138: ENTER_ATOMIC [_atomic_lock_var:=p3, p3.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:60.2-8 "$atomic"
+  138->139: $assert(p3==(*(l)).0) at unbounded_heap_based_priority_queue.cvl:61.4-29 "$assert($self == l->owner)"
+  139->140: (*(&<d0>heap.malloc0[4][0])).count=1-1 [(*(&<d0>heap.malloc0[4][0])).count:=0] at unbounded_heap_based_priority_queue.cvl:62.4-11 "l->count"
+  140->141: TRUE_BRANCH_IF (guard: 0==0) at unbounded_heap_based_priority_queue.cvl:63.23 "l"
+  141->142: (*(&<d0>heap.malloc0[4][0])).owner=$proc_null at unbounded_heap_based_priority_queue.cvl:63.23-43 "l->owner = $proc_null"
+  142->143: LEAVE_ATOMIC [_atomic_lock_var:=$proc_null, p3.atomicCount:=0] at unbounded_heap_based_priority_queue.cvl:64.2 "}"
+  143->RET: lock_release(...) return at unbounded_heap_based_priority_queue.cvl:65.0 "}"
+  156->RET: unlock_node(...) return at unbounded_heap_based_priority_queue.cvl:87.0 "}"
+--> State (id=2372)
+
+Step 313: Executed by p3 from State (id=2372)
+  49->155: unlock_node(* (&<d0>heap.malloc3[0][0]+parent)) at unbounded_heap_based_priority_queue.cvl:166.1-28 "unlock_node(q->heap[parent])"
+--> State (id=2378)
+
+Step 314: Executed by p3 from State (id=2378)
+  155->137: lock_release(&<d0>heap.malloc0[2][0]) at unbounded_heap_based_priority_queue.cvl:86.2-22 "lock_release(n->lock)"
+--> State (id=2384)
+
+Step 315: Executed by p3 from State (id=2384)
+  137->138: ENTER_ATOMIC [_atomic_lock_var:=p3, p3.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:60.2-8 "$atomic"
+  138->139: $assert(p3==(*(l)).0) at unbounded_heap_based_priority_queue.cvl:61.4-29 "$assert($self == l->owner)"
+  139->140: (*(&<d0>heap.malloc0[2][0])).count=1-1 [(*(&<d0>heap.malloc0[2][0])).count:=0] at unbounded_heap_based_priority_queue.cvl:62.4-11 "l->count"
+  140->141: TRUE_BRANCH_IF (guard: 0==0) at unbounded_heap_based_priority_queue.cvl:63.23 "l"
+  141->142: (*(&<d0>heap.malloc0[2][0])).owner=$proc_null at unbounded_heap_based_priority_queue.cvl:63.23-43 "l->owner = $proc_null"
+  142->143: LEAVE_ATOMIC [_atomic_lock_var:=$proc_null, p3.atomicCount:=0] at unbounded_heap_based_priority_queue.cvl:64.2 "}"
+  143->RET: lock_release(...) return at unbounded_heap_based_priority_queue.cvl:65.0 "}"
+  156->RET: unlock_node(...) return at unbounded_heap_based_priority_queue.cvl:87.0 "}"
+  50->44: priority_queue_add(...) return at unbounded_heap_based_priority_queue.cvl:167.1-7 "return;"
+--> State (id=2408)
+
+Step 316: Executed by p1 from State (id=2408)
+  174->175: (*(* (&<d0>heap.malloc3[0][0]+j))).score=1 at unbounded_heap_based_priority_queue.cvl:140.2-30 "q->heap[j]->score  ... _priority"
+--> State (id=2413)
+
+Step 317: Executed by p1 from State (id=2413)
+  175->176: _tag=2 at unbounded_heap_based_priority_queue.cvl:141.2-30 "Status _tag = q->heap ... tag"
+--> State (id=2418)
+
+Step 318: Executed by p1 from State (id=2418)
+  176->177: (*(* (&<d0>heap.malloc3[0][0]+i))).tag=1 at unbounded_heap_based_priority_queue.cvl:142.2-34 "q->heap[i]->tag  ... tag"
+--> State (id=2423)
+
+Step 319: Executed by p1 from State (id=2423)
+  177->178: (*(* (&<d0>heap.malloc3[0][0]+j))).tag=2 at unbounded_heap_based_priority_queue.cvl:143.2-23 "q->heap[j]->tag  ... _tag"
+  178->RET: priority_queue_swap(...) return at unbounded_heap_based_priority_queue.cvl:144.0 "}"
+  43->44: child=2 at unbounded_heap_based_priority_queue.cvl:161.1-14 "child = parent"
+--> State (id=2433)
+
+Step 320: Executed by p1 from State (id=2433)
+  44->155: unlock_node(* (&<d0>heap.malloc3[0][0]+old_child)) at unbounded_heap_based_priority_queue.cvl:172.4-34 "unlock_node(q->heap[old_child])"
+--> State (id=2439)
+
+Step 321: 1(0), Executed by p3 from State (id=2439)
+  182->183: printf("%d(%d),  ", 1, 0) at unbounded_heap_based_priority_queue.cvl:265.4-40 "printf("%d(%d), ", ins[i] ... )"
+  183->RET: _par_proc0(...) return at unbounded_heap_based_priority_queue.cvl:266.2 "}"
+--> State (id=2445)
+
+Step 322: Executed by p1 from State (id=2445)
+  155->137: lock_release(&<d0>heap.malloc0[5][0]) at unbounded_heap_based_priority_queue.cvl:86.2-22 "lock_release(n->lock)"
+--> State (id=2451)
+
+Step 323: Executed by p1 from State (id=2451)
+  137->138: ENTER_ATOMIC [_atomic_lock_var:=p1, p1.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:60.2-8 "$atomic"
+  138->139: $assert(p1==(*(l)).0) at unbounded_heap_based_priority_queue.cvl:61.4-29 "$assert($self == l->owner)"
+  139->140: (*(&<d0>heap.malloc0[5][0])).count=1-1 [(*(&<d0>heap.malloc0[5][0])).count:=0] at unbounded_heap_based_priority_queue.cvl:62.4-11 "l->count"
+  140->141: TRUE_BRANCH_IF (guard: 0==0) at unbounded_heap_based_priority_queue.cvl:63.23 "l"
+  141->142: (*(&<d0>heap.malloc0[5][0])).owner=$proc_null at unbounded_heap_based_priority_queue.cvl:63.23-43 "l->owner = $proc_null"
+  142->143: LEAVE_ATOMIC [_atomic_lock_var:=$proc_null, p1.atomicCount:=0] at unbounded_heap_based_priority_queue.cvl:64.2 "}"
+  143->RET: lock_release(...) return at unbounded_heap_based_priority_queue.cvl:65.0 "}"
+  156->RET: unlock_node(...) return at unbounded_heap_based_priority_queue.cvl:87.0 "}"
+--> State (id=2473)
+
+Step 324: Executed by p1 from State (id=2473)
+  45->155: unlock_node(* (&<d0>heap.malloc3[0][0]+parent)) at unbounded_heap_based_priority_queue.cvl:173.4-31 "unlock_node(q->heap[parent])"
+--> State (id=2479)
+
+Step 325: Executed by p1 from State (id=2479)
+  155->137: lock_release(&<d0>heap.malloc0[3][0]) at unbounded_heap_based_priority_queue.cvl:86.2-22 "lock_release(n->lock)"
+--> State (id=2485)
+
+Step 326: Executed by p1 from State (id=2485)
+  137->138: ENTER_ATOMIC [_atomic_lock_var:=p1, p1.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:60.2-8 "$atomic"
+  138->139: $assert(p1==(*(l)).0) at unbounded_heap_based_priority_queue.cvl:61.4-29 "$assert($self == l->owner)"
+  139->140: (*(&<d0>heap.malloc0[3][0])).count=1-1 [(*(&<d0>heap.malloc0[3][0])).count:=0] at unbounded_heap_based_priority_queue.cvl:62.4-11 "l->count"
+  140->141: TRUE_BRANCH_IF (guard: 0==0) at unbounded_heap_based_priority_queue.cvl:63.23 "l"
+  141->142: (*(&<d0>heap.malloc0[3][0])).owner=$proc_null at unbounded_heap_based_priority_queue.cvl:63.23-43 "l->owner = $proc_null"
+  142->143: LEAVE_ATOMIC [_atomic_lock_var:=$proc_null, p1.atomicCount:=0] at unbounded_heap_based_priority_queue.cvl:64.2 "}"
+  143->RET: lock_release(...) return at unbounded_heap_based_priority_queue.cvl:65.0 "}"
+  156->RET: unlock_node(...) return at unbounded_heap_based_priority_queue.cvl:87.0 "}"
+--> State (id=2507)
+
+Step 327: Executed by p1 from State (id=2507)
+  33->34: LOOP_BODY_ENTER (guard: 1<child) at unbounded_heap_based_priority_queue.cvl:153.9-14.13 "child > 1"
+  34->35: parent=2/2 [parent:=1] at unbounded_heap_based_priority_queue.cvl:154.4-25 "int parent = child / ... 2"
+--> State (id=2514)
+
+Step 328: Executed by p1 from State (id=2514)
+  35->153: lock_node(* (&<d0>heap.malloc3[0][0]+parent)) at unbounded_heap_based_priority_queue.cvl:155.4-29 "lock_node(q->heap[parent])"
+--> State (id=2520)
+
+Step 329: Executed by p4 from State (id=2520)
+  133->134: (*(&<d0>heap.malloc0[3][0])).owner=$self [(*(&<d0>heap.malloc0[3][0])).owner:=p4] at unbounded_heap_based_priority_queue.cvl:53.36-51 "l->owner = $self"
+  134->135: (*(&<d0>heap.malloc0[3][0])).count=0+1 [(*(&<d0>heap.malloc0[3][0])).count:=1] at unbounded_heap_based_priority_queue.cvl:55.4-11 "l->count"
+  135->136: LEAVE_ATOMIC [_atomic_lock_var:=$proc_null, p4.atomicCount:=0] at unbounded_heap_based_priority_queue.cvl:56.2 "}"
+  136->RET: lock_acquire(...) return at unbounded_heap_based_priority_queue.cvl:57.0 "}"
+  154->RET: lock_node(...) return at unbounded_heap_based_priority_queue.cvl:83.0 "}"
+--> State (id=2537)
+
+Step 330: Executed by p1 from State (id=2537)
+  153->131: lock_acquire(&<d0>heap.malloc0[2][0]) at unbounded_heap_based_priority_queue.cvl:82.2-22 "lock_acquire(n->lock)"
+--> State (id=2543)
+
+Step 331: Executed by p4 from State (id=2543)
+  36->153: lock_node(* (&<d0>heap.malloc3[0][0]+child)) at unbounded_heap_based_priority_queue.cvl:156.4-28 "lock_node(q->heap[child])"
+--> State (id=2548)
+
+Step 332: Executed by p1 from State (id=2548)
+  131->132: ENTER_ATOMIC [_atomic_lock_var:=p1, p1.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:51.2-8 "$atomic"
+  132->133: TRUE_BRANCH_IF (guard: p1!=(*(l)).0) at unbounded_heap_based_priority_queue.cvl:52.27 "{"
+--> State (id=2557)
+
+Step 333: Executed by p4 from State (id=2557)
+  153->131: lock_acquire(&<d0>heap.malloc0[6][0]) at unbounded_heap_based_priority_queue.cvl:82.2-22 "lock_acquire(n->lock)"
+--> State (id=2562)
+
+Step 334: Executed by p4 from State (id=2562)
+  131->132: ENTER_ATOMIC [_atomic_lock_var:=p4, p4.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:51.2-8 "$atomic"
+  132->133: TRUE_BRANCH_IF (guard: p4!=(*(l)).0) at unbounded_heap_based_priority_queue.cvl:52.27 "{"
+--> State (id=2571)
+
+Step 335: Executed by p1 from State (id=2571)
+  133->134: (*(&<d0>heap.malloc0[2][0])).owner=$self [(*(&<d0>heap.malloc0[2][0])).owner:=p1] at unbounded_heap_based_priority_queue.cvl:53.36-51 "l->owner = $self"
+  134->135: (*(&<d0>heap.malloc0[2][0])).count=0+1 [(*(&<d0>heap.malloc0[2][0])).count:=1] at unbounded_heap_based_priority_queue.cvl:55.4-11 "l->count"
+  135->136: LEAVE_ATOMIC [_atomic_lock_var:=$proc_null, p1.atomicCount:=0] at unbounded_heap_based_priority_queue.cvl:56.2 "}"
+  136->RET: lock_acquire(...) return at unbounded_heap_based_priority_queue.cvl:57.0 "}"
+  154->RET: lock_node(...) return at unbounded_heap_based_priority_queue.cvl:83.0 "}"
+--> State (id=2588)
+
+Step 336: Executed by p4 from State (id=2588)
+  133->134: (*(&<d0>heap.malloc0[6][0])).owner=$self [(*(&<d0>heap.malloc0[6][0])).owner:=p4] at unbounded_heap_based_priority_queue.cvl:53.36-51 "l->owner = $self"
+  134->135: (*(&<d0>heap.malloc0[6][0])).count=0+1 [(*(&<d0>heap.malloc0[6][0])).count:=1] at unbounded_heap_based_priority_queue.cvl:55.4-11 "l->count"
+  135->136: LEAVE_ATOMIC [_atomic_lock_var:=$proc_null, p4.atomicCount:=0] at unbounded_heap_based_priority_queue.cvl:56.2 "}"
+  136->RET: lock_acquire(...) return at unbounded_heap_based_priority_queue.cvl:57.0 "}"
+  154->RET: lock_node(...) return at unbounded_heap_based_priority_queue.cvl:83.0 "}"
+  37->38: old_child=5 at unbounded_heap_based_priority_queue.cvl:157.4-24 "int old_child = child"
+--> State (id=2607)
+
+Step 337: Executed by p4 from State (id=2607)
+  38->39: TRUE_BRANCH_IF (guard: ! (2==1)) at unbounded_heap_based_priority_queue.cvl:158.8 "q"
+  39->40: $sef$0=false at unbounded_heap_based_priority_queue.cvl:158.8-73 "q->heap[parent]->tag  ... )"
+--> State (id=2613)
+
+Step 338: Executed by p1 from State (id=2613)
+  36->153: lock_node(* (&<d0>heap.malloc3[0][0]+child)) at unbounded_heap_based_priority_queue.cvl:156.4-28 "lock_node(q->heap[child])"
+--> State (id=2619)
+
+Step 339: Executed by p4 from State (id=2619)
+  40->51: FALSE_BRANCH_IF (guard: !false) at unbounded_heap_based_priority_queue.cvl:171.4 "}"
+--> State (id=2624)
+
+Step 340: Executed by p1 from State (id=2624)
+  153->131: lock_acquire(&<d0>heap.malloc0[3][0]) at unbounded_heap_based_priority_queue.cvl:82.2-22 "lock_acquire(n->lock)"
+--> State (id=2630)
+
+Step 341: Executed by p4 from State (id=2630)
+  51->157: $sef$2=am_owner_node(* (&<d0>heap.malloc3[0][0]+child)) at unbounded_heap_based_priority_queue.cvl:169.16-44 "am_owner_node(q->heap[child])"
+--> State (id=2635)
+
+Step 342: Executed by p4 from State (id=2635)
+  157->160: CASE_2 (guard: 2==2) at unbounded_heap_based_priority_queue.cvl:95.2-96.28 "case BUSY:\n     ... ;"
+--> State (id=2639)
+
+Step 343: Executed by p4 from State (id=2639)
+  160->161: am_owner_node(...) return p4==$self [$sef$2:=true] at unbounded_heap_based_priority_queue.cvl:96.4-28 "return n->owner == $self;"
+  52->44: FALSE_BRANCH_IF (guard: !!true) at unbounded_heap_based_priority_queue.cvl:171.4 "}"
+--> State (id=2647)
+
+Step 344: Executed by p4 from State (id=2647)
+  44->155: unlock_node(* (&<d0>heap.malloc3[0][0]+old_child)) at unbounded_heap_based_priority_queue.cvl:172.4-34 "unlock_node(q->heap[old_child])"
+--> State (id=2652)
+
+Step 345: Executed by p4 from State (id=2652)
+  155->137: lock_release(&<d0>heap.malloc0[6][0]) at unbounded_heap_based_priority_queue.cvl:86.2-22 "lock_release(n->lock)"
+--> State (id=2657)
+
+Step 346: Executed by p1 from State (id=2657)
+  131->132: ENTER_ATOMIC [_atomic_lock_var:=p1, p1.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:51.2-8 "$atomic"
+  132->133: TRUE_BRANCH_IF (guard: p1!=(*(l)).0) at unbounded_heap_based_priority_queue.cvl:52.27 "{"
+--> State (id=2666)
+
+Step 347: Executed by p4 from State (id=2666)
+  137->138: ENTER_ATOMIC [_atomic_lock_var:=p4, p4.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:60.2-8 "$atomic"
+  138->139: $assert(p4==(*(l)).0) at unbounded_heap_based_priority_queue.cvl:61.4-29 "$assert($self == l->owner)"
+  139->140: (*(&<d0>heap.malloc0[6][0])).count=1-1 [(*(&<d0>heap.malloc0[6][0])).count:=0] at unbounded_heap_based_priority_queue.cvl:62.4-11 "l->count"
+  140->141: TRUE_BRANCH_IF (guard: 0==0) at unbounded_heap_based_priority_queue.cvl:63.23 "l"
+  141->142: (*(&<d0>heap.malloc0[6][0])).owner=$proc_null at unbounded_heap_based_priority_queue.cvl:63.23-43 "l->owner = $proc_null"
+  142->143: LEAVE_ATOMIC [_atomic_lock_var:=$proc_null, p4.atomicCount:=0] at unbounded_heap_based_priority_queue.cvl:64.2 "}"
+  143->RET: lock_release(...) return at unbounded_heap_based_priority_queue.cvl:65.0 "}"
+  156->RET: unlock_node(...) return at unbounded_heap_based_priority_queue.cvl:87.0 "}"
+--> State (id=2688)
+
+Step 348: Executed by p4 from State (id=2688)
+  45->155: unlock_node(* (&<d0>heap.malloc3[0][0]+parent)) at unbounded_heap_based_priority_queue.cvl:173.4-31 "unlock_node(q->heap[parent])"
+--> State (id=2693)
+
+Step 349: Executed by p4 from State (id=2693)
+  155->137: lock_release(&<d0>heap.malloc0[3][0]) at unbounded_heap_based_priority_queue.cvl:86.2-22 "lock_release(n->lock)"
+--> State (id=2698)
+
+Step 350: Executed by p4 from State (id=2698)
+  137->138: ENTER_ATOMIC [_atomic_lock_var:=p4, p4.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:60.2-8 "$atomic"
+  138->139: $assert(p4==(*(l)).0) at unbounded_heap_based_priority_queue.cvl:61.4-29 "$assert($self == l->owner)"
+  139->140: (*(&<d0>heap.malloc0[3][0])).count=1-1 [(*(&<d0>heap.malloc0[3][0])).count:=0] at unbounded_heap_based_priority_queue.cvl:62.4-11 "l->count"
+  140->141: TRUE_BRANCH_IF (guard: 0==0) at unbounded_heap_based_priority_queue.cvl:63.23 "l"
+  141->142: (*(&<d0>heap.malloc0[3][0])).owner=$proc_null at unbounded_heap_based_priority_queue.cvl:63.23-43 "l->owner = $proc_null"
+  142->143: LEAVE_ATOMIC [_atomic_lock_var:=$proc_null, p4.atomicCount:=0] at unbounded_heap_based_priority_queue.cvl:64.2 "}"
+  143->RET: lock_release(...) return at unbounded_heap_based_priority_queue.cvl:65.0 "}"
+  156->RET: unlock_node(...) return at unbounded_heap_based_priority_queue.cvl:87.0 "}"
+--> State (id=2720)
+
+Step 351: Executed by p4 from State (id=2720)
+  33->34: LOOP_BODY_ENTER (guard: 1<child) at unbounded_heap_based_priority_queue.cvl:153.9-14.13 "child > 1"
+  34->35: parent=5/2 [parent:=2] at unbounded_heap_based_priority_queue.cvl:154.4-25 "int parent = child / ... 2"
+--> State (id=2727)
+
+Step 352: Executed by p4 from State (id=2727)
+  35->153: lock_node(* (&<d0>heap.malloc3[0][0]+parent)) at unbounded_heap_based_priority_queue.cvl:155.4-29 "lock_node(q->heap[parent])"
+--> State (id=2732)
+
+Step 353: Executed by p1 from State (id=2732)
+  133->134: (*(&<d0>heap.malloc0[3][0])).owner=$self [(*(&<d0>heap.malloc0[3][0])).owner:=p1] at unbounded_heap_based_priority_queue.cvl:53.36-51 "l->owner = $self"
+  134->135: (*(&<d0>heap.malloc0[3][0])).count=0+1 [(*(&<d0>heap.malloc0[3][0])).count:=1] at unbounded_heap_based_priority_queue.cvl:55.4-11 "l->count"
+  135->136: LEAVE_ATOMIC [_atomic_lock_var:=$proc_null, p1.atomicCount:=0] at unbounded_heap_based_priority_queue.cvl:56.2 "}"
+  136->RET: lock_acquire(...) return at unbounded_heap_based_priority_queue.cvl:57.0 "}"
+  154->RET: lock_node(...) return at unbounded_heap_based_priority_queue.cvl:83.0 "}"
+  37->38: old_child=2 at unbounded_heap_based_priority_queue.cvl:157.4-24 "int old_child = child"
+--> State (id=2751)
+
+Step 354: Executed by p1 from State (id=2751)
+  38->54: FALSE_BRANCH_IF (guard: !! (1==1)) at unbounded_heap_based_priority_queue.cvl:158.73 ")"
+--> State (id=2755)
+
+Step 355: Executed by p4 from State (id=2755)
+  153->131: lock_acquire(&<d0>heap.malloc0[3][0]) at unbounded_heap_based_priority_queue.cvl:82.2-22 "lock_acquire(n->lock)"
+--> State (id=2760)
+
+Step 356: Executed by p1 from State (id=2760)
+  54->157: $sef$0=am_owner_node(* (&<d0>heap.malloc3[0][0]+child)) at unbounded_heap_based_priority_queue.cvl:158.45-73 "am_owner_node(q->heap[child])"
+--> State (id=2766)
+
+Step 357: Executed by p4 from State (id=2766)
+  131->132: ENTER_ATOMIC [_atomic_lock_var:=p4, p4.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:51.2-8 "$atomic"
+  132->133: TRUE_BRANCH_IF (guard: p4!=(*(l)).0) at unbounded_heap_based_priority_queue.cvl:52.27 "{"
+--> State (id=2775)
+
+Step 358: Executed by p1 from State (id=2775)
+  157->160: CASE_2 (guard: 2==2) at unbounded_heap_based_priority_queue.cvl:95.2-96.28 "case BUSY:\n     ... ;"
+--> State (id=2779)
+
+Step 359: Executed by p1 from State (id=2779)
+  160->161: am_owner_node(...) return p1==$self [$sef$0:=true] at unbounded_heap_based_priority_queue.cvl:96.4-28 "return n->owner == $self;"
+--> State (id=2786)
+
+Step 360: Executed by p1 from State (id=2786)
+  40->41: TRUE_BRANCH_IF (guard: true) at unbounded_heap_based_priority_queue.cvl:158.76 "{"
+--> State (id=2790)
+
+Step 361: Executed by p1 from State (id=2790)
+  41->46: FALSE_BRANCH_IF (guard: ! (1<(*(*(((*(q)).2+parent)))).1)) at unbounded_heap_based_priority_queue.cvl:168.6 "}"
+--> State (id=2794)
+
+Step 362: Executed by p1 from State (id=2794)
+  46->47: (*(* (&<d0>heap.malloc3[0][0]+child))).tag=1 at unbounded_heap_based_priority_queue.cvl:163.1-31 "q->heap[child]->tag  ... AVAILABLE"
+--> State (id=2799)
+
+Step 363: Executed by p1 from State (id=2799)
+  47->48: (*(* (&<d0>heap.malloc3[0][0]+child))).owner=$proc_null at unbounded_heap_based_priority_queue.cvl:164.1-15.24 "q->heap[child]->owner  ... $proc_null"
+--> State (id=2804)
+
+Step 364: Executed by p1 from State (id=2804)
+  48->155: unlock_node(* (&<d0>heap.malloc3[0][0]+old_child)) at unbounded_heap_based_priority_queue.cvl:165.1-31 "unlock_node(q->heap[old_child])"
+--> State (id=2810)
+
+Step 365: Executed by p1 from State (id=2810)
+  155->137: lock_release(&<d0>heap.malloc0[3][0]) at unbounded_heap_based_priority_queue.cvl:86.2-22 "lock_release(n->lock)"
+--> State (id=2816)
+
+Step 366: Executed by p1 from State (id=2816)
+  137->138: ENTER_ATOMIC [_atomic_lock_var:=p1, p1.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:60.2-8 "$atomic"
+  138->139: $assert(p1==(*(l)).0) at unbounded_heap_based_priority_queue.cvl:61.4-29 "$assert($self == l->owner)"
+  139->140: (*(&<d0>heap.malloc0[3][0])).count=1-1 [(*(&<d0>heap.malloc0[3][0])).count:=0] at unbounded_heap_based_priority_queue.cvl:62.4-11 "l->count"
+  140->141: TRUE_BRANCH_IF (guard: 0==0) at unbounded_heap_based_priority_queue.cvl:63.23 "l"
+  141->142: (*(&<d0>heap.malloc0[3][0])).owner=$proc_null at unbounded_heap_based_priority_queue.cvl:63.23-43 "l->owner = $proc_null"
+  142->143: LEAVE_ATOMIC [_atomic_lock_var:=$proc_null, p1.atomicCount:=0] at unbounded_heap_based_priority_queue.cvl:64.2 "}"
+  143->RET: lock_release(...) return at unbounded_heap_based_priority_queue.cvl:65.0 "}"
+  156->RET: unlock_node(...) return at unbounded_heap_based_priority_queue.cvl:87.0 "}"
+--> State (id=2838)
+
+Step 367: Executed by p4 from State (id=2838)
+  133->134: (*(&<d0>heap.malloc0[3][0])).owner=$self [(*(&<d0>heap.malloc0[3][0])).owner:=p4] at unbounded_heap_based_priority_queue.cvl:53.36-51 "l->owner = $self"
+  134->135: (*(&<d0>heap.malloc0[3][0])).count=0+1 [(*(&<d0>heap.malloc0[3][0])).count:=1] at unbounded_heap_based_priority_queue.cvl:55.4-11 "l->count"
+  135->136: LEAVE_ATOMIC [_atomic_lock_var:=$proc_null, p4.atomicCount:=0] at unbounded_heap_based_priority_queue.cvl:56.2 "}"
+  136->RET: lock_acquire(...) return at unbounded_heap_based_priority_queue.cvl:57.0 "}"
+  154->RET: lock_node(...) return at unbounded_heap_based_priority_queue.cvl:83.0 "}"
+--> State (id=2855)
+
+Step 368: Executed by p4 from State (id=2855)
+  36->153: lock_node(* (&<d0>heap.malloc3[0][0]+child)) at unbounded_heap_based_priority_queue.cvl:156.4-28 "lock_node(q->heap[child])"
+--> State (id=2860)
+
+Step 369: Executed by p4 from State (id=2860)
+  153->131: lock_acquire(&<d0>heap.malloc0[6][0]) at unbounded_heap_based_priority_queue.cvl:82.2-22 "lock_acquire(n->lock)"
+--> State (id=2865)
+
+Step 370: Executed by p4 from State (id=2865)
+  131->132: ENTER_ATOMIC [_atomic_lock_var:=p4, p4.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:51.2-8 "$atomic"
+  132->133: TRUE_BRANCH_IF (guard: p4!=(*(l)).0) at unbounded_heap_based_priority_queue.cvl:52.27 "{"
+--> State (id=2874)
+
+Step 371: Executed by p4 from State (id=2874)
+  133->134: (*(&<d0>heap.malloc0[6][0])).owner=$self [(*(&<d0>heap.malloc0[6][0])).owner:=p4] at unbounded_heap_based_priority_queue.cvl:53.36-51 "l->owner = $self"
+  134->135: (*(&<d0>heap.malloc0[6][0])).count=0+1 [(*(&<d0>heap.malloc0[6][0])).count:=1] at unbounded_heap_based_priority_queue.cvl:55.4-11 "l->count"
+  135->136: LEAVE_ATOMIC [_atomic_lock_var:=$proc_null, p4.atomicCount:=0] at unbounded_heap_based_priority_queue.cvl:56.2 "}"
+  136->RET: lock_acquire(...) return at unbounded_heap_based_priority_queue.cvl:57.0 "}"
+  154->RET: lock_node(...) return at unbounded_heap_based_priority_queue.cvl:83.0 "}"
+  37->38: old_child=5 at unbounded_heap_based_priority_queue.cvl:157.4-24 "int old_child = child"
+--> State (id=2893)
+
+Step 372: Executed by p1 from State (id=2893)
+  49->155: unlock_node(* (&<d0>heap.malloc3[0][0]+parent)) at unbounded_heap_based_priority_queue.cvl:166.1-28 "unlock_node(q->heap[parent])"
+--> State (id=2899)
+
+Step 373: Executed by p1 from State (id=2899)
+  155->137: lock_release(&<d0>heap.malloc0[2][0]) at unbounded_heap_based_priority_queue.cvl:86.2-22 "lock_release(n->lock)"
+--> State (id=2905)
+
+Step 374: Executed by p1 from State (id=2905)
+  137->138: ENTER_ATOMIC [_atomic_lock_var:=p1, p1.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:60.2-8 "$atomic"
+  138->139: $assert(p1==(*(l)).0) at unbounded_heap_based_priority_queue.cvl:61.4-29 "$assert($self == l->owner)"
+  139->140: (*(&<d0>heap.malloc0[2][0])).count=1-1 [(*(&<d0>heap.malloc0[2][0])).count:=0] at unbounded_heap_based_priority_queue.cvl:62.4-11 "l->count"
+  140->141: TRUE_BRANCH_IF (guard: 0==0) at unbounded_heap_based_priority_queue.cvl:63.23 "l"
+  141->142: (*(&<d0>heap.malloc0[2][0])).owner=$proc_null at unbounded_heap_based_priority_queue.cvl:63.23-43 "l->owner = $proc_null"
+  142->143: LEAVE_ATOMIC [_atomic_lock_var:=$proc_null, p1.atomicCount:=0] at unbounded_heap_based_priority_queue.cvl:64.2 "}"
+  143->RET: lock_release(...) return at unbounded_heap_based_priority_queue.cvl:65.0 "}"
+  156->RET: unlock_node(...) return at unbounded_heap_based_priority_queue.cvl:87.0 "}"
+  50->44: priority_queue_add(...) return at unbounded_heap_based_priority_queue.cvl:167.1-7 "return;"
+--> State (id=2929)
+
+Step 375: 4(1), Executed by p1 from State (id=2929)
+  182->183: printf("%d(%d),  ", 4, 1) at unbounded_heap_based_priority_queue.cvl:265.4-40 "printf("%d(%d), ", ins[i] ... )"
+  183->RET: _par_proc0(...) return at unbounded_heap_based_priority_queue.cvl:266.2 "}"
+--> State (id=2935)
+
+Step 376: Executed by p4 from State (id=2935)
+  38->54: FALSE_BRANCH_IF (guard: !! (1==1)) at unbounded_heap_based_priority_queue.cvl:158.73 ")"
+--> State (id=2939)
+
+Step 377: Executed by p4 from State (id=2939)
+  54->157: $sef$0=am_owner_node(* (&<d0>heap.malloc3[0][0]+child)) at unbounded_heap_based_priority_queue.cvl:158.45-73 "am_owner_node(q->heap[child])"
+--> State (id=2944)
+
+Step 378: Executed by p0 from State (id=2944)
+  11->12: $wait(p1) at unbounded_heap_based_priority_queue.cvl:266.2 "}"
+  12->10: _civl_ir1=0+1 [_civl_ir1:=1] at unbounded_heap_based_priority_queue.cvl:266.2 "}"
+--> State (id=2953)
+
+Step 379: Executed by p0 from State (id=2953)
+  10->11: LOOP_BODY_ENTER (guard: 1<_dom_size0) at unbounded_heap_based_priority_queue.cvl:266.2 "}"
+--> State (id=2958)
+
+Step 380: Executed by p3 from State (id=2958)
+  157->160: CASE_2 (guard: 2==2) at unbounded_heap_based_priority_queue.cvl:95.2-96.28 "case BUSY:\n     ... ;"
+--> State (id=2962)
+
+Step 381: Executed by p3 from State (id=2962)
+  160->161: am_owner_node(...) return p3==$self [$sef$0:=true] at unbounded_heap_based_priority_queue.cvl:96.4-28 "return n->owner == $self;"
+--> State (id=2969)
+
+Step 382: Executed by p0 from State (id=2969)
+  11->12: $wait(p1) at unbounded_heap_based_priority_queue.cvl:266.2 "}"
+  12->10: _civl_ir1=1+1 [_civl_ir1:=2] at unbounded_heap_based_priority_queue.cvl:266.2 "}"
+--> State (id=2978)
+
+Step 383: Executed by p0 from State (id=2978)
+  10->11: LOOP_BODY_ENTER (guard: 2<_dom_size0) at unbounded_heap_based_priority_queue.cvl:266.2 "}"
+--> State (id=2983)
+
+Step 384: Executed by p0 from State (id=2983)
+  11->12: $wait(p1) at unbounded_heap_based_priority_queue.cvl:266.2 "}"
+  12->10: _civl_ir1=2+1 [_civl_ir1:=3] at unbounded_heap_based_priority_queue.cvl:266.2 "}"
+--> State (id=2992)
+
+Step 385: Executed by p0 from State (id=2992)
+  10->11: LOOP_BODY_ENTER (guard: 3<_dom_size0) at unbounded_heap_based_priority_queue.cvl:266.2 "}"
+--> State (id=2997)
+
+Step 386: Executed by p1 from State (id=2997)
+  40->41: TRUE_BRANCH_IF (guard: true) at unbounded_heap_based_priority_queue.cvl:158.76 "{"
+--> State (id=3001)
+
+Step 387: Executed by p1 from State (id=3001)
+  41->42: TRUE_BRANCH_IF (guard: 0<(*(*(((*(q)).2+parent)))).1) at unbounded_heap_based_priority_queue.cvl:159.58 "{"
+--> State (id=3005)
+
+Step 388: Executed by p1 from State (id=3005)
+  42->166: priority_queue_swap(&<d0>heap.malloc2[0][0], 5, 2) at unbounded_heap_based_priority_queue.cvl:160.1-37 "priority_queue_swap(q, child, parent)"
+--> State (id=3011)
+
+Step 389: Executed by p1 from State (id=3011)
+  166->167: _owner=p1 at unbounded_heap_based_priority_queue.cvl:132.2-33 "$proc _owner = q->heap ... owner"
+--> State (id=3016)
+
+Step 390: Executed by p1 from State (id=3016)
+  167->168: (*(* (&<d0>heap.malloc3[0][0]+i))).owner=$proc_null at unbounded_heap_based_priority_queue.cvl:133.2-38 "q->heap[i]->owner  ... owner"
+--> State (id=3021)
+
+Step 391: Executed by p1 from State (id=3021)
+  168->169: (*(* (&<d0>heap.malloc3[0][0]+j))).owner=p1 at unbounded_heap_based_priority_queue.cvl:134.2-27 "q->heap[j]->owner  ... _owner"
+--> State (id=3026)
+
+Step 392: Executed by p1 from State (id=3026)
+  169->170: _item=4 at unbounded_heap_based_priority_queue.cvl:135.2-29 "int _item = q->heap ... item"
+--> State (id=3031)
+
+Step 393: Executed by p1 from State (id=3031)
+  170->171: (*(* (&<d0>heap.malloc3[0][0]+i))).item=4 at unbounded_heap_based_priority_queue.cvl:136.2-36 "q->heap[i]->item  ... item"
+--> State (id=3036)
+
+Step 394: Executed by p1 from State (id=3036)
+  171->172: (*(* (&<d0>heap.malloc3[0][0]+j))).item=4 at unbounded_heap_based_priority_queue.cvl:137.2-25 "q->heap[j]->item  ... _item"
+--> State (id=3041)
+
+Step 395: Executed by p1 from State (id=3041)
+  172->173: _priority=0 at unbounded_heap_based_priority_queue.cvl:138.2-34 "int _priority = q->heap ... score"
+--> State (id=3046)
+
+Step 396: Executed by p1 from State (id=3046)
+  173->174: (*(* (&<d0>heap.malloc3[0][0]+i))).score=1 at unbounded_heap_based_priority_queue.cvl:139.2-38 "q->heap[i]->score  ... score"
+--> State (id=3051)
+
+Step 397: Executed by p1 from State (id=3051)
+  174->175: (*(* (&<d0>heap.malloc3[0][0]+j))).score=0 at unbounded_heap_based_priority_queue.cvl:140.2-30 "q->heap[j]->score  ... _priority"
+--> State (id=3056)
+
+Step 398: Executed by p1 from State (id=3056)
+  175->176: _tag=2 at unbounded_heap_based_priority_queue.cvl:141.2-30 "Status _tag = q->heap ... tag"
+--> State (id=3061)
+
+Step 399: Executed by p1 from State (id=3061)
+  176->177: (*(* (&<d0>heap.malloc3[0][0]+i))).tag=1 at unbounded_heap_based_priority_queue.cvl:142.2-34 "q->heap[i]->tag  ... tag"
+--> State (id=3066)
+
+Step 400: Executed by p1 from State (id=3066)
+  177->178: (*(* (&<d0>heap.malloc3[0][0]+j))).tag=2 at unbounded_heap_based_priority_queue.cvl:143.2-23 "q->heap[j]->tag  ... _tag"
+  178->RET: priority_queue_swap(...) return at unbounded_heap_based_priority_queue.cvl:144.0 "}"
+  43->44: child=2 at unbounded_heap_based_priority_queue.cvl:161.1-14 "child = parent"
+--> State (id=3076)
+
+Step 401: Executed by p1 from State (id=3076)
+  44->155: unlock_node(* (&<d0>heap.malloc3[0][0]+old_child)) at unbounded_heap_based_priority_queue.cvl:172.4-34 "unlock_node(q->heap[old_child])"
+--> State (id=3081)
+
+Step 402: Executed by p1 from State (id=3081)
+  155->137: lock_release(&<d0>heap.malloc0[6][0]) at unbounded_heap_based_priority_queue.cvl:86.2-22 "lock_release(n->lock)"
+--> State (id=3086)
+
+Step 403: Executed by p1 from State (id=3086)
+  137->138: ENTER_ATOMIC [_atomic_lock_var:=p1, p1.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:60.2-8 "$atomic"
+  138->139: $assert(p1==(*(l)).0) at unbounded_heap_based_priority_queue.cvl:61.4-29 "$assert($self == l->owner)"
+  139->140: (*(&<d0>heap.malloc0[6][0])).count=1-1 [(*(&<d0>heap.malloc0[6][0])).count:=0] at unbounded_heap_based_priority_queue.cvl:62.4-11 "l->count"
+  140->141: TRUE_BRANCH_IF (guard: 0==0) at unbounded_heap_based_priority_queue.cvl:63.23 "l"
+  141->142: (*(&<d0>heap.malloc0[6][0])).owner=$proc_null at unbounded_heap_based_priority_queue.cvl:63.23-43 "l->owner = $proc_null"
+  142->143: LEAVE_ATOMIC [_atomic_lock_var:=$proc_null, p1.atomicCount:=0] at unbounded_heap_based_priority_queue.cvl:64.2 "}"
+  143->RET: lock_release(...) return at unbounded_heap_based_priority_queue.cvl:65.0 "}"
+  156->RET: unlock_node(...) return at unbounded_heap_based_priority_queue.cvl:87.0 "}"
+--> State (id=3108)
+
+Step 404: Executed by p1 from State (id=3108)
+  45->155: unlock_node(* (&<d0>heap.malloc3[0][0]+parent)) at unbounded_heap_based_priority_queue.cvl:173.4-31 "unlock_node(q->heap[parent])"
+--> State (id=3113)
+
+Step 405: Executed by p1 from State (id=3113)
+  155->137: lock_release(&<d0>heap.malloc0[3][0]) at unbounded_heap_based_priority_queue.cvl:86.2-22 "lock_release(n->lock)"
+--> State (id=3118)
+
+Step 406: Executed by p1 from State (id=3118)
+  137->138: ENTER_ATOMIC [_atomic_lock_var:=p1, p1.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:60.2-8 "$atomic"
+  138->139: $assert(p1==(*(l)).0) at unbounded_heap_based_priority_queue.cvl:61.4-29 "$assert($self == l->owner)"
+  139->140: (*(&<d0>heap.malloc0[3][0])).count=1-1 [(*(&<d0>heap.malloc0[3][0])).count:=0] at unbounded_heap_based_priority_queue.cvl:62.4-11 "l->count"
+  140->141: TRUE_BRANCH_IF (guard: 0==0) at unbounded_heap_based_priority_queue.cvl:63.23 "l"
+  141->142: (*(&<d0>heap.malloc0[3][0])).owner=$proc_null at unbounded_heap_based_priority_queue.cvl:63.23-43 "l->owner = $proc_null"
+  142->143: LEAVE_ATOMIC [_atomic_lock_var:=$proc_null, p1.atomicCount:=0] at unbounded_heap_based_priority_queue.cvl:64.2 "}"
+  143->RET: lock_release(...) return at unbounded_heap_based_priority_queue.cvl:65.0 "}"
+  156->RET: unlock_node(...) return at unbounded_heap_based_priority_queue.cvl:87.0 "}"
+--> State (id=3140)
+
+Step 407: Executed by p1 from State (id=3140)
+  33->34: LOOP_BODY_ENTER (guard: 1<child) at unbounded_heap_based_priority_queue.cvl:153.9-14.13 "child > 1"
+  34->35: parent=2/2 [parent:=1] at unbounded_heap_based_priority_queue.cvl:154.4-25 "int parent = child / ... 2"
+--> State (id=3147)
+
+Step 408: Executed by p1 from State (id=3147)
+  35->153: lock_node(* (&<d0>heap.malloc3[0][0]+parent)) at unbounded_heap_based_priority_queue.cvl:155.4-29 "lock_node(q->heap[parent])"
+--> State (id=3152)
+
+Step 409: Executed by p1 from State (id=3152)
+  153->131: lock_acquire(&<d0>heap.malloc0[2][0]) at unbounded_heap_based_priority_queue.cvl:82.2-22 "lock_acquire(n->lock)"
+--> State (id=3157)
+
+Step 410: Executed by p1 from State (id=3157)
+  131->132: ENTER_ATOMIC [_atomic_lock_var:=p1, p1.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:51.2-8 "$atomic"
+  132->133: TRUE_BRANCH_IF (guard: p1!=(*(l)).0) at unbounded_heap_based_priority_queue.cvl:52.27 "{"
+--> State (id=3166)
+
+Step 411: Executed by p1 from State (id=3166)
+  133->134: (*(&<d0>heap.malloc0[2][0])).owner=$self [(*(&<d0>heap.malloc0[2][0])).owner:=p1] at unbounded_heap_based_priority_queue.cvl:53.36-51 "l->owner = $self"
+  134->135: (*(&<d0>heap.malloc0[2][0])).count=0+1 [(*(&<d0>heap.malloc0[2][0])).count:=1] at unbounded_heap_based_priority_queue.cvl:55.4-11 "l->count"
+  135->136: LEAVE_ATOMIC [_atomic_lock_var:=$proc_null, p1.atomicCount:=0] at unbounded_heap_based_priority_queue.cvl:56.2 "}"
+  136->RET: lock_acquire(...) return at unbounded_heap_based_priority_queue.cvl:57.0 "}"
+  154->RET: lock_node(...) return at unbounded_heap_based_priority_queue.cvl:83.0 "}"
+--> State (id=3183)
+
+Step 412: Executed by p1 from State (id=3183)
+  36->153: lock_node(* (&<d0>heap.malloc3[0][0]+child)) at unbounded_heap_based_priority_queue.cvl:156.4-28 "lock_node(q->heap[child])"
+--> State (id=3188)
+
+Step 413: Executed by p1 from State (id=3188)
+  153->131: lock_acquire(&<d0>heap.malloc0[3][0]) at unbounded_heap_based_priority_queue.cvl:82.2-22 "lock_acquire(n->lock)"
+--> State (id=3193)
+
+Step 414: Executed by p1 from State (id=3193)
+  131->132: ENTER_ATOMIC [_atomic_lock_var:=p1, p1.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:51.2-8 "$atomic"
+  132->133: TRUE_BRANCH_IF (guard: p1!=(*(l)).0) at unbounded_heap_based_priority_queue.cvl:52.27 "{"
+--> State (id=3202)
+
+Step 415: Executed by p1 from State (id=3202)
+  133->134: (*(&<d0>heap.malloc0[3][0])).owner=$self [(*(&<d0>heap.malloc0[3][0])).owner:=p1] at unbounded_heap_based_priority_queue.cvl:53.36-51 "l->owner = $self"
+  134->135: (*(&<d0>heap.malloc0[3][0])).count=0+1 [(*(&<d0>heap.malloc0[3][0])).count:=1] at unbounded_heap_based_priority_queue.cvl:55.4-11 "l->count"
+  135->136: LEAVE_ATOMIC [_atomic_lock_var:=$proc_null, p1.atomicCount:=0] at unbounded_heap_based_priority_queue.cvl:56.2 "}"
+  136->RET: lock_acquire(...) return at unbounded_heap_based_priority_queue.cvl:57.0 "}"
+  154->RET: lock_node(...) return at unbounded_heap_based_priority_queue.cvl:83.0 "}"
+  37->38: old_child=2 at unbounded_heap_based_priority_queue.cvl:157.4-24 "int old_child = child"
+--> State (id=3221)
+
+Step 416: Executed by p1 from State (id=3221)
+  38->54: FALSE_BRANCH_IF (guard: !! (1==1)) at unbounded_heap_based_priority_queue.cvl:158.73 ")"
+--> State (id=3225)
+
+Step 417: Executed by p1 from State (id=3225)
+  54->157: $sef$0=am_owner_node(* (&<d0>heap.malloc3[0][0]+child)) at unbounded_heap_based_priority_queue.cvl:158.45-73 "am_owner_node(q->heap[child])"
+--> State (id=3230)
+
+Step 418: Executed by p1 from State (id=3230)
+  157->160: CASE_2 (guard: 2==2) at unbounded_heap_based_priority_queue.cvl:95.2-96.28 "case BUSY:\n     ... ;"
+--> State (id=3234)
+
+Step 419: Executed by p1 from State (id=3234)
+  160->161: am_owner_node(...) return p1==$self [$sef$0:=true] at unbounded_heap_based_priority_queue.cvl:96.4-28 "return n->owner == $self;"
+--> State (id=3241)
+
+Step 420: Executed by p1 from State (id=3241)
+  40->41: TRUE_BRANCH_IF (guard: true) at unbounded_heap_based_priority_queue.cvl:158.76 "{"
+--> State (id=3245)
+
+Step 421: Executed by p1 from State (id=3245)
+  41->46: FALSE_BRANCH_IF (guard: ! (0<(*(*(((*(q)).2+parent)))).1)) at unbounded_heap_based_priority_queue.cvl:168.6 "}"
+--> State (id=3249)
+
+Step 422: Executed by p1 from State (id=3249)
+  46->47: (*(* (&<d0>heap.malloc3[0][0]+child))).tag=1 at unbounded_heap_based_priority_queue.cvl:163.1-31 "q->heap[child]->tag  ... AVAILABLE"
+--> State (id=3254)
+
+Step 423: Executed by p1 from State (id=3254)
+  47->48: (*(* (&<d0>heap.malloc3[0][0]+child))).owner=$proc_null at unbounded_heap_based_priority_queue.cvl:164.1-15.24 "q->heap[child]->owner  ... $proc_null"
+--> State (id=3259)
+
+Step 424: Executed by p1 from State (id=3259)
+  48->155: unlock_node(* (&<d0>heap.malloc3[0][0]+old_child)) at unbounded_heap_based_priority_queue.cvl:165.1-31 "unlock_node(q->heap[old_child])"
+--> State (id=3264)
+
+Step 425: Executed by p1 from State (id=3264)
+  155->137: lock_release(&<d0>heap.malloc0[3][0]) at unbounded_heap_based_priority_queue.cvl:86.2-22 "lock_release(n->lock)"
+--> State (id=3269)
+
+Step 426: Executed by p1 from State (id=3269)
+  137->138: ENTER_ATOMIC [_atomic_lock_var:=p1, p1.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:60.2-8 "$atomic"
+  138->139: $assert(p1==(*(l)).0) at unbounded_heap_based_priority_queue.cvl:61.4-29 "$assert($self == l->owner)"
+  139->140: (*(&<d0>heap.malloc0[3][0])).count=1-1 [(*(&<d0>heap.malloc0[3][0])).count:=0] at unbounded_heap_based_priority_queue.cvl:62.4-11 "l->count"
+  140->141: TRUE_BRANCH_IF (guard: 0==0) at unbounded_heap_based_priority_queue.cvl:63.23 "l"
+  141->142: (*(&<d0>heap.malloc0[3][0])).owner=$proc_null at unbounded_heap_based_priority_queue.cvl:63.23-43 "l->owner = $proc_null"
+  142->143: LEAVE_ATOMIC [_atomic_lock_var:=$proc_null, p1.atomicCount:=0] at unbounded_heap_based_priority_queue.cvl:64.2 "}"
+  143->RET: lock_release(...) return at unbounded_heap_based_priority_queue.cvl:65.0 "}"
+  156->RET: unlock_node(...) return at unbounded_heap_based_priority_queue.cvl:87.0 "}"
+--> State (id=3291)
+
+Step 427: Executed by p1 from State (id=3291)
+  49->155: unlock_node(* (&<d0>heap.malloc3[0][0]+parent)) at unbounded_heap_based_priority_queue.cvl:166.1-28 "unlock_node(q->heap[parent])"
+--> State (id=3296)
+
+Step 428: Executed by p1 from State (id=3296)
+  155->137: lock_release(&<d0>heap.malloc0[2][0]) at unbounded_heap_based_priority_queue.cvl:86.2-22 "lock_release(n->lock)"
+--> State (id=3301)
+
+Step 429: Executed by p1 from State (id=3301)
+  137->138: ENTER_ATOMIC [_atomic_lock_var:=p1, p1.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:60.2-8 "$atomic"
+  138->139: $assert(p1==(*(l)).0) at unbounded_heap_based_priority_queue.cvl:61.4-29 "$assert($self == l->owner)"
+  139->140: (*(&<d0>heap.malloc0[2][0])).count=1-1 [(*(&<d0>heap.malloc0[2][0])).count:=0] at unbounded_heap_based_priority_queue.cvl:62.4-11 "l->count"
+  140->141: TRUE_BRANCH_IF (guard: 0==0) at unbounded_heap_based_priority_queue.cvl:63.23 "l"
+  141->142: (*(&<d0>heap.malloc0[2][0])).owner=$proc_null at unbounded_heap_based_priority_queue.cvl:63.23-43 "l->owner = $proc_null"
+  142->143: LEAVE_ATOMIC [_atomic_lock_var:=$proc_null, p1.atomicCount:=0] at unbounded_heap_based_priority_queue.cvl:64.2 "}"
+  143->RET: lock_release(...) return at unbounded_heap_based_priority_queue.cvl:65.0 "}"
+  156->RET: unlock_node(...) return at unbounded_heap_based_priority_queue.cvl:87.0 "}"
+  50->44: priority_queue_add(...) return at unbounded_heap_based_priority_queue.cvl:167.1-7 "return;"
+--> State (id=3325)
+
+Step 430: 4(0), Executed by p1 from State (id=3325)
+  182->183: printf("%d(%d),  ", 4, 0) at unbounded_heap_based_priority_queue.cvl:265.4-40 "printf("%d(%d), ", ins[i] ... )"
+  183->RET: _par_proc0(...) return at unbounded_heap_based_priority_queue.cvl:266.2 "}"
+--> State (id=3331)
+
+Step 431: Executed by p0 from State (id=3331)
+  11->12: $wait(p1) at unbounded_heap_based_priority_queue.cvl:266.2 "}"
+  12->10: _civl_ir1=3+1 [_civl_ir1:=4] at unbounded_heap_based_priority_queue.cvl:266.2 "}"
+--> State (id=3340)
+
+Step 432: Executed by p0 from State (id=3340)
+  10->11: LOOP_BODY_ENTER (guard: 4<_dom_size0) at unbounded_heap_based_priority_queue.cvl:266.2 "}"
+--> State (id=3345)
+
+Step 433: Executed by p0 from State (id=3345)
+  11->12: $wait(p1) at unbounded_heap_based_priority_queue.cvl:266.2 "}"
+  12->10: _civl_ir1=4+1 [_civl_ir1:=5] at unbounded_heap_based_priority_queue.cvl:266.2 "}"
+--> State (id=3354)
+
+Step 434: Executed by p0 from State (id=3354)
+  10->13: LOOP_BODY_EXIT (guard: ! (5<_dom_size0)) at unbounded_heap_based_priority_queue.cvl:266.2 "}"
+--> State (id=3359)
+
+Step 435: }
+Outputs: {Executed by p0 from State (id=3359)
+  13->14: printf("}\nOutputs: { ") at unbounded_heap_based_priority_queue.cvl:267.2-24 "printf("}\nOutputs: {")"
+--> State (id=3364)
+
+Step 436: Executed by p0 from State (id=3364)
+  14->15: $elaborate_domain(($domain(1))(0..4#1)) [$assume(true)] at unbounded_heap_based_priority_queue.cvl:269.17-26 "0 .. n - 1"
+  15->16: $parfor(i0: ($domain(1))(0..4#1)) $spawn _par_proc1(i0) at unbounded_heap_based_priority_queue.cvl:269.2-8 "$parfor"
+  16->17: _civl_ir1=0 at unbounded_heap_based_priority_queue.cvl:272.2 "}"
+--> State (id=3390)
+
+Step 437: Executed by p1 from State (id=3390)
+  184->63: outs[0]=priority_queue_remove_min(&<d0>heap.malloc2[0][0]) at unbounded_heap_based_priority_queue.cvl:270.4-41 "outs[i] = priority_queue_remove_min( ... )"
+--> State (id=3396)
+
+Step 438: Executed by p4 from State (id=3396)
+  184->63: outs[3]=priority_queue_remove_min(&<d0>heap.malloc2[0][0]) at unbounded_heap_based_priority_queue.cvl:270.4-41 "outs[i] = priority_queue_remove_min( ... )"
+--> State (id=3402)
+
+Step 439: Executed by p1 from State (id=3402)
+  63->162: lock_heap(&<d0>heap.malloc2[0][0]) at unbounded_heap_based_priority_queue.cvl:186.2-13 "lock_heap(q)"
+--> State (id=3408)
+
+Step 440: Executed by p0 from State (id=3408)
+  17->18: LOOP_BODY_ENTER (guard: 0<_dom_size1) at unbounded_heap_based_priority_queue.cvl:272.2 "}"
+--> State (id=3413)
+
+Step 441: Executed by p3 from State (id=3413)
+  184->63: outs[2]=priority_queue_remove_min(&<d0>heap.malloc2[0][0]) at unbounded_heap_based_priority_queue.cvl:270.4-41 "outs[i] = priority_queue_remove_min( ... )"
+--> State (id=3419)
+
+Step 442: Executed by p4 from State (id=3419)
+  63->162: lock_heap(&<d0>heap.malloc2[0][0]) at unbounded_heap_based_priority_queue.cvl:186.2-13 "lock_heap(q)"
+--> State (id=3425)
+
+Step 443: Executed by p1 from State (id=3425)
+  162->131: lock_acquire(&<d0>heap.malloc0[0][0]) at unbounded_heap_based_priority_queue.cvl:124.2-22 "lock_acquire(q->lock)"
+--> State (id=3431)
+
+Step 444: Executed by p5 from State (id=3431)
+  184->63: outs[4]=priority_queue_remove_min(&<d0>heap.malloc2[0][0]) at unbounded_heap_based_priority_queue.cvl:270.4-41 "outs[i] = priority_queue_remove_min( ... )"
+--> State (id=3437)
+
+Step 445: Executed by p4 from State (id=3437)
+  162->131: lock_acquire(&<d0>heap.malloc0[0][0]) at unbounded_heap_based_priority_queue.cvl:124.2-22 "lock_acquire(q->lock)"
+--> State (id=3443)
+
+Step 446: Executed by p3 from State (id=3443)
+  63->162: lock_heap(&<d0>heap.malloc2[0][0]) at unbounded_heap_based_priority_queue.cvl:186.2-13 "lock_heap(q)"
+--> State (id=3449)
+
+Step 447: Executed by p1 from State (id=3449)
+  131->132: ENTER_ATOMIC [_atomic_lock_var:=p1, p1.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:51.2-8 "$atomic"
+  132->133: TRUE_BRANCH_IF (guard: p1!=(*(l)).0) at unbounded_heap_based_priority_queue.cvl:52.27 "{"
+--> State (id=3458)
+
+Step 448: Executed by p5 from State (id=3458)
+  63->162: lock_heap(&<d0>heap.malloc2[0][0]) at unbounded_heap_based_priority_queue.cvl:186.2-13 "lock_heap(q)"
+--> State (id=3463)
+
+Step 449: Executed by p3 from State (id=3463)
+  162->131: lock_acquire(&<d0>heap.malloc0[0][0]) at unbounded_heap_based_priority_queue.cvl:124.2-22 "lock_acquire(q->lock)"
+--> State (id=3469)
+
+Step 450: Executed by p4 from State (id=3469)
+  131->132: ENTER_ATOMIC [_atomic_lock_var:=p4, p4.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:51.2-8 "$atomic"
+  132->133: TRUE_BRANCH_IF (guard: p4!=(*(l)).0) at unbounded_heap_based_priority_queue.cvl:52.27 "{"
+--> State (id=3478)
+
+Step 451: Executed by p1 from State (id=3478)
+  133->134: (*(&<d0>heap.malloc0[0][0])).owner=$self [(*(&<d0>heap.malloc0[0][0])).owner:=p1] at unbounded_heap_based_priority_queue.cvl:53.36-51 "l->owner = $self"
+  134->135: (*(&<d0>heap.malloc0[0][0])).count=0+1 [(*(&<d0>heap.malloc0[0][0])).count:=1] at unbounded_heap_based_priority_queue.cvl:55.4-11 "l->count"
+  135->136: LEAVE_ATOMIC [_atomic_lock_var:=$proc_null, p1.atomicCount:=0] at unbounded_heap_based_priority_queue.cvl:56.2 "}"
+  136->RET: lock_acquire(...) return at unbounded_heap_based_priority_queue.cvl:57.0 "}"
+  163->RET: lock_heap(...) return at unbounded_heap_based_priority_queue.cvl:125.0 "}"
+--> State (id=3495)
+
+Step 452: Executed by p2 from State (id=3495)
+  184->63: outs[1]=priority_queue_remove_min(&<d0>heap.malloc2[0][0]) at unbounded_heap_based_priority_queue.cvl:270.4-41 "outs[i] = priority_queue_remove_min( ... )"
+--> State (id=3501)
+
+Step 453: Executed by p2 from State (id=3501)
+  63->162: lock_heap(&<d0>heap.malloc2[0][0]) at unbounded_heap_based_priority_queue.cvl:186.2-13 "lock_heap(q)"
+--> State (id=3507)
+
+Step 454: Executed by p5 from State (id=3507)
+  162->131: lock_acquire(&<d0>heap.malloc0[0][0]) at unbounded_heap_based_priority_queue.cvl:124.2-22 "lock_acquire(q->lock)"
+--> State (id=3512)
+
+Step 455: Executed by p5 from State (id=3512)
+  131->132: ENTER_ATOMIC [_atomic_lock_var:=p5, p5.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:51.2-8 "$atomic"
+  132->133: TRUE_BRANCH_IF (guard: p5!=(*(l)).0) at unbounded_heap_based_priority_queue.cvl:52.27 "{"
+--> State (id=3521)
+
+Step 456: Executed by p2 from State (id=3521)
+  162->131: lock_acquire(&<d0>heap.malloc0[0][0]) at unbounded_heap_based_priority_queue.cvl:124.2-22 "lock_acquire(q->lock)"
+--> State (id=3527)
+
+Step 457: Executed by p2 from State (id=3527)
+  131->132: ENTER_ATOMIC [_atomic_lock_var:=p2, p2.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:51.2-8 "$atomic"
+  132->133: TRUE_BRANCH_IF (guard: p2!=(*(l)).0) at unbounded_heap_based_priority_queue.cvl:52.27 "{"
+--> State (id=3536)
+
+Step 458: Executed by p3 from State (id=3536)
+  131->132: ENTER_ATOMIC [_atomic_lock_var:=p3, p3.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:51.2-8 "$atomic"
+  132->133: TRUE_BRANCH_IF (guard: p3!=(*(l)).0) at unbounded_heap_based_priority_queue.cvl:52.27 "{"
+--> State (id=3545)
+
+Step 459: Executed by p1 from State (id=3545)
+  64->65: (*(&<d0>heap.malloc2[0][0])).next=6-1 [(*(&<d0>heap.malloc2[0][0])).next:=5] at unbounded_heap_based_priority_queue.cvl:187.17-23 "q->next"
+--> State (id=3550)
+
+Step 460: Executed by p1 from State (id=3550)
+  65->66: bottom=5 at unbounded_heap_based_priority_queue.cvl:187.2-23 "int bottom = --q->next"
+--> State (id=3555)
+
+Step 461: Executed by p1 from State (id=3555)
+  66->153: lock_node(* (&<d0>heap.malloc3[0][0]+bottom)) at unbounded_heap_based_priority_queue.cvl:188.2-27 "lock_node(q->heap[bottom])"
+--> State (id=3561)
+
+Step 462: Executed by p1 from State (id=3561)
+  153->131: lock_acquire(&<d0>heap.malloc0[6][0]) at unbounded_heap_based_priority_queue.cvl:82.2-22 "lock_acquire(n->lock)"
+--> State (id=3567)
+
+Step 463: Executed by p1 from State (id=3567)
+  131->132: ENTER_ATOMIC [_atomic_lock_var:=p1, p1.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:51.2-8 "$atomic"
+  132->133: TRUE_BRANCH_IF (guard: p1!=(*(l)).0) at unbounded_heap_based_priority_queue.cvl:52.27 "{"
+--> State (id=3576)
+
+Step 464: Executed by p1 from State (id=3576)
+  133->134: (*(&<d0>heap.malloc0[6][0])).owner=$self [(*(&<d0>heap.malloc0[6][0])).owner:=p1] at unbounded_heap_based_priority_queue.cvl:53.36-51 "l->owner = $self"
+  134->135: (*(&<d0>heap.malloc0[6][0])).count=0+1 [(*(&<d0>heap.malloc0[6][0])).count:=1] at unbounded_heap_based_priority_queue.cvl:55.4-11 "l->count"
+  135->136: LEAVE_ATOMIC [_atomic_lock_var:=$proc_null, p1.atomicCount:=0] at unbounded_heap_based_priority_queue.cvl:56.2 "}"
+  136->RET: lock_acquire(...) return at unbounded_heap_based_priority_queue.cvl:57.0 "}"
+  154->RET: lock_node(...) return at unbounded_heap_based_priority_queue.cvl:83.0 "}"
+--> State (id=3593)
+
+Step 465: Executed by p1 from State (id=3593)
+  67->153: lock_node(* (&<d0>heap.malloc3[0][0]+1)) at unbounded_heap_based_priority_queue.cvl:189.2-25 "lock_node(q->heap[1])"
+--> State (id=3599)
+
+Step 466: Executed by p1 from State (id=3599)
+  153->131: lock_acquire(&<d0>heap.malloc0[2][0]) at unbounded_heap_based_priority_queue.cvl:82.2-22 "lock_acquire(n->lock)"
+--> State (id=3605)
+
+Step 467: Executed by p1 from State (id=3605)
+  131->132: ENTER_ATOMIC [_atomic_lock_var:=p1, p1.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:51.2-8 "$atomic"
+  132->133: TRUE_BRANCH_IF (guard: p1!=(*(l)).0) at unbounded_heap_based_priority_queue.cvl:52.27 "{"
+--> State (id=3614)
+
+Step 468: Executed by p1 from State (id=3614)
+  133->134: (*(&<d0>heap.malloc0[2][0])).owner=$self [(*(&<d0>heap.malloc0[2][0])).owner:=p1] at unbounded_heap_based_priority_queue.cvl:53.36-51 "l->owner = $self"
+  134->135: (*(&<d0>heap.malloc0[2][0])).count=0+1 [(*(&<d0>heap.malloc0[2][0])).count:=1] at unbounded_heap_based_priority_queue.cvl:55.4-11 "l->count"
+  135->136: LEAVE_ATOMIC [_atomic_lock_var:=$proc_null, p1.atomicCount:=0] at unbounded_heap_based_priority_queue.cvl:56.2 "}"
+  136->RET: lock_acquire(...) return at unbounded_heap_based_priority_queue.cvl:57.0 "}"
+  154->RET: lock_node(...) return at unbounded_heap_based_priority_queue.cvl:83.0 "}"
+--> State (id=3631)
+
+Step 469: Executed by p1 from State (id=3631)
+  68->164: unlock_heap(&<d0>heap.malloc2[0][0]) at unbounded_heap_based_priority_queue.cvl:190.2-15 "unlock_heap(q)"
+--> State (id=3637)
+
+Step 470: Executed by p1 from State (id=3637)
+  164->137: lock_release(&<d0>heap.malloc0[0][0]) at unbounded_heap_based_priority_queue.cvl:128.2-22 "lock_release(q->lock)"
+--> State (id=3643)
+
+Step 471: Executed by p1 from State (id=3643)
+  137->138: ENTER_ATOMIC [_atomic_lock_var:=p1, p1.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:60.2-8 "$atomic"
+  138->139: $assert(p1==(*(l)).0) at unbounded_heap_based_priority_queue.cvl:61.4-29 "$assert($self == l->owner)"
+  139->140: (*(&<d0>heap.malloc0[0][0])).count=1-1 [(*(&<d0>heap.malloc0[0][0])).count:=0] at unbounded_heap_based_priority_queue.cvl:62.4-11 "l->count"
+  140->141: TRUE_BRANCH_IF (guard: 0==0) at unbounded_heap_based_priority_queue.cvl:63.23 "l"
+  141->142: (*(&<d0>heap.malloc0[0][0])).owner=$proc_null at unbounded_heap_based_priority_queue.cvl:63.23-43 "l->owner = $proc_null"
+  142->143: LEAVE_ATOMIC [_atomic_lock_var:=$proc_null, p1.atomicCount:=0] at unbounded_heap_based_priority_queue.cvl:64.2 "}"
+  143->RET: lock_release(...) return at unbounded_heap_based_priority_queue.cvl:65.0 "}"
+  165->RET: unlock_heap(...) return at unbounded_heap_based_priority_queue.cvl:129.0 "}"
+--> State (id=3665)
+
+Step 472: Executed by p1 from State (id=3665)
+  69->73: FALSE_BRANCH_IF (guard: ! (1==0)) at unbounded_heap_based_priority_queue.cvl:195.2 "}"
+--> State (id=3669)
+
+Step 473: Executed by p4 from State (id=3669)
+  133->134: (*(&<d0>heap.malloc0[0][0])).owner=$self [(*(&<d0>heap.malloc0[0][0])).owner:=p4] at unbounded_heap_based_priority_queue.cvl:53.36-51 "l->owner = $self"
+  134->135: (*(&<d0>heap.malloc0[0][0])).count=0+1 [(*(&<d0>heap.malloc0[0][0])).count:=1] at unbounded_heap_based_priority_queue.cvl:55.4-11 "l->count"
+  135->136: LEAVE_ATOMIC [_atomic_lock_var:=$proc_null, p4.atomicCount:=0] at unbounded_heap_based_priority_queue.cvl:56.2 "}"
+  136->RET: lock_acquire(...) return at unbounded_heap_based_priority_queue.cvl:57.0 "}"
+  163->RET: lock_heap(...) return at unbounded_heap_based_priority_queue.cvl:125.0 "}"
+--> State (id=3686)
+
+Step 474: Executed by p4 from State (id=3686)
+  64->65: (*(&<d0>heap.malloc2[0][0])).next=5-1 [(*(&<d0>heap.malloc2[0][0])).next:=4] at unbounded_heap_based_priority_queue.cvl:187.17-23 "q->next"
+--> State (id=3691)
+
+Step 475: Executed by p1 from State (id=3691)
+  73->74: item=2 at unbounded_heap_based_priority_queue.cvl:196.2-31 "int item = q->heap ... item"
+--> State (id=3696)
+
+Step 476: Executed by p1 from State (id=3696)
+  74->75: (*(* (&<d0>heap.malloc3[0][0]+1))).tag=0 at unbounded_heap_based_priority_queue.cvl:197.2-27 "q->heap[1]->tag  ... EMPTY"
+--> State (id=3701)
+
+Step 477: Executed by p1 from State (id=3701)
+  75->166: priority_queue_swap(&<d0>heap.malloc2[0][0], 5, 1) at unbounded_heap_based_priority_queue.cvl:198.2-37 "priority_queue_swap(q, bottom, 1)"
+--> State (id=3707)
+
+Step 478: Executed by p1 from State (id=3707)
+  166->167: _owner=$proc_null at unbounded_heap_based_priority_queue.cvl:132.2-33 "$proc _owner = q->heap ... owner"
+--> State (id=3712)
+
+Step 479: Executed by p1 from State (id=3712)
+  167->168: (*(* (&<d0>heap.malloc3[0][0]+i))).owner=$proc_null at unbounded_heap_based_priority_queue.cvl:133.2-38 "q->heap[i]->owner  ... owner"
+--> State (id=3717)
+
+Step 480: Executed by p4 from State (id=3717)
+  65->66: bottom=4 at unbounded_heap_based_priority_queue.cvl:187.2-23 "int bottom = --q->next"
+--> State (id=3722)
+
+Step 481: Executed by p4 from State (id=3722)
+  66->153: lock_node(* (&<d0>heap.malloc3[0][0]+bottom)) at unbounded_heap_based_priority_queue.cvl:188.2-27 "lock_node(q->heap[bottom])"
+--> State (id=3728)
+
+Step 482: Executed by p4 from State (id=3728)
+  153->131: lock_acquire(&<d0>heap.malloc0[5][0]) at unbounded_heap_based_priority_queue.cvl:82.2-22 "lock_acquire(n->lock)"
+--> State (id=3734)
+
+Step 483: Executed by p4 from State (id=3734)
+  131->132: ENTER_ATOMIC [_atomic_lock_var:=p4, p4.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:51.2-8 "$atomic"
+  132->133: TRUE_BRANCH_IF (guard: p4!=(*(l)).0) at unbounded_heap_based_priority_queue.cvl:52.27 "{"
+--> State (id=3743)
+
+Step 484: Executed by p1 from State (id=3743)
+  168->169: (*(* (&<d0>heap.malloc3[0][0]+j))).owner=$proc_null at unbounded_heap_based_priority_queue.cvl:134.2-27 "q->heap[j]->owner  ... _owner"
+--> State (id=3748)
+
+Step 485: Executed by p4 from State (id=3748)
+  133->134: (*(&<d0>heap.malloc0[5][0])).owner=$self [(*(&<d0>heap.malloc0[5][0])).owner:=p4] at unbounded_heap_based_priority_queue.cvl:53.36-51 "l->owner = $self"
+  134->135: (*(&<d0>heap.malloc0[5][0])).count=0+1 [(*(&<d0>heap.malloc0[5][0])).count:=1] at unbounded_heap_based_priority_queue.cvl:55.4-11 "l->count"
+  135->136: LEAVE_ATOMIC [_atomic_lock_var:=$proc_null, p4.atomicCount:=0] at unbounded_heap_based_priority_queue.cvl:56.2 "}"
+  136->RET: lock_acquire(...) return at unbounded_heap_based_priority_queue.cvl:57.0 "}"
+  154->RET: lock_node(...) return at unbounded_heap_based_priority_queue.cvl:83.0 "}"
+--> State (id=3765)
+
+Step 486: Executed by p1 from State (id=3765)
+  169->170: _item=4 at unbounded_heap_based_priority_queue.cvl:135.2-29 "int _item = q->heap ... item"
+--> State (id=3770)
+
+Step 487: Executed by p1 from State (id=3770)
+  170->171: (*(* (&<d0>heap.malloc3[0][0]+i))).item=2 at unbounded_heap_based_priority_queue.cvl:136.2-36 "q->heap[i]->item  ... item"
+--> State (id=3775)
+
+Step 488: Executed by p1 from State (id=3775)
+  171->172: (*(* (&<d0>heap.malloc3[0][0]+j))).item=4 at unbounded_heap_based_priority_queue.cvl:137.2-25 "q->heap[j]->item  ... _item"
+--> State (id=3780)
+
+Step 489: Executed by p4 from State (id=3780)
+  67->153: lock_node(* (&<d0>heap.malloc3[0][0]+1)) at unbounded_heap_based_priority_queue.cvl:189.2-25 "lock_node(q->heap[1])"
+--> State (id=3786)
+
+Step 490: Executed by p1 from State (id=3786)
+  172->173: _priority=1 at unbounded_heap_based_priority_queue.cvl:138.2-34 "int _priority = q->heap ... score"
+--> State (id=3791)
+
+Step 491: Executed by p1 from State (id=3791)
+  173->174: (*(* (&<d0>heap.malloc3[0][0]+i))).score=0 at unbounded_heap_based_priority_queue.cvl:139.2-38 "q->heap[i]->score  ... score"
+--> State (id=3796)
+
+Step 492: Executed by p4 from State (id=3796)
+  153->131: lock_acquire(&<d0>heap.malloc0[2][0]) at unbounded_heap_based_priority_queue.cvl:82.2-22 "lock_acquire(n->lock)"
+--> State (id=3802)
+
+Step 493: Executed by p1 from State (id=3802)
+  174->175: (*(* (&<d0>heap.malloc3[0][0]+j))).score=1 at unbounded_heap_based_priority_queue.cvl:140.2-30 "q->heap[j]->score  ... _priority"
+--> State (id=3807)
+
+Step 494: Executed by p1 from State (id=3807)
+  175->176: _tag=1 at unbounded_heap_based_priority_queue.cvl:141.2-30 "Status _tag = q->heap ... tag"
+--> State (id=3812)
+
+Step 495: Executed by p4 from State (id=3812)
+  131->132: ENTER_ATOMIC [_atomic_lock_var:=p4, p4.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:51.2-8 "$atomic"
+  132->133: TRUE_BRANCH_IF (guard: p4!=(*(l)).0) at unbounded_heap_based_priority_queue.cvl:52.27 "{"
+--> State (id=3821)
+
+Step 496: Executed by p1 from State (id=3821)
+  176->177: (*(* (&<d0>heap.malloc3[0][0]+i))).tag=0 at unbounded_heap_based_priority_queue.cvl:142.2-34 "q->heap[i]->tag  ... tag"
+--> State (id=3826)
+
+Step 497: Executed by p1 from State (id=3826)
+  177->178: (*(* (&<d0>heap.malloc3[0][0]+j))).tag=1 at unbounded_heap_based_priority_queue.cvl:143.2-23 "q->heap[j]->tag  ... _tag"
+  178->RET: priority_queue_swap(...) return at unbounded_heap_based_priority_queue.cvl:144.0 "}"
+--> State (id=3834)
+
+Step 498: Executed by p1 from State (id=3834)
+  76->77: (*(* (&<d0>heap.malloc3[0][0]+bottom))).owner=$proc_null at unbounded_heap_based_priority_queue.cvl:199.2-15.24 "q->heap[bottom]->owner  ... $proc_null"
+--> State (id=3839)
+
+Step 499: Executed by p1 from State (id=3839)
+  77->155: unlock_node(* (&<d0>heap.malloc3[0][0]+bottom)) at unbounded_heap_based_priority_queue.cvl:200.2-29 "unlock_node(q->heap[bottom])"
+--> State (id=3845)
+
+Step 500: Executed by p1 from State (id=3845)
+  155->137: lock_release(&<d0>heap.malloc0[6][0]) at unbounded_heap_based_priority_queue.cvl:86.2-22 "lock_release(n->lock)"
+--> State (id=3851)
+
+Step 501: Executed by p1 from State (id=3851)
+  137->138: ENTER_ATOMIC [_atomic_lock_var:=p1, p1.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:60.2-8 "$atomic"
+  138->139: $assert(p1==(*(l)).0) at unbounded_heap_based_priority_queue.cvl:61.4-29 "$assert($self == l->owner)"
+  139->140: (*(&<d0>heap.malloc0[6][0])).count=1-1 [(*(&<d0>heap.malloc0[6][0])).count:=0] at unbounded_heap_based_priority_queue.cvl:62.4-11 "l->count"
+  140->141: TRUE_BRANCH_IF (guard: 0==0) at unbounded_heap_based_priority_queue.cvl:63.23 "l"
+  141->142: (*(&<d0>heap.malloc0[6][0])).owner=$proc_null at unbounded_heap_based_priority_queue.cvl:63.23-43 "l->owner = $proc_null"
+  142->143: LEAVE_ATOMIC [_atomic_lock_var:=$proc_null, p1.atomicCount:=0] at unbounded_heap_based_priority_queue.cvl:64.2 "}"
+  143->RET: lock_release(...) return at unbounded_heap_based_priority_queue.cvl:65.0 "}"
+  156->RET: unlock_node(...) return at unbounded_heap_based_priority_queue.cvl:87.0 "}"
+--> State (id=3873)
+
+Step 502: Executed by p1 from State (id=3873)
+  78->81: FALSE_BRANCH_IF (guard: ! (1==0)) at unbounded_heap_based_priority_queue.cvl:204.2 "}"
+--> State (id=3877)
+
+Step 503: Executed by p1 from State (id=3877)
+  81->82: child=0 at unbounded_heap_based_priority_queue.cvl:205.2-14 "int child = 0"
+  82->83: parent=1 at unbounded_heap_based_priority_queue.cvl:206.2-14.13 "int parent = 1"
+--> State (id=3884)
+
+Step 504: Executed by p1 from State (id=3884)
+  83->84: LOOP_BODY_ENTER (guard: 1<((*(q)).3/2)) at unbounded_heap_based_priority_queue.cvl:207.9-30 "parent < q->length / ... 2"
+  84->85: left=1*2 [left:=2] at unbounded_heap_based_priority_queue.cvl:208.4-22 "int left = parent*2"
+  85->86: right=2+1 [right:=3] at unbounded_heap_based_priority_queue.cvl:209.4-29 "int right = (parent* ... 1"
+--> State (id=3893)
+
+Step 505: Executed by p1 from State (id=3893)
+  86->153: lock_node(* (&<d0>heap.malloc3[0][0]+left)) at unbounded_heap_based_priority_queue.cvl:210.4-27 "lock_node(q->heap[left])"
+--> State (id=3899)
+
+Step 506: Executed by p1 from State (id=3899)
+  153->131: lock_acquire(&<d0>heap.malloc0[3][0]) at unbounded_heap_based_priority_queue.cvl:82.2-22 "lock_acquire(n->lock)"
+--> State (id=3905)
+
+Step 507: Executed by p1 from State (id=3905)
+  131->132: ENTER_ATOMIC [_atomic_lock_var:=p1, p1.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:51.2-8 "$atomic"
+  132->133: TRUE_BRANCH_IF (guard: p1!=(*(l)).0) at unbounded_heap_based_priority_queue.cvl:52.27 "{"
+--> State (id=3914)
+
+Step 508: Executed by p1 from State (id=3914)
+  133->134: (*(&<d0>heap.malloc0[3][0])).owner=$self [(*(&<d0>heap.malloc0[3][0])).owner:=p1] at unbounded_heap_based_priority_queue.cvl:53.36-51 "l->owner = $self"
+  134->135: (*(&<d0>heap.malloc0[3][0])).count=0+1 [(*(&<d0>heap.malloc0[3][0])).count:=1] at unbounded_heap_based_priority_queue.cvl:55.4-11 "l->count"
+  135->136: LEAVE_ATOMIC [_atomic_lock_var:=$proc_null, p1.atomicCount:=0] at unbounded_heap_based_priority_queue.cvl:56.2 "}"
+  136->RET: lock_acquire(...) return at unbounded_heap_based_priority_queue.cvl:57.0 "}"
+  154->RET: lock_node(...) return at unbounded_heap_based_priority_queue.cvl:83.0 "}"
+--> State (id=3931)
+
+Step 509: Executed by p1 from State (id=3931)
+  87->153: lock_node(* (&<d0>heap.malloc3[0][0]+right)) at unbounded_heap_based_priority_queue.cvl:211.4-28 "lock_node(q->heap[right])"
+--> State (id=3937)
+
+Step 510: Executed by p1 from State (id=3937)
+  153->131: lock_acquire(&<d0>heap.malloc0[4][0]) at unbounded_heap_based_priority_queue.cvl:82.2-22 "lock_acquire(n->lock)"
+--> State (id=3943)
+
+Step 511: Executed by p1 from State (id=3943)
+  131->132: ENTER_ATOMIC [_atomic_lock_var:=p1, p1.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:51.2-8 "$atomic"
+  132->133: TRUE_BRANCH_IF (guard: p1!=(*(l)).0) at unbounded_heap_based_priority_queue.cvl:52.27 "{"
+--> State (id=3952)
+
+Step 512: Executed by p1 from State (id=3952)
+  133->134: (*(&<d0>heap.malloc0[4][0])).owner=$self [(*(&<d0>heap.malloc0[4][0])).owner:=p1] at unbounded_heap_based_priority_queue.cvl:53.36-51 "l->owner = $self"
+  134->135: (*(&<d0>heap.malloc0[4][0])).count=0+1 [(*(&<d0>heap.malloc0[4][0])).count:=1] at unbounded_heap_based_priority_queue.cvl:55.4-11 "l->count"
+  135->136: LEAVE_ATOMIC [_atomic_lock_var:=$proc_null, p1.atomicCount:=0] at unbounded_heap_based_priority_queue.cvl:56.2 "}"
+  136->RET: lock_acquire(...) return at unbounded_heap_based_priority_queue.cvl:57.0 "}"
+  154->RET: lock_node(...) return at unbounded_heap_based_priority_queue.cvl:83.0 "}"
+--> State (id=3969)
+
+Step 513: Executed by p1 from State (id=3969)
+  88->92: FALSE_BRANCH_IF (guard: ! (1==0)) at unbounded_heap_based_priority_queue.cvl:222.4 "}"
+--> State (id=3974)
+
+Step 514: Executed by p1 from State (id=3974)
+  92->93: _scc_var0=1==0 [_scc_var0:=false] at short-circuit:0.-1-unbounded_heap_based_priority_queue.cvl:216.42 "inserted text" inserted by short-circuit.identifier _scc_var0
+  93->94: TRUE_BRANCH_IF (guard: !false) at unbounded_heap_based_priority_queue.cvl:216.47 "q"
+--> State (id=3980)
+
+Step 515: Executed by p1 from State (id=3980)
+  94->95: _scc_var0=0<(*(*(((*(q)).2+right)))).1 [_scc_var0:=false] at short-circuit:0.-1-unbounded_heap_based_priority_queue.cvl:216.90 "inserted text" inserted by short-circuit.identifier _scc_var0
+--> State (id=3985)
+
+Step 516: Executed by p1 from State (id=3985)
+  95->104: FALSE_BRANCH_IF (guard: !false) at unbounded_heap_based_priority_queue.cvl:222.4 "}"
+--> State (id=3989)
+
+Step 517: Executed by p1 from State (id=3989)
+  104->155: unlock_node(* (&<d0>heap.malloc3[0][0]+left)) at unbounded_heap_based_priority_queue.cvl:220.6-31 "unlock_node(q->heap[left])"
+--> State (id=3995)
+
+Step 518: Executed by p1 from State (id=3995)
+  155->137: lock_release(&<d0>heap.malloc0[3][0]) at unbounded_heap_based_priority_queue.cvl:86.2-22 "lock_release(n->lock)"
+--> State (id=4001)
+
+Step 519: Executed by p1 from State (id=4001)
+  137->138: ENTER_ATOMIC [_atomic_lock_var:=p1, p1.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:60.2-8 "$atomic"
+  138->139: $assert(p1==(*(l)).0) at unbounded_heap_based_priority_queue.cvl:61.4-29 "$assert($self == l->owner)"
+  139->140: (*(&<d0>heap.malloc0[3][0])).count=1-1 [(*(&<d0>heap.malloc0[3][0])).count:=0] at unbounded_heap_based_priority_queue.cvl:62.4-11 "l->count"
+  140->141: TRUE_BRANCH_IF (guard: 0==0) at unbounded_heap_based_priority_queue.cvl:63.23 "l"
+  141->142: (*(&<d0>heap.malloc0[3][0])).owner=$proc_null at unbounded_heap_based_priority_queue.cvl:63.23-43 "l->owner = $proc_null"
+  142->143: LEAVE_ATOMIC [_atomic_lock_var:=$proc_null, p1.atomicCount:=0] at unbounded_heap_based_priority_queue.cvl:64.2 "}"
+  143->RET: lock_release(...) return at unbounded_heap_based_priority_queue.cvl:65.0 "}"
+  156->RET: unlock_node(...) return at unbounded_heap_based_priority_queue.cvl:87.0 "}"
+  105->98: child=3 at unbounded_heap_based_priority_queue.cvl:221.6-18 "child = right"
+--> State (id=4025)
+
+Step 520: Executed by p1 from State (id=4025)
+  98->99: TRUE_BRANCH_IF (guard: 0<(*(*(((*(q)).2+parent)))).1) at unbounded_heap_based_priority_queue.cvl:223.56 "{"
+--> State (id=4029)
+
+Step 521: Executed by p1 from State (id=4029)
+  99->166: priority_queue_swap(&<d0>heap.malloc2[0][0], 1, 3) at unbounded_heap_based_priority_queue.cvl:224.6-42 "priority_queue_swap(q, parent, child)"
+--> State (id=4035)
+
+Step 522: Executed by p1 from State (id=4035)
+  166->167: _owner=$proc_null at unbounded_heap_based_priority_queue.cvl:132.2-33 "$proc _owner = q->heap ... owner"
+--> State (id=4040)
+
+Step 523: Executed by p1 from State (id=4040)
+  167->168: (*(* (&<d0>heap.malloc3[0][0]+i))).owner=$proc_null at unbounded_heap_based_priority_queue.cvl:133.2-38 "q->heap[i]->owner  ... owner"
+--> State (id=4045)
+
+Step 524: Executed by p1 from State (id=4045)
+  168->169: (*(* (&<d0>heap.malloc3[0][0]+j))).owner=$proc_null at unbounded_heap_based_priority_queue.cvl:134.2-27 "q->heap[j]->owner  ... _owner"
+--> State (id=4050)
+
+Step 525: Executed by p1 from State (id=4050)
+  169->170: _item=4 at unbounded_heap_based_priority_queue.cvl:135.2-29 "int _item = q->heap ... item"
+--> State (id=4055)
+
+Step 526: Executed by p1 from State (id=4055)
+  170->171: (*(* (&<d0>heap.malloc3[0][0]+i))).item=1 at unbounded_heap_based_priority_queue.cvl:136.2-36 "q->heap[i]->item  ... item"
+--> State (id=4060)
+
+Step 527: Executed by p1 from State (id=4060)
+  171->172: (*(* (&<d0>heap.malloc3[0][0]+j))).item=4 at unbounded_heap_based_priority_queue.cvl:137.2-25 "q->heap[j]->item  ... _item"
+--> State (id=4065)
+
+Step 528: Executed by p1 from State (id=4065)
+  172->173: _priority=1 at unbounded_heap_based_priority_queue.cvl:138.2-34 "int _priority = q->heap ... score"
+--> State (id=4070)
+
+Step 529: Executed by p1 from State (id=4070)
+  173->174: (*(* (&<d0>heap.malloc3[0][0]+i))).score=0 at unbounded_heap_based_priority_queue.cvl:139.2-38 "q->heap[i]->score  ... score"
+--> State (id=4075)
+
+Step 530: Executed by p1 from State (id=4075)
+  174->175: (*(* (&<d0>heap.malloc3[0][0]+j))).score=1 at unbounded_heap_based_priority_queue.cvl:140.2-30 "q->heap[j]->score  ... _priority"
+--> State (id=4080)
+
+Step 531: Executed by p1 from State (id=4080)
+  175->176: _tag=1 at unbounded_heap_based_priority_queue.cvl:141.2-30 "Status _tag = q->heap ... tag"
+--> State (id=4085)
+
+Step 532: Executed by p1 from State (id=4085)
+  176->177: (*(* (&<d0>heap.malloc3[0][0]+i))).tag=1 at unbounded_heap_based_priority_queue.cvl:142.2-34 "q->heap[i]->tag  ... tag"
+--> State (id=4090)
+
+Step 533: Executed by p1 from State (id=4090)
+  177->178: (*(* (&<d0>heap.malloc3[0][0]+j))).tag=1 at unbounded_heap_based_priority_queue.cvl:143.2-23 "q->heap[j]->tag  ... _tag"
+  178->RET: priority_queue_swap(...) return at unbounded_heap_based_priority_queue.cvl:144.0 "}"
+--> State (id=4098)
+
+Step 534: Executed by p1 from State (id=4098)
+  100->155: unlock_node(* (&<d0>heap.malloc3[0][0]+parent)) at unbounded_heap_based_priority_queue.cvl:225.6-33 "unlock_node(q->heap[parent])"
+--> State (id=4104)
+
+Step 535: Executed by p1 from State (id=4104)
+  155->137: lock_release(&<d0>heap.malloc0[2][0]) at unbounded_heap_based_priority_queue.cvl:86.2-22 "lock_release(n->lock)"
+--> State (id=4110)
+
+Step 536: Executed by p1 from State (id=4110)
+  137->138: ENTER_ATOMIC [_atomic_lock_var:=p1, p1.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:60.2-8 "$atomic"
+  138->139: $assert(p1==(*(l)).0) at unbounded_heap_based_priority_queue.cvl:61.4-29 "$assert($self == l->owner)"
+  139->140: (*(&<d0>heap.malloc0[2][0])).count=1-1 [(*(&<d0>heap.malloc0[2][0])).count:=0] at unbounded_heap_based_priority_queue.cvl:62.4-11 "l->count"
+  140->141: TRUE_BRANCH_IF (guard: 0==0) at unbounded_heap_based_priority_queue.cvl:63.23 "l"
+  141->142: (*(&<d0>heap.malloc0[2][0])).owner=$proc_null at unbounded_heap_based_priority_queue.cvl:63.23-43 "l->owner = $proc_null"
+  142->143: LEAVE_ATOMIC [_atomic_lock_var:=$proc_null, p1.atomicCount:=0] at unbounded_heap_based_priority_queue.cvl:64.2 "}"
+  143->RET: lock_release(...) return at unbounded_heap_based_priority_queue.cvl:65.0 "}"
+  156->RET: unlock_node(...) return at unbounded_heap_based_priority_queue.cvl:87.0 "}"
+  101->83: parent=3 at unbounded_heap_based_priority_queue.cvl:226.6-19 "parent = child"
+--> State (id=4134)
+
+Step 537: Executed by p4 from State (id=4134)
+  133->134: (*(&<d0>heap.malloc0[2][0])).owner=$self [(*(&<d0>heap.malloc0[2][0])).owner:=p4] at unbounded_heap_based_priority_queue.cvl:53.36-51 "l->owner = $self"
+  134->135: (*(&<d0>heap.malloc0[2][0])).count=0+1 [(*(&<d0>heap.malloc0[2][0])).count:=1] at unbounded_heap_based_priority_queue.cvl:55.4-11 "l->count"
+  135->136: LEAVE_ATOMIC [_atomic_lock_var:=$proc_null, p4.atomicCount:=0] at unbounded_heap_based_priority_queue.cvl:56.2 "}"
+  136->RET: lock_acquire(...) return at unbounded_heap_based_priority_queue.cvl:57.0 "}"
+  154->RET: lock_node(...) return at unbounded_heap_based_priority_queue.cvl:83.0 "}"
+--> State (id=4151)
+
+Step 538: Executed by p4 from State (id=4151)
+  68->164: unlock_heap(&<d0>heap.malloc2[0][0]) at unbounded_heap_based_priority_queue.cvl:190.2-15 "unlock_heap(q)"
+--> State (id=4157)
+
+Step 539: Executed by p4 from State (id=4157)
+  164->137: lock_release(&<d0>heap.malloc0[0][0]) at unbounded_heap_based_priority_queue.cvl:128.2-22 "lock_release(q->lock)"
+--> State (id=4163)
+
+Step 540: Executed by p1 from State (id=4163)
+  83->84: LOOP_BODY_ENTER (guard: 3<((*(q)).3/2)) at unbounded_heap_based_priority_queue.cvl:207.9-30 "parent < q->length / ... 2"
+  84->85: left=3*2 [left:=6] at unbounded_heap_based_priority_queue.cvl:208.4-22 "int left = parent*2"
+  85->86: right=6+1 [right:=7] at unbounded_heap_based_priority_queue.cvl:209.4-29 "int right = (parent* ... 1"
+--> State (id=4172)
+
+Step 541: Executed by p1 from State (id=4172)
+  86->153: lock_node(* (&<d0>heap.malloc3[0][0]+left)) at unbounded_heap_based_priority_queue.cvl:210.4-27 "lock_node(q->heap[left])"
+--> State (id=4178)
+
+Step 542: Executed by p1 from State (id=4178)
+  153->131: lock_acquire(&<d0>heap.malloc0[7][0]) at unbounded_heap_based_priority_queue.cvl:82.2-22 "lock_acquire(n->lock)"
+--> State (id=4184)
+
+Step 543: Executed by p4 from State (id=4184)
+  137->138: ENTER_ATOMIC [_atomic_lock_var:=p4, p4.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:60.2-8 "$atomic"
+  138->139: $assert(p4==(*(l)).0) at unbounded_heap_based_priority_queue.cvl:61.4-29 "$assert($self == l->owner)"
+  139->140: (*(&<d0>heap.malloc0[0][0])).count=1-1 [(*(&<d0>heap.malloc0[0][0])).count:=0] at unbounded_heap_based_priority_queue.cvl:62.4-11 "l->count"
+  140->141: TRUE_BRANCH_IF (guard: 0==0) at unbounded_heap_based_priority_queue.cvl:63.23 "l"
+  141->142: (*(&<d0>heap.malloc0[0][0])).owner=$proc_null at unbounded_heap_based_priority_queue.cvl:63.23-43 "l->owner = $proc_null"
+  142->143: LEAVE_ATOMIC [_atomic_lock_var:=$proc_null, p4.atomicCount:=0] at unbounded_heap_based_priority_queue.cvl:64.2 "}"
+  143->RET: lock_release(...) return at unbounded_heap_based_priority_queue.cvl:65.0 "}"
+  165->RET: unlock_heap(...) return at unbounded_heap_based_priority_queue.cvl:129.0 "}"
+--> State (id=4206)
+
+Step 544: Executed by p4 from State (id=4206)
+  69->73: FALSE_BRANCH_IF (guard: ! (1==0)) at unbounded_heap_based_priority_queue.cvl:195.2 "}"
+--> State (id=4210)
+
+Step 545: Executed by p4 from State (id=4210)
+  73->74: item=1 at unbounded_heap_based_priority_queue.cvl:196.2-31 "int item = q->heap ... item"
+--> State (id=4215)
+
+Step 546: Executed by p3 from State (id=4215)
+  133->134: (*(&<d0>heap.malloc0[0][0])).owner=$self [(*(&<d0>heap.malloc0[0][0])).owner:=p3] at unbounded_heap_based_priority_queue.cvl:53.36-51 "l->owner = $self"
+  134->135: (*(&<d0>heap.malloc0[0][0])).count=0+1 [(*(&<d0>heap.malloc0[0][0])).count:=1] at unbounded_heap_based_priority_queue.cvl:55.4-11 "l->count"
+  135->136: LEAVE_ATOMIC [_atomic_lock_var:=$proc_null, p3.atomicCount:=0] at unbounded_heap_based_priority_queue.cvl:56.2 "}"
+  136->RET: lock_acquire(...) return at unbounded_heap_based_priority_queue.cvl:57.0 "}"
+  163->RET: lock_heap(...) return at unbounded_heap_based_priority_queue.cvl:125.0 "}"
+--> State (id=4232)
+
+Step 547: Executed by p1 from State (id=4232)
+  131->132: ENTER_ATOMIC [_atomic_lock_var:=p1, p1.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:51.2-8 "$atomic"
+  132->133: TRUE_BRANCH_IF (guard: p1!=(*(l)).0) at unbounded_heap_based_priority_queue.cvl:52.27 "{"
+--> State (id=4241)
+
+Step 548: Executed by p4 from State (id=4241)
+  74->75: (*(* (&<d0>heap.malloc3[0][0]+1))).tag=0 at unbounded_heap_based_priority_queue.cvl:197.2-27 "q->heap[1]->tag  ... EMPTY"
+--> State (id=4246)
+
+Step 549: Executed by p4 from State (id=4246)
+  75->166: priority_queue_swap(&<d0>heap.malloc2[0][0], 4, 1) at unbounded_heap_based_priority_queue.cvl:198.2-37 "priority_queue_swap(q, bottom, 1)"
+--> State (id=4252)
+
+Step 550: Executed by p1 from State (id=4252)
+  133->134: (*(&<d0>heap.malloc0[7][0])).owner=$self [(*(&<d0>heap.malloc0[7][0])).owner:=p1] at unbounded_heap_based_priority_queue.cvl:53.36-51 "l->owner = $self"
+  134->135: (*(&<d0>heap.malloc0[7][0])).count=0+1 [(*(&<d0>heap.malloc0[7][0])).count:=1] at unbounded_heap_based_priority_queue.cvl:55.4-11 "l->count"
+  135->136: LEAVE_ATOMIC [_atomic_lock_var:=$proc_null, p1.atomicCount:=0] at unbounded_heap_based_priority_queue.cvl:56.2 "}"
+  136->RET: lock_acquire(...) return at unbounded_heap_based_priority_queue.cvl:57.0 "}"
+  154->RET: lock_node(...) return at unbounded_heap_based_priority_queue.cvl:83.0 "}"
+--> State (id=4269)
+
+Step 551: Executed by p4 from State (id=4269)
+  166->167: _owner=$proc_null at unbounded_heap_based_priority_queue.cvl:132.2-33 "$proc _owner = q->heap ... owner"
+--> State (id=4274)
+
+Step 552: Executed by p1 from State (id=4274)
+  87->153: lock_node(* (&<d0>heap.malloc3[0][0]+right)) at unbounded_heap_based_priority_queue.cvl:211.4-28 "lock_node(q->heap[right])"
+--> State (id=4280)
+
+Step 553: Executed by p3 from State (id=4280)
+  64->65: (*(&<d0>heap.malloc2[0][0])).next=4-1 [(*(&<d0>heap.malloc2[0][0])).next:=3] at unbounded_heap_based_priority_queue.cvl:187.17-23 "q->next"
+--> State (id=4285)
+
+Step 554: Executed by p4 from State (id=4285)
+  167->168: (*(* (&<d0>heap.malloc3[0][0]+i))).owner=$proc_null at unbounded_heap_based_priority_queue.cvl:133.2-38 "q->heap[i]->owner  ... owner"
+--> State (id=4290)
+
+Step 555: Executed by p3 from State (id=4290)
+  65->66: bottom=3 at unbounded_heap_based_priority_queue.cvl:187.2-23 "int bottom = --q->next"
+--> State (id=4295)
+
+Step 556: Executed by p3 from State (id=4295)
+  66->153: lock_node(* (&<d0>heap.malloc3[0][0]+bottom)) at unbounded_heap_based_priority_queue.cvl:188.2-27 "lock_node(q->heap[bottom])"
+--> State (id=4301)
+
+Step 557: Executed by p1 from State (id=4301)
+  153->131: lock_acquire(&<d0>heap.malloc0[8][0]) at unbounded_heap_based_priority_queue.cvl:82.2-22 "lock_acquire(n->lock)"
+--> State (id=4307)
+
+Step 558: Executed by p1 from State (id=4307)
+  131->132: ENTER_ATOMIC [_atomic_lock_var:=p1, p1.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:51.2-8 "$atomic"
+  132->133: TRUE_BRANCH_IF (guard: p1!=(*(l)).0) at unbounded_heap_based_priority_queue.cvl:52.27 "{"
+--> State (id=4316)
+
+Step 559: Executed by p1 from State (id=4316)
+  133->134: (*(&<d0>heap.malloc0[8][0])).owner=$self [(*(&<d0>heap.malloc0[8][0])).owner:=p1] at unbounded_heap_based_priority_queue.cvl:53.36-51 "l->owner = $self"
+  134->135: (*(&<d0>heap.malloc0[8][0])).count=0+1 [(*(&<d0>heap.malloc0[8][0])).count:=1] at unbounded_heap_based_priority_queue.cvl:55.4-11 "l->count"
+  135->136: LEAVE_ATOMIC [_atomic_lock_var:=$proc_null, p1.atomicCount:=0] at unbounded_heap_based_priority_queue.cvl:56.2 "}"
+  136->RET: lock_acquire(...) return at unbounded_heap_based_priority_queue.cvl:57.0 "}"
+  154->RET: lock_node(...) return at unbounded_heap_based_priority_queue.cvl:83.0 "}"
+--> State (id=4333)
+
+Step 560: Executed by p3 from State (id=4333)
+  153->131: lock_acquire(&<d0>heap.malloc0[4][0]) at unbounded_heap_based_priority_queue.cvl:82.2-22 "lock_acquire(n->lock)"
+--> State (id=4339)
+
+Step 561: Executed by p4 from State (id=4339)
+  168->169: (*(* (&<d0>heap.malloc3[0][0]+j))).owner=$proc_null at unbounded_heap_based_priority_queue.cvl:134.2-27 "q->heap[j]->owner  ... _owner"
+--> State (id=4344)
+
+Step 562: Executed by p3 from State (id=4344)
+  131->132: ENTER_ATOMIC [_atomic_lock_var:=p3, p3.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:51.2-8 "$atomic"
+  132->133: TRUE_BRANCH_IF (guard: p3!=(*(l)).0) at unbounded_heap_based_priority_queue.cvl:52.27 "{"
+--> State (id=4353)
+
+Step 563: Executed by p4 from State (id=4353)
+  169->170: _item=1 at unbounded_heap_based_priority_queue.cvl:135.2-29 "int _item = q->heap ... item"
+--> State (id=4358)
+
+Step 564: Executed by p4 from State (id=4358)
+  170->171: (*(* (&<d0>heap.malloc3[0][0]+i))).item=1 at unbounded_heap_based_priority_queue.cvl:136.2-36 "q->heap[i]->item  ... item"
+--> State (id=4363)
+
+Step 565: Executed by p1 from State (id=4363)
+  88->89: TRUE_BRANCH_IF (guard: 0==0) at unbounded_heap_based_priority_queue.cvl:212.37 "{"
+--> State (id=4367)
+
+Step 566: Executed by p4 from State (id=4367)
+  171->172: (*(* (&<d0>heap.malloc3[0][0]+j))).item=1 at unbounded_heap_based_priority_queue.cvl:137.2-25 "q->heap[j]->item  ... _item"
+--> State (id=4372)
+
+Step 567: Executed by p1 from State (id=4372)
+  89->155: unlock_node(* (&<d0>heap.malloc3[0][0]+right)) at unbounded_heap_based_priority_queue.cvl:213.6-32 "unlock_node(q->heap[right])"
+--> State (id=4378)
+
+Step 568: Executed by p1 from State (id=4378)
+  155->137: lock_release(&<d0>heap.malloc0[8][0]) at unbounded_heap_based_priority_queue.cvl:86.2-22 "lock_release(n->lock)"
+--> State (id=4384)
+
+Step 569: Executed by p4 from State (id=4384)
+  172->173: _priority=4 at unbounded_heap_based_priority_queue.cvl:138.2-34 "int _priority = q->heap ... score"
+--> State (id=4389)
+
+Step 570: Executed by p4 from State (id=4389)
+  173->174: (*(* (&<d0>heap.malloc3[0][0]+i))).score=0 at unbounded_heap_based_priority_queue.cvl:139.2-38 "q->heap[i]->score  ... score"
+--> State (id=4394)
+
+Step 571: Executed by p4 from State (id=4394)
+  174->175: (*(* (&<d0>heap.malloc3[0][0]+j))).score=4 at unbounded_heap_based_priority_queue.cvl:140.2-30 "q->heap[j]->score  ... _priority"
+--> State (id=4399)
+
+Step 572: Executed by p4 from State (id=4399)
+  175->176: _tag=1 at unbounded_heap_based_priority_queue.cvl:141.2-30 "Status _tag = q->heap ... tag"
+--> State (id=4404)
+
+Step 573: Executed by p1 from State (id=4404)
+  137->138: ENTER_ATOMIC [_atomic_lock_var:=p1, p1.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:60.2-8 "$atomic"
+  138->139: $assert(p1==(*(l)).0) at unbounded_heap_based_priority_queue.cvl:61.4-29 "$assert($self == l->owner)"
+  139->140: (*(&<d0>heap.malloc0[8][0])).count=1-1 [(*(&<d0>heap.malloc0[8][0])).count:=0] at unbounded_heap_based_priority_queue.cvl:62.4-11 "l->count"
+  140->141: TRUE_BRANCH_IF (guard: 0==0) at unbounded_heap_based_priority_queue.cvl:63.23 "l"
+  141->142: (*(&<d0>heap.malloc0[8][0])).owner=$proc_null at unbounded_heap_based_priority_queue.cvl:63.23-43 "l->owner = $proc_null"
+  142->143: LEAVE_ATOMIC [_atomic_lock_var:=$proc_null, p1.atomicCount:=0] at unbounded_heap_based_priority_queue.cvl:64.2 "}"
+  143->RET: lock_release(...) return at unbounded_heap_based_priority_queue.cvl:65.0 "}"
+  156->RET: unlock_node(...) return at unbounded_heap_based_priority_queue.cvl:87.0 "}"
+--> State (id=4426)
+
+Step 574: Executed by p1 from State (id=4426)
+  90->155: unlock_node(* (&<d0>heap.malloc3[0][0]+left)) at unbounded_heap_based_priority_queue.cvl:214.6-31 "unlock_node(q->heap[left])"
+--> State (id=4432)
+
+Step 575: Executed by p4 from State (id=4432)
+  176->177: (*(* (&<d0>heap.malloc3[0][0]+i))).tag=0 at unbounded_heap_based_priority_queue.cvl:142.2-34 "q->heap[i]->tag  ... tag"
+--> State (id=4437)
+
+Step 576: Executed by p4 from State (id=4437)
+  177->178: (*(* (&<d0>heap.malloc3[0][0]+j))).tag=1 at unbounded_heap_based_priority_queue.cvl:143.2-23 "q->heap[j]->tag  ... _tag"
+  178->RET: priority_queue_swap(...) return at unbounded_heap_based_priority_queue.cvl:144.0 "}"
+--> State (id=4445)
+
+Step 577: Executed by p4 from State (id=4445)
+  76->77: (*(* (&<d0>heap.malloc3[0][0]+bottom))).owner=$proc_null at unbounded_heap_based_priority_queue.cvl:199.2-15.24 "q->heap[bottom]->owner  ... $proc_null"
+--> State (id=4450)
+
+Step 578: Executed by p4 from State (id=4450)
+  77->155: unlock_node(* (&<d0>heap.malloc3[0][0]+bottom)) at unbounded_heap_based_priority_queue.cvl:200.2-29 "unlock_node(q->heap[bottom])"
+--> State (id=4456)
+
+Step 579: Executed by p4 from State (id=4456)
+  155->137: lock_release(&<d0>heap.malloc0[5][0]) at unbounded_heap_based_priority_queue.cvl:86.2-22 "lock_release(n->lock)"
+--> State (id=4462)
+
+Step 580: Executed by p4 from State (id=4462)
+  137->138: ENTER_ATOMIC [_atomic_lock_var:=p4, p4.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:60.2-8 "$atomic"
+  138->139: $assert(p4==(*(l)).0) at unbounded_heap_based_priority_queue.cvl:61.4-29 "$assert($self == l->owner)"
+  139->140: (*(&<d0>heap.malloc0[5][0])).count=1-1 [(*(&<d0>heap.malloc0[5][0])).count:=0] at unbounded_heap_based_priority_queue.cvl:62.4-11 "l->count"
+  140->141: TRUE_BRANCH_IF (guard: 0==0) at unbounded_heap_based_priority_queue.cvl:63.23 "l"
+  141->142: (*(&<d0>heap.malloc0[5][0])).owner=$proc_null at unbounded_heap_based_priority_queue.cvl:63.23-43 "l->owner = $proc_null"
+  142->143: LEAVE_ATOMIC [_atomic_lock_var:=$proc_null, p4.atomicCount:=0] at unbounded_heap_based_priority_queue.cvl:64.2 "}"
+  143->RET: lock_release(...) return at unbounded_heap_based_priority_queue.cvl:65.0 "}"
+  156->RET: unlock_node(...) return at unbounded_heap_based_priority_queue.cvl:87.0 "}"
+--> State (id=4484)
+
+Step 581: Executed by p4 from State (id=4484)
+  78->81: FALSE_BRANCH_IF (guard: ! (1==0)) at unbounded_heap_based_priority_queue.cvl:204.2 "}"
+--> State (id=4488)
+
+Step 582: Executed by p4 from State (id=4488)
+  81->82: child=0 at unbounded_heap_based_priority_queue.cvl:205.2-14 "int child = 0"
+  82->83: parent=1 at unbounded_heap_based_priority_queue.cvl:206.2-14.13 "int parent = 1"
+--> State (id=4495)
+
+Step 583: Executed by p4 from State (id=4495)
+  83->84: LOOP_BODY_ENTER (guard: 1<((*(q)).3/2)) at unbounded_heap_based_priority_queue.cvl:207.9-30 "parent < q->length / ... 2"
+  84->85: left=1*2 [left:=2] at unbounded_heap_based_priority_queue.cvl:208.4-22 "int left = parent*2"
+  85->86: right=2+1 [right:=3] at unbounded_heap_based_priority_queue.cvl:209.4-29 "int right = (parent* ... 1"
+--> State (id=4504)
+
+Step 584: Executed by p1 from State (id=4504)
+  155->137: lock_release(&<d0>heap.malloc0[7][0]) at unbounded_heap_based_priority_queue.cvl:86.2-22 "lock_release(n->lock)"
+--> State (id=4510)
+
+Step 585: Executed by p1 from State (id=4510)
+  137->138: ENTER_ATOMIC [_atomic_lock_var:=p1, p1.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:60.2-8 "$atomic"
+  138->139: $assert(p1==(*(l)).0) at unbounded_heap_based_priority_queue.cvl:61.4-29 "$assert($self == l->owner)"
+  139->140: (*(&<d0>heap.malloc0[7][0])).count=1-1 [(*(&<d0>heap.malloc0[7][0])).count:=0] at unbounded_heap_based_priority_queue.cvl:62.4-11 "l->count"
+  140->141: TRUE_BRANCH_IF (guard: 0==0) at unbounded_heap_based_priority_queue.cvl:63.23 "l"
+  141->142: (*(&<d0>heap.malloc0[7][0])).owner=$proc_null at unbounded_heap_based_priority_queue.cvl:63.23-43 "l->owner = $proc_null"
+  142->143: LEAVE_ATOMIC [_atomic_lock_var:=$proc_null, p1.atomicCount:=0] at unbounded_heap_based_priority_queue.cvl:64.2 "}"
+  143->RET: lock_release(...) return at unbounded_heap_based_priority_queue.cvl:65.0 "}"
+  156->RET: unlock_node(...) return at unbounded_heap_based_priority_queue.cvl:87.0 "}"
+  91->106: NO_OP (guard: true) at unbounded_heap_based_priority_queue.cvl:215.6-11 "break;"
+--> State (id=4533)
+
+Step 586: Executed by p4 from State (id=4533)
+  86->153: lock_node(* (&<d0>heap.malloc3[0][0]+left)) at unbounded_heap_based_priority_queue.cvl:210.4-27 "lock_node(q->heap[left])"
+--> State (id=4539)
+
+Step 587: Executed by p4 from State (id=4539)
+  153->131: lock_acquire(&<d0>heap.malloc0[3][0]) at unbounded_heap_based_priority_queue.cvl:82.2-22 "lock_acquire(n->lock)"
+--> State (id=4545)
+
+Step 588: Executed by p4 from State (id=4545)
+  131->132: ENTER_ATOMIC [_atomic_lock_var:=p4, p4.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:51.2-8 "$atomic"
+  132->133: TRUE_BRANCH_IF (guard: p4!=(*(l)).0) at unbounded_heap_based_priority_queue.cvl:52.27 "{"
+--> State (id=4554)
+
+Step 589: Executed by p4 from State (id=4554)
+  133->134: (*(&<d0>heap.malloc0[3][0])).owner=$self [(*(&<d0>heap.malloc0[3][0])).owner:=p4] at unbounded_heap_based_priority_queue.cvl:53.36-51 "l->owner = $self"
+  134->135: (*(&<d0>heap.malloc0[3][0])).count=0+1 [(*(&<d0>heap.malloc0[3][0])).count:=1] at unbounded_heap_based_priority_queue.cvl:55.4-11 "l->count"
+  135->136: LEAVE_ATOMIC [_atomic_lock_var:=$proc_null, p4.atomicCount:=0] at unbounded_heap_based_priority_queue.cvl:56.2 "}"
+  136->RET: lock_acquire(...) return at unbounded_heap_based_priority_queue.cvl:57.0 "}"
+  154->RET: lock_node(...) return at unbounded_heap_based_priority_queue.cvl:83.0 "}"
+--> State (id=4571)
+
+Step 590: Executed by p4 from State (id=4571)
+  87->153: lock_node(* (&<d0>heap.malloc3[0][0]+right)) at unbounded_heap_based_priority_queue.cvl:211.4-28 "lock_node(q->heap[right])"
+--> State (id=4577)
+
+Step 591: Executed by p1 from State (id=4577)
+  106->155: unlock_node(* (&<d0>heap.malloc3[0][0]+parent)) at unbounded_heap_based_priority_queue.cvl:232.2-29 "unlock_node(q->heap[parent])"
+--> State (id=4583)
+
+Step 592: Executed by p1 from State (id=4583)
+  155->137: lock_release(&<d0>heap.malloc0[4][0]) at unbounded_heap_based_priority_queue.cvl:86.2-22 "lock_release(n->lock)"
+--> State (id=4589)
+
+Step 593: Executed by p4 from State (id=4589)
+  153->131: lock_acquire(&<d0>heap.malloc0[4][0]) at unbounded_heap_based_priority_queue.cvl:82.2-22 "lock_acquire(n->lock)"
+--> State (id=4595)
+
+Step 594: Executed by p4 from State (id=4595)
+  131->132: ENTER_ATOMIC [_atomic_lock_var:=p4, p4.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:51.2-8 "$atomic"
+  132->133: TRUE_BRANCH_IF (guard: p4!=(*(l)).0) at unbounded_heap_based_priority_queue.cvl:52.27 "{"
+--> State (id=4604)
+
+Step 595: Executed by p1 from State (id=4604)
+  137->138: ENTER_ATOMIC [_atomic_lock_var:=p1, p1.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:60.2-8 "$atomic"
+  138->139: $assert(p1==(*(l)).0) at unbounded_heap_based_priority_queue.cvl:61.4-29 "$assert($self == l->owner)"
+  139->140: (*(&<d0>heap.malloc0[4][0])).count=1-1 [(*(&<d0>heap.malloc0[4][0])).count:=0] at unbounded_heap_based_priority_queue.cvl:62.4-11 "l->count"
+  140->141: TRUE_BRANCH_IF (guard: 0==0) at unbounded_heap_based_priority_queue.cvl:63.23 "l"
+  141->142: (*(&<d0>heap.malloc0[4][0])).owner=$proc_null at unbounded_heap_based_priority_queue.cvl:63.23-43 "l->owner = $proc_null"
+  142->143: LEAVE_ATOMIC [_atomic_lock_var:=$proc_null, p1.atomicCount:=0] at unbounded_heap_based_priority_queue.cvl:64.2 "}"
+  143->RET: lock_release(...) return at unbounded_heap_based_priority_queue.cvl:65.0 "}"
+  156->RET: unlock_node(...) return at unbounded_heap_based_priority_queue.cvl:87.0 "}"
+  107->RET: priority_queue_remove_min(...) return 2 [outs[0]:=2] at unbounded_heap_based_priority_queue.cvl:233.2-13 "return item;"
+--> State (id=4629)
+
+Step 596: 2, Executed by p1 from State (id=4629)
+  185->186: printf("%d,  ", 2) at unbounded_heap_based_priority_queue.cvl:271.4-26 "printf("%d, ", outs[i])"
+  186->RET: _par_proc1(...) return at unbounded_heap_based_priority_queue.cvl:272.2 "}"
+--> State (id=4635)
+
+Step 597: Executed by p3 from State (id=4635)
+  133->134: (*(&<d0>heap.malloc0[4][0])).owner=$self [(*(&<d0>heap.malloc0[4][0])).owner:=p3] at unbounded_heap_based_priority_queue.cvl:53.36-51 "l->owner = $self"
+  134->135: (*(&<d0>heap.malloc0[4][0])).count=0+1 [(*(&<d0>heap.malloc0[4][0])).count:=1] at unbounded_heap_based_priority_queue.cvl:55.4-11 "l->count"
+  135->136: LEAVE_ATOMIC [_atomic_lock_var:=$proc_null, p3.atomicCount:=0] at unbounded_heap_based_priority_queue.cvl:56.2 "}"
+  136->RET: lock_acquire(...) return at unbounded_heap_based_priority_queue.cvl:57.0 "}"
+  154->RET: lock_node(...) return at unbounded_heap_based_priority_queue.cvl:83.0 "}"
+--> State (id=4652)
+
+Step 598: Executed by p0 from State (id=4652)
+  18->19: $wait(p1) at unbounded_heap_based_priority_queue.cvl:272.2 "}"
+  19->17: _civl_ir1=0+1 [_civl_ir1:=1] at unbounded_heap_based_priority_queue.cvl:272.2 "}"
+--> State (id=4661)
+
+Step 599: Executed by p0 from State (id=4661)
+  17->18: LOOP_BODY_ENTER (guard: 1<_dom_size1) at unbounded_heap_based_priority_queue.cvl:272.2 "}"
+--> State (id=4666)
+
+Step 600: Executed by p2 from State (id=4666)
+  67->153: lock_node(* (&<d0>heap.malloc3[0][0]+1)) at unbounded_heap_based_priority_queue.cvl:189.2-25 "lock_node(q->heap[1])"
+--> State (id=4672)
+
+Step 601: Executed by p2 from State (id=4672)
+  153->131: lock_acquire(&<d0>heap.malloc0[2][0]) at unbounded_heap_based_priority_queue.cvl:82.2-22 "lock_acquire(n->lock)"
+--> State (id=4678)
+
+Step 602: Executed by p2 from State (id=4678)
+  131->132: ENTER_ATOMIC [_atomic_lock_var:=p2, p2.atomicCount:=1] at unbounded_heap_based_priority_queue.cvl:51.2-8 "$atomic"
+  132->133: TRUE_BRANCH_IF (guard: p2!=(*(l)).0) at unbounded_heap_based_priority_queue.cvl:52.27 "{"
+--> State (id=4687)
+
+Step 603: 
+State (id=4687)
+| Path condition
+| | forall _t : dynamicType . (0 <= CIVL_SIZEOF(_t) - 1)
+| Dynamic scopes
+| | dyscope d0 (parent=NULL, static=1)
+| | | variables
+| | | | _heap = 
+| | | | | objects of malloc 0 at unbounded_heap_based_priority_queue.cvl:44.2-46 "Lock* new_lock = (Lock ... )"
+| | | | | | 0: struct _lock[1]
+| | | | | | | [0]={.owner=p2, .count=1}
+| | | | | | 1: struct _lock[1]
+| | | | | | | [0]={.owner=$proc_null, .count=0}
+| | | | | | 2: struct _lock[1]
+| | | | | | | [0]={.owner=p3, .count=1}
+| | | | | | 3: struct _lock[1]
+| | | | | | | [0]={.owner=p3, .count=1}
+| | | | | | 4: struct _lock[1]
+| | | | | | | [0]={.owner=p2, .count=1}
+| | | | | | 5: struct _lock[1]
+| | | | | | | [0]={.owner=$proc_null, .count=0}
+| | | | | | 6: struct _lock[1]
+| | | | | | | [0]={.owner=$proc_null, .count=0}
+| | | | | | 7: struct _lock[1]
+| | | | | | | [0]={.owner=$proc_null, .count=0}
+| | | | | | 8: struct _lock[1]
+| | | | | | | [0]={.owner=$proc_null, .count=0}
+| | | | | | 9: struct _lock[1]
+| | | | | | | [0]={.owner=$proc_null, .count=0}
+| | | | | objects of malloc 1 at unbounded_heap_based_priority_queue.cvl:68.2-46 "Node* new_node = (Node ... )"
+| | | | | | 0: struct _node[1]
+| | | | | | | [0]=Hp0s0f1o0[0]{.tag=0, .lock=&<d0>heap.malloc0[1][0]}
+| | | | | | 1: struct _node[1]
+| | | | | | | [0]={.tag=1, .score=4, .item=1, .owner=$proc_null, .lock=&<d0>heap.malloc0[2][0]}
+| | | | | | 2: struct _node[1]
+| | | | | | | [0]={.tag=1, .score=0, .item=4, .owner=$proc_null, .lock=&<d0>heap.malloc0[3][0]}
+| | | | | | 3: struct _node[1]
+| | | | | | | [0]={.tag=1, .score=1, .item=4, .owner=$proc_null, .lock=&<d0>heap.malloc0[4][0]}
+| | | | | | 4: struct _node[1]
+| | | | | | | [0]={.tag=0, .score=0, .item=1, .owner=$proc_null, .lock=&<d0>heap.malloc0[5][0]}
+| | | | | | 5: struct _node[1]
+| | | | | | | [0]={.tag=0, .score=0, .item=2, .owner=$proc_null, .lock=&<d0>heap.malloc0[6][0]}
+| | | | | | 6: struct _node[1]
+| | | | | | | [0]=Hp0s0f1o6[0]{.tag=0, .lock=&<d0>heap.malloc0[7][0]}
+| | | | | | 7: struct _node[1]
+| | | | | | | [0]=Hp0s0f1o7[0]{.tag=0, .lock=&<d0>heap.malloc0[8][0]}
+| | | | | | 8: struct _node[1]
+| | | | | | | [0]=Hp0s0f1o8[0]{.tag=0, .lock=&<d0>heap.malloc0[9][0]}
+| | | | | objects of malloc 2 at unbounded_heap_based_priority_queue.cvl:102.2-66 "PriorityQueue* q = (PriorityQueue ... )"
+| | | | | | 0: struct _priority_queue[1]
+| | | | | | | [0]={.lock=&<d0>heap.malloc0[0][0], .next=3, .heap=&<d0>heap.malloc3[0][0], .length=8}
+| | | | | objects of malloc 3 at unbounded_heap_based_priority_queue.cvl:105.2-56 "q->heap = (Node* ... )"
+| | | | | | 0: (struct _node)*[9]{[0]=&<d0>heap.malloc1[0][0], [1]=&<d0>heap.malloc1[1][0], [2]=&<d0>heap.malloc1[2][0], [3]=&<d0>heap.malloc1[3][0], [4]=&<d0>heap.malloc1[4][0], [5]=&<d0>heap.malloc1[5][0], [6]=&<d0>heap.malloc1[6][0], [7]=&<d0>heap.malloc1[7][0], [8]=&<d0>heap.malloc1[8][0]}
+| | | | _civl_root = (scope_t(0))
+| | dyscope d1 (parent=d2, static=40)
+| | | variables
+| | dyscope d2 (parent=d3, static=39)
+| | | variables
+| | | | _civl_ir1 = 1
+| | dyscope d3 (parent=d4, static=37)
+| | | variables
+| | | | _dom_size1 = 5
+| | | | _par_procs1 = {[0]=UNDEFINED, [1]=p1, [2]=p2, [3]=p3, [4]=p4}
+| | dyscope d4 (parent=d0, static=28)
+| | | variables
+| | | | n = 5
+| | | | q = &<d0>heap.malloc2[0][0]
+| | | | ins = {[0]=4, [1]=1, [2]=1, [3]=4, [4]=2}
+| | | | ins_pr = {[0]=1, [1]=4, [2]=0, [3]=0, [4]=0}
+| | | | outs = (Y2){[0]=2}
+| | dyscope d5 (parent=d4, static=38)
+| | | variables
+| | | | i = 1
+| | dyscope d6 (parent=d7, static=52)
+| | | variables
+| | | | bottom = NULL
+| | | | item = NULL
+| | | | child = NULL
+| | | | parent = NULL
+| | dyscope d7 (parent=d0, static=26)
+| | | variables
+| | | | q = &<d0>heap.malloc2[0][0]
+| | dyscope d8 (parent=d0, static=22)
+| | | variables
+| | | | q = &<d0>heap.malloc2[0][0]
+| | dyscope d9 (parent=d0, static=13)
+| | | variables
+| | | | l = &<d0>heap.malloc0[0][0]
+| | dyscope d10 (parent=d4, static=38)
+| | | variables
+| | | | i = 2
+| | dyscope d11 (parent=d12, static=52)
+| | | variables
+| | | | bottom = 3
+| | | | item = NULL
+| | | | child = NULL
+| | | | parent = NULL
+| | dyscope d12 (parent=d0, static=26)
+| | | variables
+| | | | q = &<d0>heap.malloc2[0][0]
+| | dyscope d13 (parent=d0, static=17)
+| | | variables
+| | | | n = &<d0>heap.malloc1[1][0]
+| | dyscope d14 (parent=d0, static=13)
+| | | variables
+| | | | l = &<d0>heap.malloc0[2][0]
+| | dyscope d15 (parent=d4, static=38)
+| | | variables
+| | | | i = 3
+| | dyscope d16 (parent=d17, static=53)
+| | | variables
+| | | | left = 2
+| | | | right = 3
+| | dyscope d17 (parent=d18, static=52)
+| | | variables
+| | | | bottom = 4
+| | | | item = 1
+| | | | child = 0
+| | | | parent = 1
+| | dyscope d18 (parent=d0, static=26)
+| | | variables
+| | | | q = &<d0>heap.malloc2[0][0]
+| | dyscope d19 (parent=d0, static=17)
+| | | variables
+| | | | n = &<d0>heap.malloc1[3][0]
+| | dyscope d20 (parent=d0, static=13)
+| | | variables
+| | | | l = &<d0>heap.malloc0[4][0]
+| | dyscope d21 (parent=d4, static=38)
+| | | variables
+| | | | i = 4
+| | dyscope d22 (parent=d23, static=52)
+| | | variables
+| | | | bottom = NULL
+| | | | item = NULL
+| | | | child = NULL
+| | | | parent = NULL
+| | dyscope d23 (parent=d0, static=26)
+| | | variables
+| | | | q = &<d0>heap.malloc2[0][0]
+| | dyscope d24 (parent=d0, static=22)
+| | | variables
+| | | | q = &<d0>heap.malloc2[0][0]
+| | dyscope d25 (parent=d0, static=13)
+| | | variables
+| | | | l = &<d0>heap.malloc0[0][0]
+| Process states
+| | process 0
+| | | call stack
+| | | | Frame[function=main, location=18, unbounded_heap_based_priority_queue.cvl:272.2 "}", dyscope=d1]
+| | process 1
+| | | atomicCount=1
+| | | call stack
+| | | | Frame[function=lock_acquire, location=133, unbounded_heap_based_priority_queue.cvl:53.6-10 "$when", dyscope=d9]
+| | | | Frame[function=lock_heap, location=162, unbounded_heap_based_priority_queue.cvl:124.2-13 "lock_acquire", dyscope=d8]
+| | | | Frame[function=priority_queue_remove_min, location=63, unbounded_heap_based_priority_queue.cvl:186.2-10 "lock_heap", dyscope=d6]
+| | | | Frame[function=_par_proc1, location=184, unbounded_heap_based_priority_queue.cvl:270.14-38 "priority_queue_remove_min", dyscope=d5]
+| | process 2
+| | | atomicCount=1
+| | | call stack
+| | | | Frame[function=lock_acquire, location=133, unbounded_heap_based_priority_queue.cvl:53.6-10 "$when", dyscope=d14]
+| | | | Frame[function=lock_node, location=153, unbounded_heap_based_priority_queue.cvl:82.2-13 "lock_acquire", dyscope=d13]
+| | | | Frame[function=priority_queue_remove_min, location=67, unbounded_heap_based_priority_queue.cvl:189.2-10 "lock_node", dyscope=d11]
+| | | | Frame[function=_par_proc1, location=184, unbounded_heap_based_priority_queue.cvl:270.14-38 "priority_queue_remove_min", dyscope=d10]
+| | process 3
+| | | atomicCount=1
+| | | call stack
+| | | | Frame[function=lock_acquire, location=133, unbounded_heap_based_priority_queue.cvl:53.6-10 "$when", dyscope=d20]
+| | | | Frame[function=lock_node, location=153, unbounded_heap_based_priority_queue.cvl:82.2-13 "lock_acquire", dyscope=d19]
+| | | | Frame[function=priority_queue_remove_min, location=87, unbounded_heap_based_priority_queue.cvl:211.4-12 "lock_node", dyscope=d16]
+| | | | Frame[function=_par_proc1, location=184, unbounded_heap_based_priority_queue.cvl:270.14-38 "priority_queue_remove_min", dyscope=d15]
+| | process 4
+| | | atomicCount=1
+| | | call stack
+| | | | Frame[function=lock_acquire, location=133, unbounded_heap_based_priority_queue.cvl:53.6-10 "$when", dyscope=d25]
+| | | | Frame[function=lock_heap, location=162, unbounded_heap_based_priority_queue.cvl:124.2-13 "lock_acquire", dyscope=d24]
+| | | | Frame[function=priority_queue_remove_min, location=63, unbounded_heap_based_priority_queue.cvl:186.2-10 "lock_heap", dyscope=d22]
+| | | | Frame[function=_par_proc1, location=184, unbounded_heap_based_priority_queue.cvl:270.14-38 "priority_queue_remove_min", dyscope=d21]
+
+Violation of Deadlock found in (id=4687):
+A deadlock is possible:
+  Path condition: forall _t : dynamicType . (0 <= CIVL_SIZEOF(_t) - 1)
+  Enabling predicate: false
+process p0 (id=0): false
+process p1 (id=1): false
+process p2 (id=2): false
+process p3 (id=3): false
+process p4 (id=4): false
+
+Trace ends after 603 trace steps.
+Violation(s) found.
+
+=== Source files ===
+unbounded_heap_based_priority_queue.cvl  (unbounded_heap_based_priority_queue.cvl)
+priority_queue.cvh  (../include/priority_queue.cvh)
+
+
+=== Command ===
+civl run -showTransitions unbounded_heap_based_priority_queue.cvl 
+
+=== Stats ===
+   time (s)            : 1.62
+   memory (bytes)      : 2155872256
+   max process count   : 6
+   states              : 1118
+   seed                : 1620223820484
+   valid calls         : 6290
+   provers             : cvc4, z3, why3
+   prover calls        : 0
+

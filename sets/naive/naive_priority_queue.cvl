@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
 #include <limits.h>
 #include "../include/naive_priority_queue.cvh"
 
@@ -33,6 +34,8 @@ typedef struct _npriority_queue
 NNode* create_naive_node() {
   NNode* new_naive_node = (NNode*) malloc(sizeof(NNode));
   new_naive_node->tag = EMPTY;
+  new_naive_node->score = -1;
+  new_naive_node->item = -1;
   return new_naive_node;
 }
 
@@ -47,7 +50,7 @@ NPQueue* create_naive_priority_queue() {
   q->next = ROOT;
   q->heap = (NNode**) malloc(sizeof(NNode*)*(CAPACITY + 1));
   for (int i = 0; i < CAPACITY + 1; i++) {
-    q->heap[i] = (NNode*) malloc(sizeof(NNode));
+    q->heap[i] = create_naive_node();
   }
   q->length = CAPACITY;
   return q;
@@ -59,6 +62,30 @@ void destroy_naive_priority_queue(NPQueue* q) {
   }
   free(q->heap);
   free(q);
+}
+
+NPQueue* duplicate_naive_priority_queue(NPQueue* original) {
+  /*
+  NPQueue* result = (NPQueue*) malloc(sizeof(NPQueue));
+  memcpy(result, original, sizeof(NPQueue));
+  for (int i = 0; i < original->length; i++) {
+    result->heap[i] = (NNode*) malloc(sizeof(NNode));
+    memcpy(result->heap[i], original->heap[i], sizeof(NNode));
+    printf("Copied value %d in original as value %d in dupe\n",
+	   original->heap[i]->item,
+	   result->heap[i]->item);
+  }
+  */
+
+  NPQueue* result = create_naive_priority_queue();
+  result->next = original->next;
+  result->length = original->length;
+  for (int i = 0; i < original->length; i++) {
+    result->heap[i]->tag = original->heap[i]->tag;
+    result->heap[i]->score = original->heap[i]->score;
+    result->heap[i]->item = original->heap[i]->item;
+  }
+  return result;
 }
 
 void naive_priority_queue_swap(NPQueue* q, int i, int j) {
@@ -96,7 +123,7 @@ void naive_priority_queue_add(NPQueue* q, int item, int priority) {
 
 int naive_priority_queue_remove_min(NPQueue* q) {
   int bottom = --q->next;
-  if (q->heap[ROOT]->tag == EMPTY) {
+  if (q->heap[ROOT]->tag == EMPTY || bottom < 0) {
     return -1;
   }
   int item = q->heap[ROOT]->item;
@@ -128,12 +155,13 @@ int naive_priority_queue_remove_min(NPQueue* q) {
 }
 
 _Bool naive_priority_queue_contains(NPQueue *q, int item) {
+  _Bool result = false;
   for (int i = 0; i < CAPACITY; i++) {
     if (q->heap[i]->tag != EMPTY && q->heap[i]->item == item) {
-      return true;
+      result = true;
     }
   }
-  return false;
+  return result;
 }
 
 int naive_priority_queue_item_index(NPQueue* q, int i) {
@@ -143,3 +171,26 @@ int naive_priority_queue_item_index(NPQueue* q, int i) {
 int naive_priority_queue_score_index(NPQueue* q, int i) {
   return q->heap[i]->score;
 }
+
+//int main() {
+//  int n = 5;
+//  NPQueue* q = create_naive_priority_queue();
+//  int ins[n];
+//  int ins_pr[n];
+//  int outs[n];
+//  printf("Inputs: {");
+//  for (int i = 0; i < n; i++) {
+//    ins[i] = $choose_int(n);
+//    ins_pr[i] = $choose_int(n);
+//    naive_priority_queue_add(q, ins[i], ins_pr[i]);
+//    printf("%d(%d), ", ins[i], ins_pr[i]);
+//  }
+//  printf("}\nOutputs: {");
+//  for (int i = 0; i < n; i++) {
+//    outs[i] = naive_priority_queue_remove_min(q);
+//    printf("%d, ", outs[i]);
+//  }
+//  printf("}\n");
+//  destroy_naive_priority_queue(q);
+//}
+//

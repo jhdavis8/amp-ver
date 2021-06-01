@@ -8,6 +8,7 @@
 #include "../include/set.cvh"
 #include "../include/list.cvh"
 #include "../include/priority_queue.cvh"
+#include "../include/naive_priority_queue.cvh"
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
@@ -53,7 +54,7 @@ void printInitInfo() {
   print_steps();
 }
 
-void printQueue(_Bool* s) {
+void printBoolResults(_Bool* s) {
   _Bool first = true;
   printf("\t{");
   for (int v = 0; v < num_vals; v++) {
@@ -61,6 +62,19 @@ void printQueue(_Bool* s) {
       if (first) first = false;
       else printf(", ");
       printf("%d", v);
+    }
+  }
+  printf("}");
+}
+
+void printIntResults(int* s) {
+  _Bool first = true;
+  printf("\t{");
+  for (int v = 0; v < num_steps; v++) {
+    if (s[v] != -1) {
+      if (first) first = false;
+      else printf(", ");
+      printf("%d", s[v]);
     }
   }
   printf("}");
@@ -82,7 +96,22 @@ void printOpInfo(int type, int tid, _Bool op, int val, _Bool* results) {
   printf("\t Thread[%d] performs ", tid);
   printf((op==ADD?"<ADD>":"<DEL>"));
   printf(" value: %d", val);
-  printQueue(results);
+  printBoolResults(results);
+  printf("\n");
+}
+
+void printOpInfo_int(int type, int tid, _Bool op, int val, int* results) {
+  if (type == RESULT) {
+    printf("[RESULT]");
+  } else if (type == ACTUAL) {
+    printf("[ACTUAL]");
+  } else {
+    printf("[PERMS%d]", type);
+  }
+  printf("\t Thread[%d] performs ", tid);
+  printf((op==ADD?"<ADD>":"<DEL>"));
+  printf(" value: %d", val);
+  printIntResults(results);
   printf("\n");
 }
 
@@ -102,6 +131,24 @@ void printOpInfo_priority_queue(int type, int tid, _Bool op, int val, PriorityQu
   printOpInfo(type, tid, op, val, temp_results);
 }
 
+void printOpInfo_naive_priority_queue(int type, int tid, _Bool op, int val, NPQueue* pqueue) {
+  int temp_results[num_steps];
+
+  for (int step = 0; step < num_steps; step++)
+    temp_results[step] = naive_priority_queue_remove_min(pqueue);
+  printOpInfo_int(type, tid, op, val, temp_results);
+}
+
+void printNPQueue(NPQueue* pqueue) {
+  int temp_results[num_steps];
+
+  for (int step = 0; step < num_steps; step++)
+    temp_results[step] = naive_priority_queue_remove_min(pqueue);
+
+  printIntResults(temp_results);
+  printf("\n");
+}
+
 void printOpInfo_set(int type, int tid, _Bool op, int val, Set* set) {
   _Bool temp_results[num_vals];
 
@@ -116,6 +163,24 @@ void printOpInfo_list(int type, int tid, _Bool op, int val, List* list) {
   for (int val = 0; val < num_vals; val++)
     temp_results[val] = list_contains(list, val);
   printOpInfo(type, tid, op, val, temp_results);
+}
+
+void printEquivSeqInfo_naive_priority_queue(int* perms, NPQueue* results) {
+  int step_counters[nthreads];
+
+  for (int tid = 0; tid < nthreads; tid++)
+    step_counters[tid] = 0;
+
+  printf("[PASS]\t Equivalent sequential execution: \n");
+  for (int step = 0; step < num_steps; step++) {
+    int tid = perms[step];
+    int step_local = step_counters[tid];
+    _Bool op = ops[tid][step_local];
+    int val = vals[tid][step_local];
+
+    printOpInfo_naive_priority_queue(RESULT, tid, op, val, results);
+    step_counters[tid]++;
+  }  
 }
 
 void printEquivSeqInfo(int* perms, _Bool* results) {
