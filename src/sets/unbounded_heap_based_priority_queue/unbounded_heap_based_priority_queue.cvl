@@ -214,6 +214,7 @@ int priority_queue_remove_min(PriorityQueue* q) {
   lock_heap(q);
   int bottom = --q->next;
   if (bottom < 0) {
+    q->next++;
     unlock_heap(q);
     return -1;
   }

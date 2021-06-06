@@ -102,6 +102,10 @@ void naive_priority_queue_swap(NPQueue* q, int i, int j) {
 
 void naive_priority_queue_add(NPQueue* q, int item, int priority) {
   int child = q->next++;
+  //printf("Child val: %d\n", child);
+  if (child < 0) {
+    child = 0;
+  }
   init_naive_node(q->heap[child], item, priority);
   while (child > ROOT) {
     int parent = child / 2;
@@ -123,7 +127,11 @@ void naive_priority_queue_add(NPQueue* q, int item, int priority) {
 
 int naive_priority_queue_remove_min(NPQueue* q) {
   int bottom = --q->next;
-  if (q->heap[ROOT]->tag == EMPTY || bottom < 0) {
+  if (q->heap[ROOT]->tag == EMPTY) {
+    return -1;
+  }
+  if (bottom < 0) {
+    q->next++;
     return -1;
   }
   int item = q->heap[ROOT]->item;
