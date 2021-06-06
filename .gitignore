@@ -1,3 +1,4 @@
 *.out
-sets/CIVLREP
+src/sets/CIVLREP
+src/sets/logs
 *~
