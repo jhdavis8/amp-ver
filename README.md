@@ -21,7 +21,7 @@ Optimistic List:
 * **Note**: This implementation does verify but may need further debugging.
 
 Lock-Free Unbounded Queue
-* sets/lock_free_unbounded_queue.cvl
+* sets/lock_free_unbounded_queue/lock_free_unbounded_queue.cvl
 * A queue implementation which uses atomic compare and swap operations to maintain correctness, with a lazy/two-step add/remove process.
 * AMP Chapter 10.5, page 230
 
@@ -50,9 +50,14 @@ Striped Cuckoo Hash Set:
 * sets/striped_cuckoo/striped_cuckoo.cvl
 * An open-address hash set which combines the approaches of the cuckoo hash set and the striped hash set.
 * AMP Chapter 13.4.3, page 322
-* **Note**: This data structure fails to verify due to a suspected bug in the relocate() method.
+* **Note**: This data structure fails to verify in its unmodified form due to a confirmed bug in the relocate() method. We have implemented a patch that can be enabled with the ENABLE_PATCH=1 option at the command line.
 
-## Publication Targets:
+Unbounded Heap-Based Priority Queue
+* sets/unbounded_heap_based_priority_queue/unbounded_heap_based_priority_queue.cvl
+* A priority queue implementation which uses a fine-grained locking approach for synchronization of the underlying heap structure.
+* AMP Chapter 15.4, page 363
+
+## Publication Targets (outdated):
 
 
 	PPoPP 2020:  ACM SIGPLAN Symposium on Principles and Practice of Parallel
