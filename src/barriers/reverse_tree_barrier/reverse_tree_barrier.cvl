@@ -4,6 +4,7 @@
  * Verified Software Lab, Univ. of Delaware
  */
 
+#include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
 #include <math.h>
@@ -41,14 +42,15 @@ void destroy_node(Node* node) {
 
 void node_wait(Node* n, Barrier* b, int tid) {
   _Bool my_sense = b->thread_sense[tid];
-  $atom {
-    int position = n->count--;
+  int position;
+  $atomic {
+    position = n->count--;
   }
   if (position == 1) {
     if (n->parent != NULL) {
       node_wait(n->parent, b, tid);
     }
-    $atom {
+    $atomic {
       n->count = b->radix;
     }
     n->sense = my_sense;
@@ -56,6 +58,17 @@ void node_wait(Node* n, Barrier* b, int tid) {
     $when (n->sense != my_sense) {/* continue */}
   }
   b->thread_sense[tid] = !my_sense;
+}
+
+void build(Barrier* b, Node* parent, int depth) {
+  if (depth == 0) {
+    b->leaf[b->leaves++] = parent;
+  } else {
+    for (int i = 0; i < b->radix; i++) {
+      Node* child = create_node(b->radix, parent);
+      build(b, child, depth - 1);
+    }
+  }
 }
 
 Barrier* create_barrier(int n, int r) {
@@ -76,17 +89,6 @@ Barrier* create_barrier(int n, int r) {
   Node* root = create_node(r, NULL);
   build(new_barrier, root, depth - 1);
   return new_barrier;
-}
-
-void build(Barrier* b, Node* parent, int depth) {
-  if (depth == 0) {
-    b->leaf[b->leaves++] = parent;
-  } else {
-    for (int i = 0; i < b->radix; i++) {
-      Node* child = create_node(b->radix, parent);
-      build(b, child, depth - 1);
-    }
-  }
 }
 
 void barrier_wait(Barrier* b, int tid) {
