@@ -22,6 +22,9 @@ endif
 ifndef HASH_OPT
 	HASH_OPT = 0
 endif
+ifndef DEP_BND
+	DEP_BND = 2
+endif
 
 DEFINES = -DENABLE_PATCH=$(PATCH) -DHASH_FN_OPTION=$(HASH_OPT) -DVAL_BND=$(VAL_BND)
 
@@ -29,5 +32,5 @@ DEFINES = -DENABLE_PATCH=$(PATCH) -DHASH_FN_OPTION=$(HASH_OPT) -DVAL_BND=$(VAL_B
 
 reverse_tree_barrier : reverse_tree_barrier/reverse_tree_barrier.cvl driver/barrier_driver.cvl \
 	include/barrier.cvh
-	$(CIVL) -inputVAL_B=$(VAL_BND) -inputTHD_B=$(THD_BND) -inputSTP_B=$(STP_BND) \
+	$(CIVL) -inputD_B=$(DEP_BND) -inputSTP_B=$(STP_BND) \
 	 	$(DEFINES) driver/barrier_driver.cvl reverse_tree_barrier/reverse_tree_barrier.cvl

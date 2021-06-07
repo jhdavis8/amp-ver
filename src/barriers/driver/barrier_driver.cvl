@@ -5,18 +5,21 @@
  */
 
 #include <stdio.h>
+#include <string.h>
 #include <stdbool.h>
 #include <math.h>
 #include "../include/barrier.cvh"
 
-$input int THD_B = 4;                         // Max number of threads
+//$input int THD_B = 4;                         // Max number of threads
 $input int STP_B = 10;                        // Max number of iterations in barrier test loop
 $input int RADIX = 2;                         // Radix for the tree (children per node)
-$input int nthreads;                          // Actual number of threads
-$input int D_B = (log(THD_B)/log(RADIX)) - 1; // Max tree depth
+//$input int nthreads;                          // Actual number of threads
+//$input int D_B = (log(THD_B)/log(RADIX)) - 1; // Max tree depth
+$input int D_B = 2;
 $input int depth;                             // Actual tree depth
 $assume(1 <= depth && depth <= D_B);
-$assume(nthreads == pow(RADIX, depth + 1) && 1 <= nthreads && nthreads <= THD_B);
+int nthreads = pow(RADIX, depth + 1);
+//$assume(nthreads == pow(RADIX, depth + 1) && 1 <= nthreads && nthreads <= THD_B);
 
 Barrier* curr_barrier;
 _Bool thread_state[nthreads];
@@ -29,7 +32,7 @@ void driver(int tid) {
     barrier_wait(curr_barrier, tid);
     $assert($forall (int i : 0..nthreads-1) thread_state[i] == thread_state[tid]);
     barrier_wait(curr_barrier, tid);
-    if (tid == 0) printf("[STEP]\t Completed iteration %d", iter);
+    if (tid == 0) printf("[STEP]\t Iteration %d completed\n", iter);
     iter++;
   }
 }

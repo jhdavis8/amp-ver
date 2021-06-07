@@ -12,17 +12,19 @@
 
 typedef struct _node Node;
 
-struct _node {
+struct _node
+{
   int count;
   Node* parent;
   _Bool sense;
 };
 
-struct _barrier {
+struct _barrier
+{
   int radix;
   _Bool* thread_sense;
   int leaves;
-  Node* leaf;
+  Node** leaf;
   int nthreads;
 };
 
@@ -55,7 +57,7 @@ void node_wait(Node* n, Barrier* b, int tid) {
     }
     n->sense = my_sense;
   } else {
-    $when (n->sense != my_sense) {/* continue */}
+    while (n->sense != my_sense) {/* continue */}
   }
   b->thread_sense[tid] = !my_sense;
 }
@@ -76,7 +78,7 @@ Barrier* create_barrier(int n, int r) {
   new_barrier->radix = r;
   new_barrier->nthreads = n;
   new_barrier->leaves = 0;
-  new_barrier->leaf = (Node*) malloc(sizeof(Node)*(n / r));
+  new_barrier->leaf = (Node**) malloc(sizeof(Node*)*(n / r));
   int depth = 0;
   new_barrier->thread_sense = (_Bool*) malloc(sizeof(_Bool)*n);
   for (int i = 0; i < n; i++) new_barrier->thread_sense[i] = true;
