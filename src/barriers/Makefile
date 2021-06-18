@@ -28,7 +28,12 @@ endif
 
 DEFINES = -DENABLE_PATCH=$(PATCH) -DHASH_FN_OPTION=$(HASH_OPT) -DVAL_BND=$(VAL_BND)
 
-.PHONY: reverse_tree_barrier
+.PHONY: reverse_tree_barrier combining_tree_barrier
+
+combining_tree_barrier : combining_tree_barrier/combining_tree_barrier.cvl driver/barrier_driver.cvl \
+	include/barrier.cvh
+	$(CIVL) -inputD_B=$(DEP_BND) -inputSTP_B=$(STP_BND) \
+	 	$(DEFINES) driver/barrier_driver.cvl combining_tree_barrier/combining_tree_barrier.cvl
 
 reverse_tree_barrier : reverse_tree_barrier/reverse_tree_barrier.cvl driver/barrier_driver.cvl \
 	include/barrier.cvh
