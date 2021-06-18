@@ -1,4 +1,6 @@
 *.out
 src/sets/CIVLREP
 src/sets/logs
+src/barriers/logs
+src/barriers/CIVLREP
 *~
