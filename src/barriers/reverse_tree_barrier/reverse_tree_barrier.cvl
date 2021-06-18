@@ -17,6 +17,7 @@ struct _node
   int count;
   Node* parent;
   _Bool sense;
+  int depth;
 };
 
 struct _barrier
@@ -44,20 +45,22 @@ void destroy_node(Node* node) {
 
 void node_wait(Node* n, Barrier* b, int tid) {
   _Bool my_sense = b->thread_sense[tid];
+  if ((tid % b->radix) == 0) {
+    if (n->parent != NULL) {
+      node_wait(n->parent, b, tid / b->radix);
+    }
+  }
   int position;
   $atomic {
     position = n->count--;
   }
   if (position == 1) {
-    if (n->parent != NULL) {
-      node_wait(n->parent, b, tid);
-    }
     $atomic {
       n->count = b->radix;
     }
     n->sense = my_sense;
   } else {
-    while (n->sense != my_sense) {/* continue */}
+    $when (n->sense == my_sense) {/* continue */}
   }
   b->thread_sense[tid] = !my_sense;
 }
@@ -68,6 +71,7 @@ void build(Barrier* b, Node* parent, int depth) {
   } else {
     for (int i = 0; i < b->radix; i++) {
       Node* child = create_node(b->radix, parent);
+      child->depth = depth;
       build(b, child, depth - 1);
     }
   }
@@ -89,6 +93,7 @@ Barrier* create_barrier(int n, int r) {
     $assert(curr_size > 0);
   }
   Node* root = create_node(r, NULL);
+  root->depth = depth;
   build(new_barrier, root, depth - 1);
   return new_barrier;
 }
