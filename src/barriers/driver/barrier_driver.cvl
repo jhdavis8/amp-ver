@@ -10,17 +10,13 @@
 #include <math.h>
 #include "../include/barrier.cvh"
 
-//$input int THD_B = 4;                         // Max number of threads
 $input int STP_B = 10;                        // Max number of iterations in barrier test loop
 $input int RADIX = 2;                         // Radix for the tree (children per node)
-//$input int nthreads;                          // Actual number of threads
-//$input int D_B = (log(THD_B)/log(RADIX)) - 1; // Max tree depth
-$input int D_B = 2;
+$input int D_B = 2;                           // Max tree depth
 $input int depth;                             // Actual tree depth
-//int depth = 2;
 $assume(1 <= depth && depth <= D_B);
-int nthreads = pow(RADIX, depth + 1);
-//$assume(nthreads == pow(RADIX, depth + 1) && 1 <= nthreads && nthreads <= THD_B);
+$input int THD_N = pow(RADIX, depth + 1);     // Number of threads
+int nthreads = THD_N;
 
 Barrier* curr_barrier;
 _Bool thread_state[nthreads];
