@@ -4,6 +4,8 @@
 
 *All page numbers taken from the Revised Reprint*
 
+### Lists
+
 Coarse-grained List:
 * sets/coarselist/coarse_list.cvl
 * A linked list which uses a single lock to control access to the entire list.
@@ -18,12 +20,15 @@ Optimistic List:
 * sets/optimisticlist/optimistic_list.cvl
 * A linked list which allows searching the list without locking, locks when the nodes are found, and then checks that the locked nodes are correct. If a synchronization conflict causes the wrong node to be locked, the locks are released and the process restarts.
 * AMP Chapter 9.6, page 205
-* **Note**: This implementation does verify but may need further debugging.
+
+### Queues
 
 Lock-Free Unbounded Queue
 * sets/lock_free_unbounded_queue/lock_free_unbounded_queue.cvl
 * A queue implementation which uses atomic compare and swap operations to maintain correctness, with a lazy/two-step add/remove process.
 * AMP Chapter 10.5, page 230
+
+### Hash Sets
 
 Naive Set:
 * sets/naive/naive_set.cvl
@@ -52,10 +57,34 @@ Striped Cuckoo Hash Set:
 * AMP Chapter 13.4.3, page 322
 * **Note**: This data structure fails to verify in its unmodified form due to a confirmed bug in the relocate() method. We have implemented a patch that can be enabled with the ENABLE_PATCH=1 option at the command line.
 
+### Priority Queues
+
 Unbounded Heap-Based Priority Queue
 * sets/unbounded_heap_based_priority_queue/unbounded_heap_based_priority_queue.cvl
 * A priority queue implementation which uses a fine-grained locking approach for synchronization of the underlying heap structure.
 * AMP Chapter 15.4, page 363
+
+### Barriers
+
+Sense-reversing Barrier
+* barriers/sense_barrier/sense_barrier.cvl
+* A simple barrier with one global sense and thread-local Boolean senses
+* AMP Chapter 18.3, page 433
+
+Combining Tree Barrier
+* barriers/combining_tree_barrier/combining_tree_barrier.cvl
+* A tree barrier in which each node is a barrier between two threads, and all threads are assigned in pairs to leaf nodes. Similar to a tournament barrier.
+* AMP Chapter 18.4, page 434
+
+Static Tree Barrier
+* barriers/static_tree_barrier/static_tree_barrier.cvl
+* A tree barrier in which each thread is a assigned a node, and each node waits for its children to complete.
+* AMP Chapter 18.5, page 436
+
+Reverse Tree Barrier
+* barriers/reverse_tree_barrier/reverse_tree_barrier.cvl
+* A tree barrier similar to the combining tree barrier except that barrier completion starts at the root rather than at the leaves, and notifications come back to the root from the leaves. Presented as an exercise for the reader to check correctness.
+* AMP Chapter 18.8, Exercise 18.7, page 447
 
 ## Publication Targets (outdated):
 
