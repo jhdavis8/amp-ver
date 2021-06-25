@@ -15,8 +15,25 @@ $input int RADIX = 2;                         // Radix for the tree (children pe
 $input int D_B = 2;                           // Max tree depth
 $input int depth;                             // Actual tree depth
 $assume(1 <= depth && depth <= D_B);
-$input int THD_N = pow(RADIX, depth + 1);     // Number of threads
-int nthreads = THD_N;
+
+#ifdef THREADS_ARE_LEAVES
+$input int THD_B = pow(RADIX, depth + 1);
+int nthreads = THD_B;
+
+#else
+
+#ifdef THREADS_ARE_NODES
+$input int THD_B = pow(RADIX, depth + 1) - 1;
+int nthreads = THD_B;
+
+#else
+$input int THD_B = 4;
+$input int nthreads;
+$assume(1 <= nthreads && nthreads <= THD_B);
+
+#endif
+#endif
+
 
 Barrier* curr_barrier;
 _Bool thread_state[nthreads];
