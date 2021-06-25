@@ -7,52 +7,52 @@
 ### Lists
 
 Coarse-grained List:
-* sets/coarselist/coarse_list.cvl
+* src/lists/coarselist/coarse_list.cvl
 * A linked list which uses a single lock to control access to the entire list.
 * AMP Chapter 9.4, page 200
 
 Fine-grained List:
-* sets/finelist/fine_list.cvl
+* src/lists/finelist/fine_list.cvl
 * A linked list which uses one lock for each node of the list.
 * AMP Chapter 9.5, page 201
 
 Optimistic List:
-* sets/optimisticlist/optimistic_list.cvl
+* src/lists/optimisticlist/optimistic_list.cvl
 * A linked list which allows searching the list without locking, locks when the nodes are found, and then checks that the locked nodes are correct. If a synchronization conflict causes the wrong node to be locked, the locks are released and the process restarts.
 * AMP Chapter 9.6, page 205
 
 ### Queues
 
 Lock-Free Unbounded Queue
-* sets/lock_free_unbounded_queue/lock_free_unbounded_queue.cvl
+* src/queues/lock_free_unbounded_queue/lock_free_unbounded_queue.cvl
 * A queue implementation which uses atomic compare and swap operations to maintain correctness, with a lazy/two-step add/remove process.
 * AMP Chapter 10.5, page 230
 
 ### Hash Sets
 
 Naive Set:
-* sets/naive/naive_set.cvl
+* src/hash_sets/naive/naive_set.cvl
 * A minimum set implementation (created for testing the driver)
 * No corresponding AMP chapter
 
 Coarse-grained Hash Set:
-* sets/coarse/coarse_set.cvl
+* src/hash_sets/coarse/coarse_set.cvl
 * A closed-address hash set which uses a single lock to control access.
 * AMP Chapter 13.2.1, page 302
 
 Striped Hash Set:
-* sets/striped/striped_set.cvl
+* src/hash_sets/striped/striped_set.cvl
 * A closed-address hash set which uses a fixed number of locks which each control access to a disjoint subet of the set's buckets.
 * AMP Chapter 13.2.2, page 303
 
 Sequential Cuckoo Hash Set:
-* sets/cuckoo/cuckoo_seq.cvl
+* src/hash_sets/cuckoo/cuckoo_seq.cvl
 * An open-address hash set with (sequential access only) which demonstrates cuckoo hashing. Cuckoo hashing involves the use of two hash tables with different hash function, in which values displaced from one table are moved to the other until all items are stored.
 * AMP Chapter 13.4.1, page 316
 * **Note**: This data structure fails to verify as it has no means to prevent synchronization errors.
 
 Striped Cuckoo Hash Set:
-* sets/striped_cuckoo/striped_cuckoo.cvl
+* src/hash_sets/striped_cuckoo/striped_cuckoo.cvl
 * An open-address hash set which combines the approaches of the cuckoo hash set and the striped hash set.
 * AMP Chapter 13.4.3, page 322
 * **Note**: This data structure fails to verify in its unmodified form due to a confirmed bug in the relocate() method. We have implemented a patch that can be enabled with the ENABLE_PATCH=1 option at the command line.
@@ -60,29 +60,29 @@ Striped Cuckoo Hash Set:
 ### Priority Queues
 
 Unbounded Heap-Based Priority Queue
-* sets/unbounded_heap_based_priority_queue/unbounded_heap_based_priority_queue.cvl
+* src/priority_queues/unbounded_heap_based_priority_queue/unbounded_heap_based_priority_queue.cvl
 * A priority queue implementation which uses a fine-grained locking approach for synchronization of the underlying heap structure.
 * AMP Chapter 15.4, page 363
 
 ### Barriers
 
 Sense-reversing Barrier
-* barriers/sense_barrier/sense_barrier.cvl
+* src/barriers/sense_barrier/sense_barrier.cvl
 * A simple barrier with one global sense and thread-local Boolean senses
 * AMP Chapter 18.3, page 433
 
 Combining Tree Barrier
-* barriers/combining_tree_barrier/combining_tree_barrier.cvl
+* src/barriers/combining_tree_barrier/combining_tree_barrier.cvl
 * A tree barrier in which each node is a barrier between two threads, and all threads are assigned in pairs to leaf nodes. Similar to a tournament barrier.
 * AMP Chapter 18.4, page 434
 
 Static Tree Barrier
-* barriers/static_tree_barrier/static_tree_barrier.cvl
+* src/barriers/static_tree_barrier/static_tree_barrier.cvl
 * A tree barrier in which each thread is a assigned a node, and each node waits for its children to complete.
 * AMP Chapter 18.5, page 436
 
 Reverse Tree Barrier
-* barriers/reverse_tree_barrier/reverse_tree_barrier.cvl
+* src/barriers/reverse_tree_barrier/reverse_tree_barrier.cvl
 * A tree barrier similar to the combining tree barrier except that barrier completion starts at the root rather than at the leaves, and notifications come back to the root from the leaves. Presented as an exercise for the reader to check correctness.
 * AMP Chapter 18.8, Exercise 18.7, page 447
 
