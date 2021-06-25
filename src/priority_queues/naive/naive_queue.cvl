@@ -1,0 +1,99 @@
+/* Minimum implementation of Queue for driver 
+ * oracle state keeping.
+ * Jan-26-2021 
+ * Josh Davis
+ * VSL Lab; Dept. CIS; UDel
+ */
+
+#include <stdlib.h>	// Malloc
+#include <stdio.h>	// Printing outputs
+#include <string.h>	// Output content.
+#include <stdbool.h>
+#include "../include/naive_queue.cvh"
+
+typedef struct _nnode
+{
+  int value;
+  struct _nnode* next;
+} NNode;
+
+
+typedef struct _nqueue
+{
+  int size;
+  NNode* head;
+  NNode* tail;
+} NQueue;
+
+_Bool naive_queue_contains(NQueue* queue, int value) {
+  NNode* curr = queue->head->next;
+  while (curr) {
+    if (curr->value == value) {
+      return true;
+    }
+    curr = curr->next;
+  }
+  return false;
+}
+
+int naive_queue_index(NQueue* queue, int index) {
+  NNode* curr = queue->head->next;
+  int location = 0;
+  while (curr) {
+    if (location == index) {
+      return curr->value;
+    }
+    curr = curr->next;
+    location++;
+  }
+  return -1;
+}
+
+_Bool naive_enq(NQueue* queue, int value) {
+  NNode* new = malloc(sizeof(NNode));
+  new->value = value;
+  new->next = NULL;
+  queue->tail->next = new;
+  queue->tail = new;
+  queue->size++;
+  return true;
+}
+
+int naive_deq(NQueue* queue) {
+  if (queue->head->next) {
+    NNode* removed = queue->head->next;
+    int result = queue->head->next->value;
+    queue->head->next = queue->head->next->next;
+    if (removed == queue->tail) {
+      queue->tail = queue->head;
+    }
+    queue->size--;
+    free(removed);
+    return result;
+  } else {
+    return -1;
+  }
+}
+
+NQueue* naive_queue_create() {
+  NQueue* q;
+  q = malloc(sizeof(NQueue));
+  q->size = 0;
+  q->head = malloc(sizeof(NNode));
+  q->head->value = -1;
+  q->head->next = NULL;
+  q->tail = q->head;
+  return q;
+}
+
+_Bool naive_queue_destroy(NQueue* queue) {
+  NNode* curr = queue->head;
+  NNode* prev = NULL;
+  while (curr) {
+    prev = curr;
+    curr = curr->next;
+    free(prev);
+  }
+  free(queue);
+  return true;
+}

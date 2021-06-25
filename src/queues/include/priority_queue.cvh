@@ -1,0 +1,24 @@
+// priority_queue.cvh
+#ifndef PQUEUE_H
+#define PQUEUE_H
+
+struct _priority_queue;
+typedef struct _priority_queue PriorityQueue;
+
+void priority_queue_add(PriorityQueue* q, int item, int priority);
+
+int priority_queue_remove_min(PriorityQueue* q);
+
+_Bool priority_queue_contains(PriorityQueue *q, int item);
+
+PriorityQueue* create_priority_queue();
+
+void destroy_priority_queue(PriorityQueue* q);
+
+PriorityQueue* duplicate_priority_queue(PriorityQueue* o);
+
+int priority_queue_item_index(PriorityQueue* q, int i);
+
+int priority_queue_score_index(PriorityQueue* q, int i);
+
+#endif
