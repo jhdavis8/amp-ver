@@ -4,7 +4,7 @@
 
 *All page numbers taken from the Revised Reprint*
 
-### Lists
+### Lists (Ch. 9)
 
 Coarse-grained List:
 * src/lists/coarselist/coarse_list.cvl
@@ -21,14 +21,14 @@ Optimistic List:
 * A linked list which allows searching the list without locking, locks when the nodes are found, and then checks that the locked nodes are correct. If a synchronization conflict causes the wrong node to be locked, the locks are released and the process restarts.
 * AMP Chapter 9.6, page 205
 
-### Queues
+### Queues (Ch. 10)
 
 Lock-Free Unbounded Queue
 * src/queues/lock_free_unbounded_queue/lock_free_unbounded_queue.cvl
 * A queue implementation which uses atomic compare and swap operations to maintain correctness, with a lazy/two-step add/remove process.
 * AMP Chapter 10.5, page 230
 
-### Hash Sets
+### Hash Sets (Ch. 13)
 
 Naive Set:
 * src/hash_sets/naive/naive_set.cvl
@@ -57,14 +57,14 @@ Striped Cuckoo Hash Set:
 * AMP Chapter 13.4.3, page 322
 * **Note**: This data structure fails to verify in its unmodified form due to a confirmed bug in the relocate() method. We have implemented a patch that can be enabled with the ENABLE_PATCH=1 option at the command line.
 
-### Priority Queues
+### Priority Queues (Ch. 15)
 
 Unbounded Heap-Based Priority Queue
 * src/priority_queues/unbounded_heap_based_priority_queue/unbounded_heap_based_priority_queue.cvl
 * A priority queue implementation which uses a fine-grained locking approach for synchronization of the underlying heap structure.
 * AMP Chapter 15.4, page 363
 
-### Barriers
+### Barriers (Ch. 18)
 
 Sense-reversing Barrier
 * src/barriers/sense_barrier/sense_barrier.cvl
