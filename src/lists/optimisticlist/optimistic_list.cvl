@@ -156,14 +156,14 @@ _Bool list_add(List* list, int item) {
 	lock_release(curr->lock);
 	return false;
       } else {
-	printf("List state before adding:\n");
-	list_print(list);    
+	//printf("List state before adding:\n");
+	//list_print(list);    
 	Node* new_node = node_create(item);
 	new_node->next = pred->next; 
 	pred->next = new_node;
 	list->size++;
-	printf("List state after adding:\n");
-	list_print(list);
+	//printf("List state after adding:\n");
+	//list_print(list);
 	lock_release(pred->lock);
 	lock_release(curr->lock);
 	return true;
@@ -179,7 +179,7 @@ _Bool list_remove(List* list, int item) {
   while (true) {
     Node* pred = list->head;
     Node* curr = pred->next;
-    printf("************* curr = %p\n", curr); 
+    //printf("************* curr = %p\n", curr); 
     while (curr->key < key) {
       pred = curr;
       curr = curr->next;
