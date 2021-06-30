@@ -41,3 +41,8 @@ optimistic_list : optimisticlist/optimistic_list.cvl driver/list_max_driver.cvl 
 		../util/perm_util.c include/list.cvh
 		$(CIVL) -inputVAL_B=$(VAL_BND) -inputTHD_B=$(THD_BND) -inputSTP_B=$(STP_BND) \
                 $(DEFINES) driver/list_max_driver.cvl optimisticlist/optimistic_list.cvl
+
+lock_free_list : lock_free_list/lock_free_list.cvl driver/list_max_driver.cvl \
+		../util/perm_util.c include/list.cvh
+		$(CIVL) -inputVAL_B=$(VAL_BND) -inputTHD_B=$(THD_BND) -inputSTP_B=$(STP_BND) \
+                $(DEFINES) driver/list_max_driver.cvl lock_free_list/lock_free_list.cvl

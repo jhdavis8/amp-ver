@@ -1,0 +1,162 @@
+/* Concurrent list using lock-free synchronization
+ * Josh Davis
+ * Jun-30-2021
+ * Verified Software Lab, Univ. of Delaware
+ */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <limits.h>
+#include "../include/list.cvh"
+#include "../include/atomic_markable_ref.cvl"
+
+typedef struct _node
+{
+  int item;
+  int key;
+  struct _node* next;
+} Node;
+
+int hash(int i) {
+  return i;
+}
+
+Node * node_create(int item){
+  Node * result = malloc(sizeof(Node));
+  result->key = hash(item);
+  result->item = item;
+  result->next = NULL;
+  return result; 
+}
+
+void node_destroy(Node* node) {
+  if (node->next != NULL) {
+    node_destroy(node->next);
+  }
+  free(node);
+}
+
+
+typedef struct _list
+{
+  int size;
+  Node* head;
+} List;
+
+
+List* list_create() {
+  List* result = (List*) malloc(sizeof(List));
+  result->size = 0;
+  result->head = node_create(INT_MIN);
+  result->head->next = node_create(INT_MAX); 
+  return result;
+}
+
+_Bool list_destroy(List* list) {
+  node_destroy(list->head);
+  free(list);
+  return true;
+}
+
+void list_print(List* list) {
+  Node* curr = list->head;
+  while (curr != NULL) {
+    printf("(%d,%d) ", curr->key, curr->item);
+    curr = curr->next;
+  }
+  printf("\n");
+}
+
+_Bool validate(List* list, Node* pred, Node* curr) {
+  Node* entry = list->head;
+  while (entry->key <= pred->key) {
+    if (entry == pred) {
+      return (pred->next == curr);
+    }
+    entry = entry->next;
+  }
+  return false;
+}
+
+_Bool list_contains(List* list, int item) {
+  int key = hash(item);
+  while (true) {
+    Node* pred = list->head;
+    Node* curr = pred->next;
+    while (curr->key < key) {
+      pred = curr;
+      curr = curr->next;
+    }
+    if (validate(list, pred, curr)) {
+      _Bool result = (curr->key == key);
+      return result;
+    }
+  }
+}
+
+_Bool list_add(List* list, int item) {
+  int key = hash(item);
+  while (true) {
+    Node* pred = list->head;
+    Node* curr = pred->next;
+    while (curr->key < key) {
+      pred = curr;
+      curr = curr->next;
+    }
+    lock_acquire(pred->lock);
+    lock_acquire(curr->lock);
+    if (validate(list, pred, curr)) {
+      if (curr->key == key) {
+	lock_release(pred->lock);
+	lock_release(curr->lock);
+	return false;
+      } else {
+	//printf("List state before adding:\n");
+	//list_print(list);    
+	Node* new_node = node_create(item);
+	new_node->next = pred->next; 
+	pred->next = new_node;
+	list->size++;
+	//printf("List state after adding:\n");
+	//list_print(list);
+	lock_release(pred->lock);
+	lock_release(curr->lock);
+	return true;
+      }
+    }
+    lock_release(pred->lock);
+    lock_release(curr->lock);
+  }
+}
+
+_Bool list_remove(List* list, int item) {
+  int key = hash(item);
+  while (true) {
+    Node* pred = list->head;
+    Node* curr = pred->next;
+    //printf("************* curr = %p\n", curr); 
+    while (curr->key < key) {
+      pred = curr;
+      curr = curr->next;
+    }
+    lock_acquire(pred->lock);
+    lock_acquire(curr->lock);
+    if (validate(list, pred, curr)) {
+      if (curr->key == key) {
+	pred->next = curr->next;
+	curr->next = NULL;
+	node_destroy(curr);
+	list->size--; 
+	lock_release(pred->lock);
+	return true;
+      } else {
+	lock_release(pred->lock);
+	lock_release(curr->lock);
+	return false;
+      }
+    }
+    lock_release(pred->lock);
+    lock_release(curr->lock);
+  }
+}

@@ -1,0 +1,48 @@
+/*
+ * AtomicMarkableReference implementation
+ * Josh Davis, Aamir Majeed
+ * Apr-2018
+ * VIP-HPC, Univ. of Delaware
+ */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+
+typedef struct AtomicMarkableReference {
+  void* reference;
+  _Bool mark;
+} AtomicMarkableReference;
+
+AtomicMarkableReference* create_atomic_markable_reference(void* ref, _Bool m) {
+  AtomicMarkableReference* amr;
+  amr = (AtomicMarkableReference *) malloc(sizeof(AtomicMarkableReference));
+  amr->reference = ref;
+  amr->mark = m;
+  return amr;
+}
+
+$atomic_f _Bool amr_compare_and_set(AtomicMarkableReference* ref,
+				    void* exp_ref, void* new_ref,
+				    _Bool exp_mark, _Bool new_mark) {
+  if (ref->reference == exp_ref && ref->mark == exp_mark) {
+    ref->reference = new_ref;
+    ref->mark = new_mark;
+    return true;
+  } else {
+    return false;
+  }
+}
+
+void* amr_get(AtomicMarkableReference* amr, _Bool* mark_out) {
+  mark_out = &(amr->mark);
+  return amr->reference;
+}
+
+void* amr_get_reference(AtomicMarkableReference* amr) {
+  return amr->reference;
+}
+
+_Bool amr_is_marked(AtomicMarkableReference* amr) {
+  return amr->mark;
+}
