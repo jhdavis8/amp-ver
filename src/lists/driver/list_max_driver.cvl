@@ -88,11 +88,11 @@ void printMatchFail() {
   printf("[RESULT]\t Concurrent execution results:");
 }
 
-void printList(int* s) {
+void printList(_Bool* s) {
   _Bool first = true;
   printf("\t{");
   for (int v = 0; v < num_vals; v++) {
-    for (int c = 0; c < s[v]; c++) {
+    if (s[v]) {
       if (first) first = false;
       else printf(", ");
       printf("%d", v);
@@ -133,7 +133,7 @@ void printOpInfo_int(int type, int tid, _Bool op, int val, int* results) {
 }
 */
 
-void printOpInfo_list(int type, int tid, _Bool op, int val, int* results) {
+void printOpInfo_list(int type, int tid, _Bool op, int val, _Bool* results) {
   if (type == RESULT) {
     printf("[RESULT]");
   } else if (type == ACTUAL) {
@@ -148,7 +148,7 @@ void printOpInfo_list(int type, int tid, _Bool op, int val, int* results) {
   printf("\n");
 }
 
-void printEquivSeqInfo(int* perms, int* results) {
+void printEquivSeqInfo(int* perms, _Bool* results) {
   int step_counters[nthreads];
 
   for (int tid = 0; tid < nthreads; tid++)
@@ -183,7 +183,7 @@ void init() {
   num_perms = calc_num_perms(nthreads, nsteps);
 }
 
-void thread(int tid, List* list, int* results) {
+void thread(int tid, List* list) {
   int num_steps_local = nsteps[tid];
   
   for (int step = 0; step < num_steps_local; step++) {
@@ -195,10 +195,8 @@ void thread(int tid, List* list, int* results) {
     
     if (op == ADD) {
       list_add(list, val);
-      $atomic {results[val]++;}
     } else {
       list_remove(list, val);
-      $atomic {results[val]--;}
     }
 
     // set end time for step
@@ -207,7 +205,7 @@ void thread(int tid, List* list, int* results) {
   }
 }
 
-void permseq(int pid, int* perm, int* oracle_results) {
+void permseq(int pid, int* perm, _Bool* oracle_results) {
   int step_counters[nthreads];
 
   for (int tid = 0; tid < nthreads; tid++)
@@ -220,15 +218,15 @@ void permseq(int pid, int* perm, int* oracle_results) {
     int val = vals[tid][step];
 
     if (op == ADD)
-      oracle_results[val]++;
-    else 
-      oracle_results[val]--;
+      oracle_results[val] = true;
+    else
+      oracle_results[val] = false;
     step_counters[tid]++;
     //printOpInfo(pid, tid, op, val, oracle_results);
   }
 }
 
-_Bool isEqual(int* actual, int* oracle) {
+_Bool isEqual(_Bool* actual, _Bool* oracle) {
   for (int val = 0; val < num_vals; val++)
     if (actual[val] != oracle[val])
       return false;
@@ -241,20 +239,20 @@ int main() {
 
   int pid = 0;
   int** perms = compute_perms(nthreads, nsteps);
-  int actual_results[num_vals];
-  int oracle_results[num_vals];
+  _Bool actual_results[num_vals];
+  _Bool oracle_results[num_vals];
   List* actual_list = list_create();
 
-  for (int val = 0; val < num_vals; val++)
-    actual_results[val] = 0;
-
   $parfor (int tid : 0 .. nthreads-1) {
-    thread(tid, actual_list, actual_results);
+    thread(tid, actual_list);
   }
+
+  for (int val = 0; val < num_vals; val++)
+    actual_results[val] = list_contains(actual_list, val);
   
   for (pid = 0; pid < num_perms; pid++) {
     for (int val = 0; val < num_vals; val++)
-      oracle_results[val] = 0;
+      oracle_results[val] = false;
     permseq(pid, perms[pid], oracle_results);
     if (isEqual(actual_results, oracle_results) == true) {
       printEquivSeqInfo(perms[pid], oracle_results);
