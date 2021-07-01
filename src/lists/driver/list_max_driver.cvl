@@ -28,9 +28,12 @@ $assume(1 <= nthreads && nthreads <= THD_B);
 int num_vals;
 int num_steps;
 int num_perms;
+int time = 0;
 int nsteps[nthreads];
 _Bool ops[nthreads][STP_B];
 int vals[nthreads][STP_B];
+int start_times[nthreads][STP_B];
+int end_times[nthreads][STP_B];
 
 void print_steps() {
   for (int tid = 0; tid < nthreads; tid++) {
@@ -187,17 +190,19 @@ void thread(int tid, List* list, int* results) {
     _Bool op = ops[tid][step];
     int val = vals[tid][step];
 
+    // set start time for step
+    $atomic {start_times[tid][step] = time++;}
+    
     if (op == ADD) {
       list_add(list, val);
-      $atomic {
-	results[val]++;
-      }
+      $atomic {results[val]++;}
     } else {
       list_remove(list, val);
-      $atomic {
-	results[val]--;
-      }
+      $atomic {results[val]--;}
     }
+
+    // set end time for step
+    $atomic {end_times[tid][step] = time++;}    
     //printOpInfo_list(ACTUAL, tid, op, val, list);
   }
 }
