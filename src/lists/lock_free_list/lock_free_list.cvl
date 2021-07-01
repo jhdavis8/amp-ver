@@ -15,28 +15,8 @@ typedef struct _node
 {
   int item;
   int key;
-  struct _node* next;
+  AtomicMarkableReference* next;
 } Node;
-
-int hash(int i) {
-  return i;
-}
-
-Node * node_create(int item){
-  Node * result = malloc(sizeof(Node));
-  result->key = hash(item);
-  result->item = item;
-  result->next = NULL;
-  return result; 
-}
-
-void node_destroy(Node* node) {
-  if (node->next != NULL) {
-    node_destroy(node->next);
-  }
-  free(node);
-}
-
 
 typedef struct _list
 {
@@ -44,119 +24,137 @@ typedef struct _list
   Node* head;
 } List;
 
+typedef struct _window
+{
+  Node* pred;
+  Node* curr;
+} Window;
+
+int hash(int i) {
+  return i;
+}
+
+Node* node_create(int item) {
+  Node* result = malloc(sizeof(Node));
+  result->key = hash(item);
+  result->item = item;
+  result->next = create_atomic_markable_reference(NULL, false);
+  return result;
+}
+
+Node* sentinel_node_create(int key) {
+  Node* result = malloc(sizeof(Node));
+  result->key = key;
+  result->item = -1;
+  result->next = create_atomic_markable_reference(NULL, false);
+  return result;
+}
+
+void node_ref_destroy(AtomicMarkableReference* ref) {
+  Node* node = (Node*) ref->reference;
+  if (node && node->next != NULL) {
+    node_ref_destroy(node->next);
+  }
+  free(node);
+  free(ref);
+}
+
+Window* window_create(Node* p, Node* c) {
+  Window* result = (Window*) malloc(sizeof(Window));
+  result->pred = p;
+  result->curr = c;
+  return result;
+}
+
+Window* find(Node* head, int key) {
+  Node* pred = NULL;
+  Node* curr = NULL;
+  Node* succ = NULL;
+  _Bool f = false;
+  _Bool* marked = &f;
+  _Bool snip;
+ retry: while (true) {
+    pred = head;
+    curr = pred->next->reference;
+    while (true) {
+      succ = amr_get(curr->next, marked);
+      while (*marked) {
+	snip = amr_compare_and_set(pred->next, curr, succ, false, false);
+	if (!snip) goto retry;
+	curr = pred->next->reference;
+	succ = amr_get(curr->next, marked);
+      }
+      if (curr->key >= key) {
+	return window_create(pred, curr);
+      }
+      pred = curr;
+      curr = succ;
+    }
+  }
+}
 
 List* list_create() {
   List* result = (List*) malloc(sizeof(List));
   result->size = 0;
-  result->head = node_create(INT_MIN);
-  result->head->next = node_create(INT_MAX); 
+  result->head = sentinel_node_create(INT_MIN);
+  free(result->head->next);
+  result->head->next = create_atomic_markable_reference(NULL, false);
+  Node* tail = sentinel_node_create(INT_MAX);
+  while (!amr_compare_and_set(result->head->next, NULL, (void*) tail, false, false));
   return result;
 }
 
 _Bool list_destroy(List* list) {
-  node_destroy(list->head);
+  node_ref_destroy(create_atomic_markable_reference((void*) list->head, false));
   free(list);
   return true;
 }
 
-void list_print(List* list) {
-  Node* curr = list->head;
-  while (curr != NULL) {
-    printf("(%d,%d) ", curr->key, curr->item);
-    curr = curr->next;
-  }
-  printf("\n");
-}
-
-_Bool validate(List* list, Node* pred, Node* curr) {
-  Node* entry = list->head;
-  while (entry->key <= pred->key) {
-    if (entry == pred) {
-      return (pred->next == curr);
-    }
-    entry = entry->next;
-  }
-  return false;
-}
-
-_Bool list_contains(List* list, int item) {
-  int key = hash(item);
-  while (true) {
-    Node* pred = list->head;
-    Node* curr = pred->next;
-    while (curr->key < key) {
-      pred = curr;
-      curr = curr->next;
-    }
-    if (validate(list, pred, curr)) {
-      _Bool result = (curr->key == key);
-      return result;
-    }
-  }
-}
-
 _Bool list_add(List* list, int item) {
   int key = hash(item);
+  _Bool splice;
   while (true) {
-    Node* pred = list->head;
-    Node* curr = pred->next;
-    while (curr->key < key) {
-      pred = curr;
-      curr = curr->next;
-    }
-    lock_acquire(pred->lock);
-    lock_acquire(curr->lock);
-    if (validate(list, pred, curr)) {
-      if (curr->key == key) {
-	lock_release(pred->lock);
-	lock_release(curr->lock);
-	return false;
-      } else {
-	//printf("List state before adding:\n");
-	//list_print(list);    
-	Node* new_node = node_create(item);
-	new_node->next = pred->next; 
-	pred->next = new_node;
-	list->size++;
-	//printf("List state after adding:\n");
-	//list_print(list);
-	lock_release(pred->lock);
-	lock_release(curr->lock);
+    Window* window = find(list->head, key); // find pred and curr entries
+    Node* pred = window->pred;
+    Node* curr = window->curr;
+    if (curr->key == key) {                 // is the key present?
+      return false;
+    } else {                                // splice in new node
+      Node* node = node_create(item);
+      free(node->next);
+      node->next = create_atomic_markable_reference(curr, false);
+      if (amr_compare_and_set(pred->next, curr, node, false, false)) {
 	return true;
       }
     }
-    lock_release(pred->lock);
-    lock_release(curr->lock);
   }
 }
 
 _Bool list_remove(List* list, int item) {
   int key = hash(item);
+  _Bool snip;
   while (true) {
-    Node* pred = list->head;
-    Node* curr = pred->next;
-    //printf("************* curr = %p\n", curr); 
-    while (curr->key < key) {
-      pred = curr;
-      curr = curr->next;
-    }
-    lock_acquire(pred->lock);
-    lock_acquire(curr->lock);
-    if (validate(list, pred, curr)) {
-      if (curr->key == key) {
-	pred->next = curr->next;
-	curr->next = NULL;
-	node_destroy(curr);
-	list->size--; 
-	lock_release(pred->lock);
-	return true;
-      } else {
-	lock_release(pred->lock);
-	lock_release(curr->lock);
-	return false;
+    Window* window = find(list->head, key);
+    Node* pred = window->pred;
+    Node* curr = window->curr;
+    if (curr->key != key) {
+      return false;
+    } else {
+      Node* succ = curr->next->reference;
+      snip = amr_compare_and_set(curr->next, succ, succ, false, true);
+      if (!snip) {
+	continue;
       }
+      amr_compare_and_set(pred->next, curr, succ, false, false);
+      return true;
     }
-    lock_release(pred->lock);
-    lock_release(curr->lock);
   }
+}
+
+_Bool list_contains(List* list, int item) {
+  int key = hash(item);
+  Window* window = find(list->head, key);
+  Node* pred = window->pred;
+  Node* curr = window->curr;
+  return (curr->key == key);
 }

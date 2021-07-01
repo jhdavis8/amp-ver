@@ -25,7 +25,7 @@ endif
 
 DEFINES = -DENABLE_PATCH=$(PATCH) -DHASH_FN_OPTION=$(HASH_OPT) -DVAL_BND=$(VAL_BND)
 
-.PHONY: coarse_list fine_list optimistic_list
+.PHONY: coarse_list fine_list optimistic_list lock_free_list
 
 coarse_list : coarselist/coarse_list.cvl driver/list_max_driver.cvl \
 		../util/perm_util.c include/list.cvh
