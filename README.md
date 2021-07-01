@@ -21,6 +21,11 @@ Optimistic List:
 * A linked list which allows searching the list without locking, locks when the nodes are found, and then checks that the locked nodes are correct. If a synchronization conflict causes the wrong node to be locked, the locks are released and the process restarts.
 * AMP Chapter 9.6, page 205
 
+Lock-free List:
+* src/lists/lock_free_list/lock_free_list.cvl
+* A linked list which uses atomic markable references with compare-and-set for a non-blocking synchronization strategy.
+* AMP Chapter 9.8, page 220
+
 ### Queues (Ch. 10)
 
 Lock-Free Unbounded Queue
