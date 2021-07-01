@@ -2,7 +2,7 @@
 
 ## Concurrent data structures implemented:
 
-*All page numbers taken from the Revised Reprint*
+*All page numbers taken from the 2nd Edition*
 
 ### Lists (Ch. 9)
 
