@@ -6,7 +6,7 @@
 
 // Dependencies
 #include "../include/list.cvh"
-#include "../../util/perm_util.c"
+#include "../../util/perm_util.cvl"
 #include <stdio.h>	// Printing outputs
 #include <string.h>	// Output content.
 #include <stdbool.h>
@@ -238,7 +238,6 @@ int main() {
   printInitInfo();
 
   int pid = 0;
-  int** perms = compute_perms(nthreads, nsteps);
   _Bool actual_results[num_vals];
   _Bool oracle_results[num_vals];
   List* actual_list = list_create();
@@ -249,8 +248,12 @@ int main() {
 
   for (int val = 0; val < num_vals; val++)
     actual_results[val] = list_contains(actual_list, val);
+
+  int** perms = compute_linearizable_perms(nthreads, nsteps, start_times);
   
   for (pid = 0; pid < num_perms; pid++) {
+    // check if this perm has been filtered out as non-linearizable
+    if (perms[pid][0] < 0) continue;
     for (int val = 0; val < num_vals; val++)
       oracle_results[val] = false;
     permseq(pid, perms[pid], oracle_results);
