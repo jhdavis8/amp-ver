@@ -1,0 +1,140 @@
+/* Unbounded queue implementation using lazy
+ * synchronization and no locks.
+ * Mar-2-2021
+ * Josh Davis
+ * VSL Lab; Dept. CIS; UDel
+ */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <string.h>
+#include <limits.h>
+#include "../include/priority_queue.cvh"
+#include "../../util/atomic_markable_ref.cvl"
+
+#define ROOT 1
+#define NO_ONE $proc_null
+#define CAPACITY 8
+#define MAX_LEVEL 32
+
+int random_seed = $choose_int(256);
+
+typedef struct _priority_queue
+{
+  Node* head;
+  Node* tail;
+} PriorityQueue;
+
+typedef struct _node
+{
+  int priority;
+  int item;
+  _Bool marked; //atomic
+  AtomicMarkableReference** next;
+  int length;
+  int top_level;
+} Node;
+
+Node* create_node() {
+}
+
+PriorityQueue* create_priority_queue() {
+  PriorityQueue* q = (PriorityQueue*) malloc(sizeof(PriorityQueue));
+  q->head = create_node();
+  q->head->priority = INT_MIN;
+  q->tail = create_node();
+  q->tail->priority = INT_MAX;
+  for (int i = 0; i < head->length; i++) {
+    q->head->next[i] = create_atomic_markable_reference((void*) tail, false);
+  }
+  return q;
+}
+
+void destroy_priority_queue(PriorityQueue* q) {
+}
+
+PriorityQueue* duplicate_priority_queue(PriorityQueue* original) {
+  /*
+  PriorityQueue* result = create_priority_queue();
+  result->next = original->next;
+  result->length = original->length;
+  for (int i = 0; i < original->length; i++) {
+    result->heap[i]->tag = original->heap[i]->tag;
+    result->heap[i]->score = original->heap[i]->score;
+    result->heap[i]->item = original->heap[i]->item;
+    result->heap[i]->owner = original->heap[i]->owner;
+  }
+  
+  return result;
+  */
+}
+
+int random_level(PriorityQueue* q) {
+  int x = q->random_seed;
+  x = pow(x, x << 13);
+  x = pow(x, ((unsigned int) x) >> 17);
+  x = pow(x, x << 5);
+  q->random_seed = x;
+  if ((x & 0x80000001) != 0) // test highest and lowest bits
+    return 0;
+  int level = 1;
+  while (((((unsigned int) x) >>= 1) & 1) != 0) ++level;
+  return (level > MAX_LEVEL-1) ? MAX_LEVEL-1 : level;
+}
+
+_Bool add(PriorityQueue* q, Node* node) {
+  int bottom_level = 0;
+  Node** preds = malloc(sizeof(Node*)*(MAX_LEVEL + 1));
+  Node** succs = malloc(sizeof(Node*)*(MAX_LEVEL + 1));
+  while (true) {
+    _Bool found = find(node, preds, succs);
+    if (found) { // if found it's not marked
+      return false;
+    } else {
+      for (int level = bottom_level; level <= node->top_level; level++) {
+	Node* succ = succs[level];
+	amr_set(node->next[level], succ, false);
+      }
+      // try to splice in new node in bottom_level going up
+      Node* pred = preds[bottom_level];
+      Node* succ = succs[bottom_level];
+      amr_set(node->next[bottom_level], succ, false);
+      if (!amr_compare_and_set(pred->next[bottom_level], succ, node, false, false)) {// lin point
+	continue; // retry from start
+      }
+      // splice in remaining levels going up
+      for (int level = bottom_level + 1; level <= node->top_level; level++) {
+	while (true) {
+	  pred = preds[level];
+	  succ = succs[level];
+	  if (amr_compare_and_set(pred->next[level], succ, node, false, false)) {
+	    break;
+	  }
+	  find(node, preds, succs); // find new preds and succs
+	}
+      }
+      return true;
+    }
+  }
+}
+
+void priority_queue_swap(PriorityQueue* q, int i, int j) {
+}
+
+void priority_queue_add(PriorityQueue* q, int item, int priority) {
+}
+
+int priority_queue_remove_min(PriorityQueue* q) {
+}
+
+_Bool priority_queue_contains(PriorityQueue *q, int item) {
+}
+
+int priority_queue_item_index(PriorityQueue* q, int i) {
+  return q->heap[i]->item;
+}
+
+int priority_queue_score_index(PriorityQueue* q, int i) {
+  return q->heap[i]->score;
+}

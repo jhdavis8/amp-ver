@@ -34,6 +34,11 @@ $atomic_f _Bool amr_compare_and_set(AtomicMarkableReference* ref,
   }
 }
 
+$atomic_f void amr_set(AtomicMarkableReference* ref, void* r, _Bool m) {
+  ref->reference = r;
+  ref->mark = m;
+}
+
 void* amr_get(AtomicMarkableReference* amr, _Bool* mark_out) {
   mark_out = &(amr->mark);
   return amr->reference;
