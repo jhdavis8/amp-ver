@@ -3,4 +3,12 @@ src/sets/CIVLREP
 src/sets/logs
 src/barriers/logs
 src/barriers/CIVLREP
+src/lists/CIVLREP
+src/lists/logs
+src/queues/CIVLREP
+src/queues/logs
+src/priority_queues/CIVLREP
+src/priority_queues/logs
+src/hash_sets/CIVLREP
+src/hash_sets/logs
 *~
