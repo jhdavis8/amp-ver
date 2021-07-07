@@ -249,8 +249,11 @@ int main() {
   for (int val = 0; val < num_vals; val++)
     actual_results[val] = list_contains(actual_list, val);
 
+#if LNR_CHECK == 0
+  int** perms = compute_perms(nthreads, nsteps);
+#else
   int** perms = compute_linearizable_perms(nthreads, nsteps, STP_B, start_times);
-  //int** perms = compute_perms(nthreads, nsteps);
+#endif
   
   for (pid = 0; pid < num_perms; pid++) {
     // check if this perm has been filtered out as non-linearizable

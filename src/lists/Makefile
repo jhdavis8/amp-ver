@@ -22,27 +22,24 @@ endif
 ifndef HASH_OPT
 	HASH_OPT = 0
 endif
+ifndef LNR_CHECK
+	LNR_CHECK = 1
+endif
 
-DEFINES = -DENABLE_PATCH=$(PATCH) -DHASH_FN_OPTION=$(HASH_OPT) -DVAL_BND=$(VAL_BND)
+DEPS = driver/list_max_driver.cvl ../util/perm_util.c include/list.cvh
+INPUTS = -inputVAL_B=$(VAL_BND) -inputTHD_B=$(THD_BND) -inputSTP_B=$(STP_BND)
+DEFINES = -DENABLE_PATCH=$(PATCH) -DHASH_FN_OPTION=$(HASH_OPT) -DVAL_BND=$(VAL_BND) -DLNR_CHECK=$(LNR_CHECK)
 
 .PHONY: coarse_list fine_list optimistic_list lock_free_list
 
-coarse_list : coarselist/coarse_list.cvl driver/list_max_driver.cvl \
-		../util/perm_util.c include/list.cvh
-		$(CIVL) -inputVAL_B=$(VAL_BND) -inputTHD_B=$(THD_BND) -inputSTP_B=$(STP_BND) \
-                $(DEFINES) driver/list_max_driver.cvl coarselist/coarse_list.cvl
+coarse_list : coarselist/coarse_list.cvl $(DEPS)
+		$(CIVL) $(INPUTS) $(DEFINES) driver/list_max_driver.cvl coarselist/coarse_list.cvl
 
-fine_list : finelist/fine_list.cvl driver/list_max_driver.cvl \
-		../util/perm_util.c include/list.cvh
-		$(CIVL) -inputVAL_B=$(VAL_BND) -inputTHD_B=$(THD_BND) -inputSTP_B=$(STP_BND) \
-                $(DEFINES) driver/list_max_driver.cvl finelist/fine_list.cvl
+fine_list : finelist/fine_list.cvl $(DEPS)
+		$(CIVL) $(INPUTS) $(DEFINES) driver/list_max_driver.cvl finelist/fine_list.cvl
 
-optimistic_list : optimisticlist/optimistic_list.cvl driver/list_max_driver.cvl \
-		../util/perm_util.c include/list.cvh
-		$(CIVL) -inputVAL_B=$(VAL_BND) -inputTHD_B=$(THD_BND) -inputSTP_B=$(STP_BND) \
-                $(DEFINES) driver/list_max_driver.cvl optimisticlist/optimistic_list.cvl
+optimistic_list : optimisticlist/optimistic_list.cvl $(DEPS)
+		$(CIVL) $(INPUTS) $(DEFINES) driver/list_max_driver.cvl optimisticlist/optimistic_list.cvl
 
-lock_free_list : lock_free_list/lock_free_list.cvl driver/list_max_driver.cvl \
-		../util/perm_util.c include/list.cvh
-		$(CIVL) -inputVAL_B=$(VAL_BND) -inputTHD_B=$(THD_BND) -inputSTP_B=$(STP_BND) \
-                $(DEFINES) driver/list_max_driver.cvl lock_free_list/lock_free_list.cvl
+lock_free_list : lock_free_list/lock_free_list.cvl $(DEPS)
+		$(CIVL) $(INPUTS) $(DEFINES) driver/list_max_driver.cvl lock_free_list/lock_free_list.cvl
