@@ -9,7 +9,7 @@
 #include <stdbool.h>
 #include <limits.h>
 #include "../include/list.cvh"
-#include "../include/atomic_markable_ref.cvl"
+#include "../../util/atomic_markable_ref.cvl"
 
 typedef struct _node
 {
