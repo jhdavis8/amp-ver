@@ -7,8 +7,7 @@
 // Dependencies
 #include "../include/priority_queue.cvh"
 #include "../include/naive_priority_queue.cvh"
-#include "driver_print_functions.cvl"
-#include "perm_util.c"
+#include "../../util/perm_util.c"
 #include <stdio.h>	// Printing outputs
 #include <string.h>	// Output content.
 #include <stdbool.h>
@@ -35,10 +34,138 @@ $assume(1 <= nthreads && nthreads <= THD_B);
 int num_vals;
 int num_steps;
 int num_perms;
+int time = 0;
 int nsteps[nthreads];
 _Bool ops[nthreads][STP_B];
 int vals[nthreads][STP_B];
 int scores[nthreads][STP_B];
+int start_times[nthreads][STP_B];
+int end_times[nthreads][STP_B];
+
+void print_steps() {
+  for (int tid = 0; tid < nthreads; tid++) {
+    printf("[STEP]\t Thread %d steps: ", tid);
+    int m = nsteps[tid];
+    for (int i = 0; i < m; i++) {
+      if (i > 0) printf(", ");
+      if (ops[tid][i] == ADD) printf("ADD");
+      else printf("DEL");
+      printf(" %d", vals[tid][i]);
+    }
+    printf("\n");
+  }
+}
+
+void printInitInfo() {
+  printf("\n[INIT]\t Num of threads: %d\n", nthreads);
+  printf("[INIT]\t Num of steps: %d\n", num_steps);
+  print_steps();
+}
+
+void printBoolResults(_Bool* s) {
+  _Bool first = true;
+  printf("\t{");
+  for (int v = 0; v < num_vals; v++) {
+    if (s[v]) {
+      if (first) first = false;
+      else printf(", ");
+      printf("%d", v);
+    }
+  }
+  printf("}");
+}
+
+void printIntResults(int* s) {
+  _Bool first = true;
+  printf("\t{");
+  for (int v = 0; v < num_steps; v++) {
+    if (s[v] != -1) {
+      if (first) first = false;
+      else printf(", ");
+      printf("%d", s[v]);
+    }
+  }
+  printf("}");
+}
+
+void printMatchFail() {
+  printf("[FAIL]\t No matching sequentialized execution found!\n");
+  printf("[RESULT]\t Concurrent execution results:");
+}
+
+void printOpInfo(int type, int tid, _Bool op, int val, _Bool* results) {
+  if (type == RESULT) {
+    printf("[RESULT]");
+  } else if (type == ACTUAL) {
+    printf("[ACTUAL]");
+  } else {
+    printf("[PERMS%d]", type);
+  }
+  printf("\t Thread[%d] performs ", tid);
+  printf((op==ADD?"<ADD>":"<DEL>"));
+  printf(" value: %d", val);
+  printBoolResults(results);
+  printf("\n");
+}
+
+void printOpInfo_int(int type, int tid, _Bool op, int val, int* results) {
+  if (type == RESULT) {
+    printf("[RESULT]");
+  } else if (type == ACTUAL) {
+    printf("[ACTUAL]");
+  } else {
+    printf("[PERMS%d]", type);
+  }
+  printf("\t Thread[%d] performs ", tid);
+  printf((op==ADD?"<ADD>":"<DEL>"));
+  printf(" value: %d", val);
+  printIntResults(results);
+  printf("\n");
+}
+
+void printOpInfo_priority_queue(int type, int tid, _Bool op, int val, PriorityQueue* pqueue) {
+  _Bool temp_results[num_vals];
+
+  for (int val = 0; val < num_vals; val++)
+    temp_results[val] = priority_queue_contains(pqueue, val);
+  printOpInfo(type, tid, op, val, temp_results);
+}
+
+void printOpInfo_naive_priority_queue(int type, int tid, _Bool op, int val, NPQueue* pqueue) {
+  int temp_results[num_steps];
+
+  for (int step = 0; step < num_steps; step++)
+    temp_results[step] = naive_priority_queue_remove_min(pqueue);
+  printOpInfo_int(type, tid, op, val, temp_results);
+}
+
+void printNPQueue(NPQueue* pqueue) {
+  int temp_results[num_steps];
+
+  for (int step = 0; step < num_steps; step++)
+    temp_results[step] = naive_priority_queue_remove_min(pqueue);
+
+  printIntResults(temp_results);
+  printf("\n");
+}
+
+void printEquivSeqInfo_naive_priority_queue(int* perms, NPQueue* results) {
+  int step_counters[nthreads];
+
+  for (int tid = 0; tid < nthreads; tid++)
+    step_counters[tid] = 0;
+
+  printf("[PASS]\t Equivalent sequential execution: \n");
+  for (int step = 0; step < num_steps; step++) {
+    int tid = perms[step];
+    int step_local = step_counters[tid];
+    _Bool op = ops[tid][step_local];
+    int val = vals[tid][step_local];
+
+    printOpInfo_naive_priority_queue(RESULT, tid, op, val, results);
+    step_counters[tid]++;
+  }  
+}
 
 void init() {
   num_vals = VAL_B + 1;
@@ -71,10 +198,17 @@ void thread(int tid, PriorityQueue* queue) {
     int val = vals[tid][step];
     int score = scores[tid][step];
 
+    // set start time for step
+    $atomic {start_times[tid][step] = time++;}
+    
     if (op == ADD) 
       priority_queue_add(queue, val, score);
     else
       priority_queue_remove_min(queue);
+
+    // set end time for step
+    $atomic {end_times[tid][step] = time++;}
+
     //printOpInfo_queue(ACTUAL, tid, op, val, queue);
   }
 }
@@ -137,7 +271,6 @@ int main() {
   printInitInfo();
 
   int pid = 0;
-  int** perms = compute_perms(nthreads, nsteps);
   _Bool actual_results[num_vals];
   _Bool oracle_results[num_vals];
   _Bool found_match = false;
@@ -148,30 +281,27 @@ int main() {
     thread(tid, actual_queue);
   } 
 
-  for (int val = 0; val < num_vals; val++)
+  for (int val = 0; val < num_vals; val++) {
     actual_results[val] = priority_queue_contains(actual_queue, val);
+  }
+
+#if LNR_CHECK == 0
+  int** perms = compute_perms(nthreads, nsteps);
+#else
+  int** perms = compute_linearizable_perms(nthreads, nsteps, STP_B, start_times);
+#endif
   
   for (pid = 0; pid < num_perms; pid++) {
-    //for (int val = 0; val < num_vals; val++)
-    //oracle_results[val] = false;
+    // check if this perm has been filtered out as non-linearizable
+    if (num_steps > 1 && perms[pid][0] < 0) continue;
     destroy_naive_priority_queue(oracle_queue);
     oracle_queue = create_naive_priority_queue();
     permseq(pid, perms[pid], oracle_queue);
     if (isEqual(actual_queue, oracle_queue)) {
-      /*
-      for (int val = 0; val < num_vals; val++) {
-	oracle_results[val] = naive_priority_queue_contains(oracle_queue, val);
-      }
-      */
       printEquivSeqInfo_naive_priority_queue(perms[pid], oracle_queue);
       found_match = true;
       break;
     }
-    /*else {
-      printf("Failed match:\n");
-      printNPQueue(oracle_queue);
-    }
-    */
   }
   if (num_steps > 0 && found_match == false) {
     printMatchFail();

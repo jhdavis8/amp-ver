@@ -22,16 +22,18 @@ endif
 ifndef HASH_OPT
 	HASH_OPT = 0
 endif
+ifndef LNR_CHECK
+	LNR_CHECK = 1
+endif
 
-DEFINES = -DENABLE_PATCH=$(PATCH) -DHASH_FN_OPTION=$(HASH_OPT) -DVAL_BND=$(VAL_BND)
+DEPS = naive/naive_priority_queue.cvl driver/priority_queue_max_driver.cvl ../util/perm_util.c include/priority_queue.cvh include/naive_priority_queue.cvh
+INPUTS = -inputVAL_B=$(VAL_BND) -inputTHD_B=$(THD_BND) -inputSTP_B=$(STP_BND)
+DEFINES = -DENABLE_PATCH=$(PATCH) -DHASH_FN_OPTION=$(HASH_OPT) -DLNR_CHECK=$(LNR_CHECK) -DVAL_BND=$(VAL_BND)
+RUNFILES = driver/priority_queue_max_driver.cvl naive/naive_priority_queue.cvl
 
 .PHONY: uhb_priority_queue
 
-uhb_priority_queue : unbounded_heap_based_priority_queue/unbounded_heap_based_priority_queue.cvl \
-		naive/naive_priority_queue.cvl driver/priority_queue_max_driver.cvl \
-		driver/perm_util.c include/priority_queue.cvh include/naive_priority_queue.cvh
-		$(CIVL) -inputVAL_B=$(VAL_BND) -inputTHD_B=$(THD_BND) -inputSTP_B=$(STP_BND) \
-                $(DEFINES) driver/priority_queue_max_driver.cvl \
-		unbounded_heap_based_priority_queue/unbounded_heap_based_priority_queue.cvl \
-		naive/naive_priority_queue.cvl
+uhb_priority_queue : unbounded_heap_based_priority_queue/unbounded_heap_based_priority_queue.cvl $(DEPS)
+		$(CIVL) $(INPUTS) $(DEFINES) $(RUNFILES) \
+		unbounded_heap_based_priority_queue/unbounded_heap_based_priority_queue.cvl
 
