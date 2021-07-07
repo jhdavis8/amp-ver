@@ -8,7 +8,7 @@
 #include "../include/queue.cvh"
 #include "../include/naive_queue.cvh"
 #include "driver_print_functions.cvl"
-#include "perm_util.c"
+#include "../../util/perm_util.c"
 #include <stdio.h>	// Printing outputs
 #include <string.h>	// Output content.
 #include <stdbool.h>
