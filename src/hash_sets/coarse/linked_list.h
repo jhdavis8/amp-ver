@@ -37,18 +37,15 @@ bool append_list(List* head, int val){
 // check if value is in the list
 bool contains_list(List* head, int val){
     if(head == NULL){
-        //printf("no values in list!\n");
         return false;
     }
     List* cursor = head; // traverse
     while(cursor != NULL){
         if(cursor->val == val){
-            printf("Found %d in list.\n", cursor->val);
             return true;
         }
         cursor = cursor->next;
     }
-    printf("%d not found in list.\n", val);
     return false;
 }
 
@@ -59,7 +56,6 @@ bool remove_list(List** head, int val){
 
     // check front of linked list
     if(cursor == NULL){
-        printf("list does not exist!\n");
         return false;
     }
     else if(cursor->val == val){
@@ -69,7 +65,6 @@ bool remove_list(List** head, int val){
         } else {
             temp = *head;
             *head = (*head)->next;
-            printf("deleting %d\n", temp->val);
             free(temp);
             return true;
         }
@@ -77,7 +72,6 @@ bool remove_list(List** head, int val){
     List* cursor_next = (*head)->next;;
     while(cursor != NULL && cursor_next != NULL){ // run through list
         if(cursor_next->val == val){
-            printf("deleting %d\n", cursor_next->val);
             temp = cursor_next;
             cursor->next = cursor_next->next;
             free(temp);
@@ -93,10 +87,8 @@ bool remove_list(List** head, int val){
 void print_list(List* list){
     List* temp = list;
     while(temp != NULL){
-        printf("%d ", temp->val);
         temp = temp->next;
     }
-    printf("\n");
 }
 
 // free memory of whole list
