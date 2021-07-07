@@ -55,34 +55,6 @@ void printInitInfo() {
   print_steps();
 }
 
-/*
-void printBoolResults(_Bool* s) {
-  _Bool first = true;
-  printf("\t{");
-  for (int v = 0; v < num_vals; v++) {
-    if (s[v]) {
-      if (first) first = false;
-      else printf(", ");
-      printf("%d", v);
-    }
-  }
-  printf("}");
-}
-
-void printIntResults(int* s) {
-  _Bool first = true;
-  printf("\t{");
-  for (int v = 0; v < num_steps; v++) {
-    if (s[v] != -1) {
-      if (first) first = false;
-      else printf(", ");
-      printf("%d", s[v]);
-    }
-  }
-  printf("}");
-}
-*/
-
 void printMatchFail() {
   printf("[FAIL]\t No matching sequentialized execution found!\n");
   printf("[RESULT]\t Concurrent execution results:");
@@ -100,38 +72,6 @@ void printList(_Bool* s) {
   }
   printf("}");
 }
-
-/*
-void printOpInfo(int type, int tid, _Bool op, int val, _Bool* results) {
-  if (type == RESULT) {
-    printf("[RESULT]");
-  } else if (type == ACTUAL) {
-    printf("[ACTUAL]");
-  } else {
-    printf("[PERMS%d]", type);
-  }
-  printf("\t Thread[%d] performs ", tid);
-  printf((op==ADD?"<ADD>":"<DEL>"));
-  printf(" value: %d", val);
-  printBoolResults(results);
-  printf("\n");
-}
-
-void printOpInfo_int(int type, int tid, _Bool op, int val, int* results) {
-  if (type == RESULT) {
-    printf("[RESULT]");
-  } else if (type == ACTUAL) {
-    printf("[ACTUAL]");
-  } else {
-    printf("[PERMS%d]", type);
-  }
-  printf("\t Thread[%d] performs ", tid);
-  printf((op==ADD?"<ADD>":"<DEL>"));
-  printf(" value: %d", val);
-  printIntResults(results);
-  printf("\n");
-}
-*/
 
 void printOpInfo_list(int type, int tid, _Bool op, int val, _Bool* results) {
   if (type == RESULT) {

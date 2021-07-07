@@ -22,10 +22,13 @@ endif
 ifndef HASH_OPT
 	HASH_OPT = 0
 endif
+ifndef LNR_CHECK
+	LNR_CHECK = 1
+endif
 
 DEPS = naive/naive_queue.cvl driver/queue_max_driver.cvl ../util/perm_util.c include/queue.cvh include/naive_queue.cvh
 INPUTS = -inputVAL_B=$(VAL_BND) -inputTHD_B=$(THD_BND) -inputSTP_B=$(STP_BND)
-DEFINES = -DENABLE_PATCH=$(PATCH) -DHASH_FN_OPTION=$(HASH_OPT) -DVAL_BND=$(VAL_BND)
+DEFINES = -DENABLE_PATCH=$(PATCH) -DHASH_FN_OPTION=$(HASH_OPT) -DLNR_CHECK=$(LNR_CHECK)
 RUNFILES = driver/queue_max_driver.cvl naive/naive_queue.cvl
 
 .PHONY: lfu_queue
