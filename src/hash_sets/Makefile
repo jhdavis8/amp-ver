@@ -22,32 +22,27 @@ endif
 ifndef HASH_OPT
 	HASH_OPT = 0
 endif
+ifndef LNR_CHECK
+	LNR_CHECK = 1
+endif
 
-DEFINES = -DENABLE_PATCH=$(PATCH) -DHASH_FN_OPTION=$(HASH_OPT) -DVAL_BND=$(VAL_BND)
+DEPS = driver/hash_set_max_driver.cvl ../util/perm_util.c include/set.cvh
+INPUTS = -inputVAL_B=$(VAL_BND) -inputTHD_B=$(THD_BND) -inputSTP_B=$(STP_BND)
+DEFINES = -DENABLE_PATCH=$(PATCH) -DHASH_FN_OPTION=$(HASH_OPT) -DLNR_CHECK=$(LNR_CHECK) -DVAL_BND=$(VAL_BND)
 
 .PHONY: naive striped coarse cuckoo striped_cuckoo
 
-naive : naive/naive_set.cvl driver/max_driver.cvl driver/perm_util.c \
-	include/set.cvh
-	$(CIVL) -inputVAL_B=$(VAL_BND) -inputTHD_B=$(THD_BND) -inputSTP_B=$(STP_BND) \
-	 	$(DEFINES) driver/max_driver.cvl naive/naive_set.cvl 
+naive : naive/naive_set.cvl $(DEPS)
+	$(CIVL) $(INPUTS) $(DEFINES) driver/hash_set_max_driver.cvl naive/naive_set.cvl 
 
-striped : striped/striped_set.cvl driver/max_driver.cvl driver/perm_util.c \
-	include/set.cvh
-	$(CIVL) -inputVAL_B=$(VAL_BND) -inputTHD_B=$(THD_BND) -inputSTP_B=$(STP_BND) \
-	 	$(DEFINES) driver/max_driver.cvl striped/striped_set.cvl
+striped : striped/striped_set.cvl $(DEPS)
+	$(CIVL) $(INPUTS) $(DEFINES) driver/hash_set_max_driver.cvl striped/striped_set.cvl
 
-coarse : coarse/coarse_set.cvl driver/max_driver.cvl driver/perm_util.c \
-	include/set.cvh
-	$(CIVL) -inputVAL_B=$(VAL_BND) -inputTHD_B=$(THD_BND) -inputSTP_B=$(STP_BND) \
-                $(DEFINES) driver/max_driver.cvl coarse/coarse_set.cvl
+coarse : coarse/coarse_set.cvl $(DEPS)
+	$(CIVL) $(INPUTS) $(DEFINES) driver/hash_set_max_driver.cvl coarse/coarse_set.cvl
 
-cuckoo : cuckoo/cuckoo_seq.cvl driver/max_driver.cvl driver/perm_util.c \
-	include/set.cvh
-	$(CIVL) -inputVAL_B=$(VAL_BND) -inputTHD_B=$(THD_BND) -inputSTP_B=$(STP_BND) \
-                $(DEFINES) driver/max_driver.cvl cuckoo/cuckoo_seq.cvl
+cuckoo : cuckoo/cuckoo_seq.cvl $(DEPS)
+	$(CIVL) $(INPUTS) $(DEFINES) driver/hash_set_max_driver.cvl cuckoo/cuckoo_seq.cvl
 
-striped_cuckoo : striped_cuckoo/striped_cuckoo.cvl driver/max_driver.cvl \
-	          driver/perm_util.c include/set.cvh
-		$(CIVL) -inputVAL_B=$(VAL_BND) -inputTHD_B=$(THD_BND) -inputSTP_B=$(STP_BND) \
-                $(DEFINES) driver/max_driver.cvl striped_cuckoo/striped_cuckoo.cvl
+striped_cuckoo : striped_cuckoo/striped_cuckoo.cvl $(DEPS)
+	$(CIVL) $(INPUTS) $(DEFINES) driver/hash_set_max_driver.cvl striped_cuckoo/striped_cuckoo.cvl

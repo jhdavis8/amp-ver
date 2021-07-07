@@ -6,7 +6,7 @@
 
 // Dependencies
 #include "../include/set.cvh"
-#include "perm_util.c"
+#include "../../util/perm_util.c"
 #include <stdio.h>	// Printing outputs
 #include <string.h>	// Output content.
 #include <stdbool.h>
