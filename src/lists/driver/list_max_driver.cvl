@@ -249,11 +249,12 @@ int main() {
   for (int val = 0; val < num_vals; val++)
     actual_results[val] = list_contains(actual_list, val);
 
-  int** perms = compute_linearizable_perms(nthreads, nsteps, start_times);
+  int** perms = compute_linearizable_perms(nthreads, nsteps, STP_B, start_times);
+  //int** perms = compute_perms(nthreads, nsteps);
   
   for (pid = 0; pid < num_perms; pid++) {
     // check if this perm has been filtered out as non-linearizable
-    if (perms[pid][0] < 0) continue;
+    if (num_steps > 1 && perms[pid][0] < 0) continue;
     for (int val = 0; val < num_vals; val++)
       oracle_results[val] = false;
     permseq(pid, perms[pid], oracle_results);
