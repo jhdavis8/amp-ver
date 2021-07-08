@@ -36,7 +36,45 @@ typedef struct _node
   int top_level;
 } Node;
 
+
+int random_level(PriorityQueue* q) {
+  int x = q->random_seed;
+  x = pow(x, x << 13);
+  x = pow(x, ((unsigned int) x) >> 17);
+  x = pow(x, x << 5);
+  q->random_seed = x;
+  if ((x & 0x80000001) != 0) // test highest and lowest bits
+    return 0;
+  int level = 1;
+  while (((((unsigned int) x) >>= 1) & 1) != 0) ++level;
+  return (level > MAX_LEVEL - 1) ? MAX_LEVEL - 1 : level;
+}
+
 Node* create_node() {
+  Node* result = (Node*) malloc(sizeof(Node));
+  result->priority = -1;
+  result->item = -1;
+  result->marked = false;
+  result->next = (AtomicMarkableReference**) malloc(sizeof(AtomicMarkableReference)*(MAX_LEVEL + 1));
+  result->top_level = MAX_LEVEL;
+  result->length = MAX_LEVEL + 1;
+  for (int i = 0; i < result->length; i++) {
+    result->next[i] = create_atomic_markable_reference(NULL, false);
+  }
+}
+
+Node* create_node_initialized(int x, int my_priority) {
+  Node* result = (Node*) malloc(sizeof(Node));
+  result->priority = my_priority;
+  result->item = x;
+  result->marked = false;
+  int height = random_level();
+  result->next = (AtomicMarkableReference**) malloc(sizeof(AtomicMarkableReference)*(height + 1));
+  result->top_level = height;
+  result->length = height + 1;
+  for (int i = 0; i < result->length; i++) {
+    result->next[i] = create_atomic_markable_reference(NULL, false);
+  }
 }
 
 PriorityQueue* create_priority_queue() {
@@ -70,25 +108,12 @@ PriorityQueue* duplicate_priority_queue(PriorityQueue* original) {
   */
 }
 
-int random_level(PriorityQueue* q) {
-  int x = q->random_seed;
-  x = pow(x, x << 13);
-  x = pow(x, ((unsigned int) x) >> 17);
-  x = pow(x, x << 5);
-  q->random_seed = x;
-  if ((x & 0x80000001) != 0) // test highest and lowest bits
-    return 0;
-  int level = 1;
-  while (((((unsigned int) x) >>= 1) & 1) != 0) ++level;
-  return (level > MAX_LEVEL-1) ? MAX_LEVEL-1 : level;
-}
-
 _Bool add(PriorityQueue* q, Node* node) {
   int bottom_level = 0;
   Node** preds = malloc(sizeof(Node*)*(MAX_LEVEL + 1));
   Node** succs = malloc(sizeof(Node*)*(MAX_LEVEL + 1));
   while (true) {
-    _Bool found = find(node, preds, succs);
+    _Bool found = find(q, node, preds, succs);
     if (found) { // if found it's not marked
       return false;
     } else {
@@ -111,7 +136,7 @@ _Bool add(PriorityQueue* q, Node* node) {
 	  if (amr_compare_and_set(pred->next[level], succ, node, false, false)) {
 	    break;
 	  }
-	  find(node, preds, succs); // find new preds and succs
+	  find(q, node, preds, succs); // find new preds and succs
 	}
       }
       return true;
@@ -119,22 +144,68 @@ _Bool add(PriorityQueue* q, Node* node) {
   }
 }
 
-void priority_queue_swap(PriorityQueue* q, int i, int j) {
+_Bool remove(PriorityQueue* q, Node* node) {
+  int bottom_level = 0;
+  Node* preds = (Node*) malloc(sizeof(Node)*(MAX_LEVEL + 1));
+  Node* succs = (Node*) malloc(sizeof(Node)*(MAX_LEVEL + 1));
+  Node* succ;
+  while (true) {
+    _Bool found = find(q, node, preds, succs);
+    if (!found) {
+      return false;
+    } else {
+      // proceed to mark all levels
+      // some levels could stil be unthreaded by concurrent add() while being marked
+      // other find()s could be modifying node's pointers concurrently
+      for (int level = node->top_level; level >= bottom_level + 1; level--) {
+	_Bool marked = false;
+	succ = amr_get(node->next[level], &marked);
+	while (!marked) { // until I succeed in marking
+	  amr_attempt_mark(node->next[level], succ, true);
+	  succ = amr_get(node->next[level], &marked);
+	}
+      }
+      // proceed to remove from bottom level
+      _Bool marked = false;
+      succ = amr_get(node->next[level], &marked);
+      while (true) { // until someone succeeded in marking
+	_Bool i_marked_it = amr_compare_and_set(node->next[bottom_level], succ, succ, false, true);
+	succ = amr_get(succs[bottom_level]->next[bottom_level], &marked);
+	if (i_marked_it) {
+	  // run find to remove links of the logically removed node
+	  find(q, node, preds, succs);
+	  return true;
+	} else if (marked[0]) return false;
+      }
+    }
+  }
 }
 
-void priority_queue_add(PriorityQueue* q, int item, int priority) {
+_Bool priority_queue_add(PriorityQueue* q, int item, int score) {
+  Node* node = create_node_initialized(item, priority);
+  return add(q, node);
 }
 
 int priority_queue_remove_min(PriorityQueue* q) {
+  Node* node = find_and_mark_min(q);
+  if (node != NULL) {
+    remove(q, node);
+    return node->item;
+  } else {
+    return NULL;
+  }
 }
 
 _Bool priority_queue_contains(PriorityQueue *q, int item) {
 }
 
 int priority_queue_item_index(PriorityQueue* q, int i) {
-  return q->heap[i]->item;
+  return 0;
 }
 
 int priority_queue_score_index(PriorityQueue* q, int i) {
-  return q->heap[i]->score;
+  return 0;
+}
+
+void priority_queue_swap(PriorityQueue* q, int i, int j) {
 }
