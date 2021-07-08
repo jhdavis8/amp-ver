@@ -50,7 +50,7 @@ $atomic_f void amr_set(AtomicMarkableReference* ref, void* r, _Bool m) {
 }
 
 void* amr_get(AtomicMarkableReference* amr, _Bool* mark_out) {
-  mark_out* = amr->mark;
+  *mark_out = amr->mark;
   return amr->reference;
 }
 

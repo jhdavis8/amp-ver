@@ -10,6 +10,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <limits.h>
+#include <math.h>
 #include "../include/priority_queue.cvh"
 #include "../../util/atomic_markable_ref.cvl"
 
@@ -19,12 +20,6 @@
 #define MAX_LEVEL 32
 
 int random_seed = $choose_int(256);
-
-typedef struct _priority_queue
-{
-  Node* head;
-  Node* tail;
-} PriorityQueue;
 
 typedef struct _node
 {
@@ -36,17 +31,22 @@ typedef struct _node
   int top_level;
 } Node;
 
+typedef struct _priority_queue
+{
+  Node* head;
+  Node* tail;
+} PriorityQueue;
 
-int random_level(PriorityQueue* q) {
-  int x = q->random_seed;
+int random_level() {
+  int x = random_seed;
   x = pow(x, x << 13);
   x = pow(x, ((unsigned int) x) >> 17);
   x = pow(x, x << 5);
-  q->random_seed = x;
+  random_seed = x;
   if ((x & 0x80000001) != 0) // test highest and lowest bits
     return 0;
   int level = 1;
-  while (((((unsigned int) x) >>= 1) & 1) != 0) ++level;
+  while (((x >>= 1) & 1) != 0) ++level;
   return (level > MAX_LEVEL - 1) ? MAX_LEVEL - 1 : level;
 }
 
@@ -55,12 +55,13 @@ Node* create_node() {
   result->priority = -1;
   result->item = -1;
   result->marked = false;
-  result->next = (AtomicMarkableReference**) malloc(sizeof(AtomicMarkableReference)*(MAX_LEVEL + 1));
+  result->next = (AtomicMarkableReference**) malloc(sizeof(AtomicMarkableReference*)*(MAX_LEVEL + 1));
   result->top_level = MAX_LEVEL;
   result->length = MAX_LEVEL + 1;
   for (int i = 0; i < result->length; i++) {
     result->next[i] = create_atomic_markable_reference(NULL, false);
   }
+  return result;
 }
 
 Node* create_node_initialized(int x, int my_priority) {
@@ -75,6 +76,7 @@ Node* create_node_initialized(int x, int my_priority) {
   for (int i = 0; i < result->length; i++) {
     result->next[i] = create_atomic_markable_reference(NULL, false);
   }
+  return result;
 }
 
 PriorityQueue* create_priority_queue() {
@@ -83,8 +85,8 @@ PriorityQueue* create_priority_queue() {
   q->head->priority = INT_MIN;
   q->tail = create_node();
   q->tail->priority = INT_MAX;
-  for (int i = 0; i < head->length; i++) {
-    q->head->next[i] = create_atomic_markable_reference((void*) tail, false);
+  for (int i = 0; i < q->head->length; i++) {
+    q->head->next[i] = create_atomic_markable_reference((void*) q->tail, false);
   }
   return q;
 }
@@ -108,10 +110,44 @@ PriorityQueue* duplicate_priority_queue(PriorityQueue* original) {
   */
 }
 
+_Bool find(PriorityQueue* q, Node* node, Node** preds, Node** succs) {
+  int bottom_level = 0;
+  _Bool marked = false;
+  _Bool snip;
+  Node* pred = NULL;
+  Node* curr = NULL;
+  Node* succ = NULL;
+ retry:
+  while (true) {
+    pred = q->head;
+    for (int level = MAX_LEVEL; level >= bottom_level; level--) {
+      curr = pred->next[level]->reference;
+      while (true) {
+	succ = amr_get(curr->next[level], &marked);
+	while (marked) {           // replace curr if marked
+	  snip = amr_compare_and_set(pred->next[level], curr, succ, false, false);
+	  if (!snip) goto retry;
+	  curr = pred->next[level]->reference;
+	  succ = amr_get(curr->next[level], &marked);
+	}
+	if (curr->priority < node->priority) { // move forward same level
+	  pred = curr;
+	  curr = succ;
+	} else {
+	  break; // move to next level
+	}
+      }
+      preds[level] = pred;
+      succs[level] = curr;
+    }
+    return (curr->priority == node->priority); // bottom level curr.key == v
+  }
+}
+
 _Bool add(PriorityQueue* q, Node* node) {
   int bottom_level = 0;
-  Node** preds = malloc(sizeof(Node*)*(MAX_LEVEL + 1));
-  Node** succs = malloc(sizeof(Node*)*(MAX_LEVEL + 1));
+  Node** preds = (Node**) malloc(sizeof(Node*)*(MAX_LEVEL + 1));
+  Node** succs = (Node**) malloc(sizeof(Node*)*(MAX_LEVEL + 1));
   while (true) {
     _Bool found = find(q, node, preds, succs);
     if (found) { // if found it's not marked
@@ -144,10 +180,10 @@ _Bool add(PriorityQueue* q, Node* node) {
   }
 }
 
-_Bool remove(PriorityQueue* q, Node* node) {
+_Bool skiplist_remove(PriorityQueue* q, Node* node) {
   int bottom_level = 0;
-  Node* preds = (Node*) malloc(sizeof(Node)*(MAX_LEVEL + 1));
-  Node* succs = (Node*) malloc(sizeof(Node)*(MAX_LEVEL + 1));
+  Node** preds = (Node**) malloc(sizeof(Node*)*(MAX_LEVEL + 1));
+  Node** succs = (Node**) malloc(sizeof(Node*)*(MAX_LEVEL + 1));
   Node* succ;
   while (true) {
     _Bool found = find(q, node, preds, succs);
@@ -167,7 +203,7 @@ _Bool remove(PriorityQueue* q, Node* node) {
       }
       // proceed to remove from bottom level
       _Bool marked = false;
-      succ = amr_get(node->next[level], &marked);
+      succ = amr_get(node->next[bottom_level], &marked);
       while (true) { // until someone succeeded in marking
 	_Bool i_marked_it = amr_compare_and_set(node->next[bottom_level], succ, succ, false, true);
 	succ = amr_get(succs[bottom_level]->next[bottom_level], &marked);
@@ -175,28 +211,54 @@ _Bool remove(PriorityQueue* q, Node* node) {
 	  // run find to remove links of the logically removed node
 	  find(q, node, preds, succs);
 	  return true;
-	} else if (marked[0]) return false;
+	} else if (marked) return false; // someone else removed node
+	// else only succ changed so repeat
       }
     }
   }
 }
 
-_Bool priority_queue_add(PriorityQueue* q, int item, int score) {
+$atomic_f _Bool atomic_bool_compare_and_set(_Bool* val, _Bool exp_val, _Bool new_val) {
+  _Bool result = (*val == exp_val);
+  if (result) *val = new_val;
+  return result;
+}
+
+Node* find_and_mark_min(PriorityQueue* q) {
+  Node* curr = NULL;
+  Node* succ = NULL;
+  _Bool marked;
+  curr = q->head->next[0]->reference;
+  while (curr != q->tail) {
+    $atomic { marked = curr->marked; }
+    if (!marked) {
+      if (atomic_bool_compare_and_set(&curr->marked, false, true)) {
+	return curr;
+      } else {
+	curr = curr->next[0]->reference;
+      }
+    }
+  }
+  return NULL;
+}
+
+void priority_queue_add(PriorityQueue* q, int item, int priority) {
   Node* node = create_node_initialized(item, priority);
-  return add(q, node);
+  add(q, node);
 }
 
 int priority_queue_remove_min(PriorityQueue* q) {
   Node* node = find_and_mark_min(q);
   if (node != NULL) {
-    remove(q, node);
+    skiplist_remove(q, node);
     return node->item;
   } else {
-    return NULL;
+    return -1;
   }
 }
 
 _Bool priority_queue_contains(PriorityQueue *q, int item) {
+  return false;
 }
 
 int priority_queue_item_index(PriorityQueue* q, int i) {
