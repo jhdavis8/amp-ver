@@ -17,9 +17,9 @@
 #define ROOT 1
 #define NO_ONE $proc_null
 #define CAPACITY 8
-#define MAX_LEVEL 32
+#define MAX_LEVEL 4
 
-int random_seed = $choose_int(256);
+//int random_seed = $choose_int(8);
 
 typedef struct _node
 {
@@ -38,6 +38,7 @@ typedef struct _priority_queue
 } PriorityQueue;
 
 int random_level() {
+  /*
   int x = random_seed;
   x = pow(x, x << 13);
   x = pow(x, ((unsigned int) x) >> 17);
@@ -48,6 +49,8 @@ int random_level() {
   int level = 1;
   while (((x >>= 1) & 1) != 0) ++level;
   return (level > MAX_LEVEL - 1) ? MAX_LEVEL - 1 : level;
+  */
+  return $choose_int(MAX_LEVEL);
 }
 
 Node* create_node() {
@@ -70,7 +73,7 @@ Node* create_node_initialized(int x, int my_priority) {
   result->item = x;
   result->marked = false;
   int height = random_level();
-  result->next = (AtomicMarkableReference**) malloc(sizeof(AtomicMarkableReference)*(height + 1));
+  result->next = (AtomicMarkableReference**) malloc(sizeof(AtomicMarkableReference*)*(height + 1));
   result->top_level = height;
   result->length = height + 1;
   for (int i = 0; i < result->length; i++) {
@@ -95,19 +98,17 @@ void destroy_priority_queue(PriorityQueue* q) {
 }
 
 PriorityQueue* duplicate_priority_queue(PriorityQueue* original) {
-  /*
   PriorityQueue* result = create_priority_queue();
-  result->next = original->next;
-  result->length = original->length;
-  for (int i = 0; i < original->length; i++) {
-    result->heap[i]->tag = original->heap[i]->tag;
-    result->heap[i]->score = original->heap[i]->score;
-    result->heap[i]->item = original->heap[i]->item;
-    result->heap[i]->owner = original->heap[i]->owner;
+  Node* curr_original = original->head->next[0]->reference;
+  Node* curr_new = result->head;
+  while (curr_original != original->tail) {
+    curr_new->next[0]->reference = create_node_initialized(curr_original->item, curr_original->priority);
+    curr_new = curr_new->next[0]->reference;
+    curr_new->next[0]->reference = result->tail;
+    curr_new->top_level = 0;
+    curr_original = curr_original->next[0]->reference;
   }
-  
   return result;
-  */
 }
 
 _Bool find(PriorityQueue* q, Node* node, Node** preds, Node** succs) {
@@ -258,7 +259,15 @@ int priority_queue_remove_min(PriorityQueue* q) {
 }
 
 _Bool priority_queue_contains(PriorityQueue *q, int item) {
-  return false;
+  _Bool result = false;
+  Node* curr = q->head->next[0]->reference;
+  while (curr != q->tail) {
+    if (curr->item == item) {
+      return true;
+    }
+    curr = curr->next[0]->reference;
+  }
+  return result;
 }
 
 int priority_queue_item_index(PriorityQueue* q, int i) {
