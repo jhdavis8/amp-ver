@@ -15,7 +15,7 @@ void printPerms(int num_perms, int size_perm, int** perms){
     for (int i = 0; i < num_perms; i++){
         printf("Perm[%d]:\t", i);
         for (int j = 0; j < size_perm; j++){
-            printf("%d, ", perms[i][j]);
+            printf("%d ", perms[i][j]);
         }
         printf("\n");
     }

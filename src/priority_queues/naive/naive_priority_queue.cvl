@@ -180,6 +180,13 @@ int naive_priority_queue_score_index(NPQueue* q, int i) {
   return q->heap[i]->score;
 }
 
+void print_naive_priority_queue(NPQueue* q) {
+  for (int i = 0; i < q->length; i++) {
+    printf("%d.%d/%d ", q->heap[i]->item, q->heap[i]->score, q->heap[i]->tag);
+  }
+  printf("\n");
+}
+
 //int main() {
 //  int n = 5;
 //  NPQueue* q = create_naive_priority_queue();

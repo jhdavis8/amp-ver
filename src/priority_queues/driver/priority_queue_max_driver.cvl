@@ -253,11 +253,15 @@ _Bool isEqual(PriorityQueue* actual, NPQueue* oracle) {
   NPQueue* oracle_c = duplicate_naive_priority_queue(oracle);
   int actual_out;
   int oracle_out;
+  printf("[DEBUG]\t Original NPQueue heap:  ");
+  print_naive_priority_queue(oracle);
+  printf("[DEBUG]\t Duplicate NPQueue heap: ");
+  print_naive_priority_queue(oracle_c);
   for (int i = 0; i < num_steps; i++) {
     actual_out = priority_queue_remove_min(actual_c);
     oracle_out = naive_priority_queue_remove_min(oracle_c);
     if (actual_out != oracle_out) {
-      //printf("Match failed, actual is %d but oracle got %d, at remove_min call %d\n", actual_out, oracle_out, i);
+      printf("[DEBUG]\t Match failed, actual is %d but oracle got %d, at remove_min call %d\n", actual_out, oracle_out, i);
       result = false;
     }
   }
@@ -306,6 +310,8 @@ int main() {
   if (num_steps > 0 && found_match == false) {
     printMatchFail();
     printBoolResults(actual_results);
+    printf("\n");
+    printPerms(num_perms, num_steps, perms);
     printf("\n");
     $assert(false);
   }
