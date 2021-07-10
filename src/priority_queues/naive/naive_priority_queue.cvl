@@ -12,177 +12,98 @@
 #include <limits.h>
 #include "../include/naive_priority_queue.cvh"
 
-#define ROOT 1
 #define CAPACITY 8
-
-typedef enum _status {EMPTY, AVAILABLE} Status;
-
-typedef struct _nnode
-{
-  Status tag;
-  int score;
-  int item;
-} NNode;
 
 typedef struct _npriority_queue
 {
-  int next;
-  NNode** heap;
+  int* items;
+  int* scores;
   int length;
 } NPQueue;
 
-NNode* create_naive_node() {
-  NNode* new_naive_node = (NNode*) malloc(sizeof(NNode));
-  new_naive_node->tag = EMPTY;
-  new_naive_node->score = -1;
-  new_naive_node->item = -1;
-  return new_naive_node;
-}
-
-void init_naive_node(NNode* n, int new_item, int new_score) {
-  n->item = new_item;
-  n->score = new_score;
-  n->tag = AVAILABLE;
-}
-
 NPQueue* create_naive_priority_queue() {
   NPQueue* q = (NPQueue*) malloc(sizeof(NPQueue));
-  q->next = ROOT;
-  q->heap = (NNode**) malloc(sizeof(NNode*)*(CAPACITY + 1));
-  for (int i = 0; i < CAPACITY + 1; i++) {
-    q->heap[i] = create_naive_node();
-  }
+  q->items = (int*) malloc(sizeof(int)*CAPACITY);
+  q->scores = (int*) malloc(sizeof(int)*CAPACITY);
   q->length = CAPACITY;
+  for (int i = 0; i < q->length; i++) {
+    q->items[i] = -1;
+    q->scores[i] = -1;
+  }
   return q;
 }
 
 void destroy_naive_priority_queue(NPQueue* q) {
-  for (int i = 0; i < CAPACITY + 1; i++) {
-    free(q->heap[i]);
-  }
-  free(q->heap);
+  free(q->items);
+  free(q->scores);
   free(q);
 }
 
 NPQueue* duplicate_naive_priority_queue(NPQueue* original) {
-  /*
-  NPQueue* result = (NPQueue*) malloc(sizeof(NPQueue));
-  memcpy(result, original, sizeof(NPQueue));
-  for (int i = 0; i < original->length; i++) {
-    result->heap[i] = (NNode*) malloc(sizeof(NNode));
-    memcpy(result->heap[i], original->heap[i], sizeof(NNode));
-    printf("Copied value %d in original as value %d in dupe\n",
-	   original->heap[i]->item,
-	   result->heap[i]->item);
-  }
-  */
-
   NPQueue* result = create_naive_priority_queue();
-  result->next = original->next;
   result->length = original->length;
   for (int i = 0; i < original->length; i++) {
-    result->heap[i]->tag = original->heap[i]->tag;
-    result->heap[i]->score = original->heap[i]->score;
-    result->heap[i]->item = original->heap[i]->item;
+    result->items[i] = original->items[i];
+    result->scores[i] = original->scores[i];
   }
   return result;
-}
-
-void naive_priority_queue_swap(NPQueue* q, int i, int j) {
-  int _item = q->heap[i]->item;
-  q->heap[i]->item = q->heap[j]->item;
-  q->heap[j]->item = _item;
-  int _priority = q->heap[i]->score;
-  q->heap[i]->score = q->heap[j]->score;
-  q->heap[j]->score = _priority;
-  Status _tag = q->heap[i]->tag;
-  q->heap[i]->tag = q->heap[j]->tag;
-  q->heap[j]->tag = _tag;
 }
 
 void naive_priority_queue_add(NPQueue* q, int item, int priority) {
-  int child = q->next++;
-  //printf("Child val: %d\n", child);
-  if (child < 0) {
-    child = 0;
+  for (int i = 0; i < CAPACITY; i++) {
+    if (q->items[i] == item && q->scores[i] == priority) return;
   }
-  init_naive_node(q->heap[child], item, priority);
-  while (child > ROOT) {
-    int parent = child / 2;
-    int old_child = child;
-    if (q->heap[parent]->tag == AVAILABLE) {
-      if (q->heap[child]->score < q->heap[parent]->score) {
-	naive_priority_queue_swap(q, child, parent);
-	child = parent;
-      } else {
-	q->heap[child]->tag = AVAILABLE;
-	return;
-      }
-    }
-    if (child == ROOT) {
-      q->heap[ROOT]->tag = AVAILABLE;
+  for (int i = 0; i < CAPACITY; i++) {
+    if (q->items[i] < 0) {
+      q->items[i] = item;
+      q->scores[i] = priority;
+      return;
     }
   }
+  printf("[ERROR!]\t Tried to add to naive priority queue over CAPACITY.\n");
+  return;
 }
 
 int naive_priority_queue_remove_min(NPQueue* q) {
-  int bottom = --q->next;
-  if (q->heap[ROOT]->tag == EMPTY) {
-    return -1;
-  }
-  if (bottom < 0) {
-    q->next++;
-    return -1;
-  }
-  int item = q->heap[ROOT]->item;
-  q->heap[ROOT]->tag = EMPTY;
-  naive_priority_queue_swap(q, bottom, ROOT);
-  if (q->heap[ROOT]->tag == EMPTY) {
-    return item;
-  }
-  int child = 0;
-  int parent = ROOT;
-  while (parent < q->length / 2) {
-    int left = parent*2;
-    int right = (parent*2) + 1;
-    if (q->heap[left]->tag == EMPTY) {
-      break;
-    } else if (q->heap[right]->tag == EMPTY || q->heap[left]->score < q->heap[right]->score) {
-      child = left;
-    } else {
-      child = right;
-    }
-    if (q->heap[child]->score < q->heap[parent]->score) {
-      naive_priority_queue_swap(q, parent, child);
-      parent = child;
-    } else {
-      break;
-    }
-  }
-  return item;
-}
-
-_Bool naive_priority_queue_contains(NPQueue *q, int item) {
-  _Bool result = false;
+  int max_priority = -1;
+  int max_index = -1;
   for (int i = 0; i < CAPACITY; i++) {
-    if (q->heap[i]->tag != EMPTY && q->heap[i]->item == item) {
-      result = true;
+    if (q->scores[i] > max_priority) {
+      max_priority = q->scores[i];
+      max_index = i;
     }
+  }
+  if (max_index < 0) return -1;
+  int result = q->items[max_index];
+  for (int i = max_index; i < CAPACITY - 1; i++) {
+    q->items[i] = q->items[i + 1];
+    q->scores[i] = q->scores[i + 1];
+    q->items[i + 1] = -1;
+    q->scores[i + 1] = -1;
   }
   return result;
 }
 
+_Bool naive_priority_queue_contains(NPQueue *q, int item) {
+  for (int i = 0; i < CAPACITY; i++) {
+    if (q->items[i] == item) {
+      return true;
+    }
+  }
+  return false;
+}
+
 int naive_priority_queue_item_index(NPQueue* q, int i) {
-  return q->heap[i]->item;
+  return q->items[i];
 }
 
 int naive_priority_queue_score_index(NPQueue* q, int i) {
-  return q->heap[i]->score;
+  return q->scores[i];
 }
 
 void print_naive_priority_queue(NPQueue* q) {
   for (int i = 0; i < q->length; i++) {
-    printf("%d.%d/%d ", q->heap[i]->item, q->heap[i]->score, q->heap[i]->tag);
+    printf("%dp%d ", q->items[i], q->scores[i]);
   }
   printf("\n");
 }

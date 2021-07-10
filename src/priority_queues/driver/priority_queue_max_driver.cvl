@@ -253,9 +253,7 @@ _Bool isEqual(PriorityQueue* actual, NPQueue* oracle) {
   NPQueue* oracle_c = duplicate_naive_priority_queue(oracle);
   int actual_out;
   int oracle_out;
-  printf("[DEBUG]\t Original NPQueue heap:  ");
-  print_naive_priority_queue(oracle);
-  printf("[DEBUG]\t Duplicate NPQueue heap: ");
+  printf("[DEBUG]\t NPQueue final state: ");
   print_naive_priority_queue(oracle_c);
   for (int i = 0; i < num_steps; i++) {
     actual_out = priority_queue_remove_min(actual_c);

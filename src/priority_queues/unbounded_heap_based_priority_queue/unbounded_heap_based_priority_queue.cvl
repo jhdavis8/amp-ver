@@ -94,7 +94,7 @@ _Bool am_owner_node(Node* n) {
   case AVAILABLE:
     return false;
   case BUSY:
-    return n->owner == $self;
+    return (n->owner == $self);
   }
   return false; // not reached
 }
@@ -213,13 +213,15 @@ void priority_queue_add(PriorityQueue* q, int item, int priority) {
 int priority_queue_remove_min(PriorityQueue* q) {
   lock_heap(q);
   int bottom = --q->next;
+  /*
   if (bottom < 0) {
     q->next++;
     unlock_heap(q);
     return -1;
   }
-  lock_node(q->heap[ROOT]);
+  */
   lock_node(q->heap[bottom]);
+  lock_node(q->heap[ROOT]);
   unlock_heap(q);
   if (q->heap[ROOT]->tag == EMPTY) {
     unlock_node(q->heap[ROOT]);
