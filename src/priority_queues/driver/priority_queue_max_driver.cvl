@@ -8,6 +8,7 @@
 #include "../include/priority_queue.cvh"
 #include "../include/naive_priority_queue.cvh"
 #include "../../util/perm_util.c"
+#include "../../util/sym.cvl"
 #include <stdio.h>	// Printing outputs
 #include <string.h>	// Output content.
 #include <stdbool.h>
@@ -171,7 +172,8 @@ void printEquivSeqInfo_naive_priority_queue(int* perms, NPQueue* results) {
 void init() {
   num_vals = VAL_B + 1;
   num_steps = 0;
-  
+
+#if SYM_GEN == 0
   for (int tid = 0; tid < nthreads; tid++) {
     int num_steps_local = $choose_int(STP_B+1-num_steps);
     
@@ -188,6 +190,11 @@ void init() {
       num_steps++;
     }
   }
+#else
+  choose_lengths();
+  choose_ops();
+  choose_vals();
+#endif
   num_perms = calc_num_perms(nthreads, nsteps);
 }
 

@@ -1,0 +1,72 @@
+#include <stdio.h>
+
+
+#define ADD 1
+#define REMOVE 0
+
+$input int STP_B;           // upper bound on the total number of steps
+$input int nthreads;        // number of threads, chosen from within the input bound
+int num_steps = 0;          // total number of steps across all threads
+int nsteps[nthreads];       // number of steps per thread
+_Bool ops[nthreads][STP_B]; // operations schedule per thread, True represents ADD and False REMOVE
+int vals[nthreads][STP_B];  // value schedule per thread
+
+// sets num_steps and nsteps[]
+void choose_lengths() {
+  int remain = STP_B, cap = STP_B;
+  for (int i=0; i<nthreads; i++) {
+    int tmp = $choose_int(cap+1);
+    nsteps[i] = tmp;
+    num_steps += tmp;
+    remain -= tmp;
+    cap = tmp <= remain ? tmp : remain;
+  }
+}
+
+// sets ops[][]
+void choose_ops() {
+  for (int i = 0; i < nthreads; i++) {
+    int ns = nsteps[i], j = 0;
+    if (i >= 1 && ns == nsteps[i-1]) {
+      for (; j < ns; j++) {
+	_Bool s = ops[i-1][j];
+	if (s == ADD && $choose_int(2)) {
+	  ops[i][j++] = REMOVE;
+	  break;
+	} else { ops[i][j] = s;	}
+      }
+    }
+    for (; j < ns; j++) ops[i][j] = $choose_int(2);
+  }
+}
+
+// sets vals[][]
+void choose_vals() {
+  int max = -1;
+  for (int i=0; i<nthreads; i++) {
+    for (int j=0; j<nsteps[i]; j++) {
+      vals[i][j] = $choose_int(max + 2);
+      if (vals[i][j] == max + 1) max++;
+    }
+  }
+}
+
+void print_sched() {
+  printf("num_steps = %d\n", num_steps);
+  for (int i=0; i<nthreads; i++) {
+    printf("thread %d: [ ", i);
+    for (int j=0; j<nsteps[i]; j++) {
+      if (ops[i][j] == ADD) printf("ADD(%d) ", vals[i][j]);
+      else printf("REMOVE(%d) ", vals[i][j]);
+    }
+    printf("]\n");
+  }
+  printf("\n");
+}
+
+//int main() {
+//  choose_lengths();
+//  choose_ops();
+//  choose_vals();
+//  print_sched();
+//}

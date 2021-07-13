@@ -7,11 +7,11 @@
 CC = gcc
 CIVL = civl verify -checkMemoryLeak=false
 
-ifndef THD_BND
-	THD_BND = 2
+ifndef THD_B
+	THD_B = 2
 endif
-ifndef STP_BND
-	STP_BND = 2
+ifndef STP_B
+	STP_B = 2
 endif
 ifndef PATCH
 	PATCH = 1
@@ -22,10 +22,13 @@ endif
 ifndef LNR_CHECK
 	LNR_CHECK = 1
 endif
+ifndef SYM_GEN
+	SYM_GEN = 1
+endif
 
 DEPS = naive/naive_priority_queue.cvl driver/priority_queue_max_driver.cvl ../util/perm_util.c include/priority_queue.cvh include/naive_priority_queue.cvh
-INPUTS = -inputTHD_B=$(THD_BND) -inputSTP_B=$(STP_BND)
-DEFINES = -DENABLE_PATCH=$(PATCH) -DHASH_FN_OPTION=$(HASH_OPT) -DLNR_CHECK=$(LNR_CHECK)
+INPUTS = -inputTHD_B=$(THD_B) -inputSTP_B=$(STP_B)
+DEFINES = -DENABLE_PATCH=$(PATCH) -DHASH_FN_OPTION=$(HASH_OPT) -DLNR_CHECK=$(LNR_CHECK) -DSYM_GEN=$(SYM_GEN)
 RUNFILES = driver/priority_queue_max_driver.cvl naive/naive_priority_queue.cvl
 
 .PHONY: uhb_priority_queue sbu_priority_queue
