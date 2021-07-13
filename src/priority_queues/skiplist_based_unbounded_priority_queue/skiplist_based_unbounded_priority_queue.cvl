@@ -151,9 +151,9 @@ _Bool add(PriorityQueue* q, Node* node) {
   Node** succs = (Node**) malloc(sizeof(Node*)*(MAX_LEVEL + 1));
   while (true) {
     _Bool found = find(q, node, preds, succs);
-    if (found) { // if found it's not marked
-      return false;
-    } else {
+    //if (found) { // if found it's not marked
+    //  return false;
+    //} else {
       for (int level = bottom_level; level <= node->top_level; level++) {
 	Node* succ = succs[level];
 	amr_set(node->next[level], succ, false);
@@ -177,7 +177,7 @@ _Bool add(PriorityQueue* q, Node* node) {
 	}
       }
       return true;
-    }
+    //}
   }
 }
 
@@ -280,3 +280,16 @@ int priority_queue_score_index(PriorityQueue* q, int i) {
 
 void priority_queue_swap(PriorityQueue* q, int i, int j) {
 }
+
+/*
+int main() {
+  PriorityQueue* q = create_priority_queue();
+  for (int i = 0; i < 2; i++) {
+    priority_queue_add(q, 0, 0);
+  }
+  for (int i = 0; i < 2; i++) {
+    printf("Remove %d output: %d\n", i, priority_queue_remove_min(q));
+  }
+  destroy_priority_queue(q);
+}
+*/

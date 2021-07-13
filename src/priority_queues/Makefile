@@ -7,9 +7,6 @@
 CC = gcc
 CIVL = civl verify -checkMemoryLeak=false
 
-ifndef VAL_BND
-	VAL_BND = 2
-endif
 ifndef THD_BND
 	THD_BND = 2
 endif
@@ -27,16 +24,16 @@ ifndef LNR_CHECK
 endif
 
 DEPS = naive/naive_priority_queue.cvl driver/priority_queue_max_driver.cvl ../util/perm_util.c include/priority_queue.cvh include/naive_priority_queue.cvh
-INPUTS = -inputVAL_B=$(VAL_BND) -inputTHD_B=$(THD_BND) -inputSTP_B=$(STP_BND)
-DEFINES = -DENABLE_PATCH=$(PATCH) -DHASH_FN_OPTION=$(HASH_OPT) -DLNR_CHECK=$(LNR_CHECK) -DVAL_BND=$(VAL_BND)
+INPUTS = -inputTHD_B=$(THD_BND) -inputSTP_B=$(STP_BND)
+DEFINES = -DENABLE_PATCH=$(PATCH) -DHASH_FN_OPTION=$(HASH_OPT) -DLNR_CHECK=$(LNR_CHECK)
 RUNFILES = driver/priority_queue_max_driver.cvl naive/naive_priority_queue.cvl
 
 .PHONY: uhb_priority_queue sbu_priority_queue
 
 uhb_priority_queue : unbounded_heap_based_priority_queue/unbounded_heap_based_priority_queue.cvl $(DEPS)
-		$(CIVL) $(INPUTS) $(DEFINES) $(RUNFILES) \
+		$(CIVL) $(INPUTS) $(DEFINES) -DEQUAL_PRIORITY_MODE=0 $(RUNFILES) \
 		unbounded_heap_based_priority_queue/unbounded_heap_based_priority_queue.cvl
 
 sbu_priority_queue : skiplist_based_unbounded_priority_queue/skiplist_based_unbounded_priority_queue.cvl $(DEPS)
-		$(CIVL) $(INPUTS) $(DEFINES) $(RUNFILES) \
+		$(CIVL) $(INPUTS) $(DEFINES) -DEQUAL_PRIORITY_MODE=1 $(RUNFILES) \
 		skiplist_based_unbounded_priority_queue/skiplist_based_unbounded_priority_queue.cvl

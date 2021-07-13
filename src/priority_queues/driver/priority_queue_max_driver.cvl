@@ -24,13 +24,14 @@
 #endif
 
 //CIVL Inputs
-$input int VAL_B;	// Vals are in [0, VAL_B]
-$input int THD_B;   // Maximum number of threads
+
+$input int THD_B;       // Maximum number of threads
 $input int STP_B;	// Maximum number of total steps
 $input int nthreads;	// Actual number of threads
 $assume(1 <= nthreads && nthreads <= THD_B);
 
-//Global Vars
+//Global Var
+int VAL_B = STP_B - 1;  // Vals are in [0, VAL_B]
 int num_vals;
 int num_steps;
 int num_perms;
@@ -253,13 +254,13 @@ _Bool isEqual(PriorityQueue* actual, NPQueue* oracle) {
   NPQueue* oracle_c = duplicate_naive_priority_queue(oracle);
   int actual_out;
   int oracle_out;
-  printf("[DEBUG]\t NPQueue final state: ");
-  print_naive_priority_queue(oracle_c);
+  //printf("[DEBUG]\t NPQueue final state: ");
+  //print_naive_priority_queue(oracle_c);
   for (int i = 0; i < num_steps; i++) {
     actual_out = priority_queue_remove_min(actual_c);
     oracle_out = naive_priority_queue_remove_min(oracle_c);
     if (actual_out != oracle_out) {
-      printf("[DEBUG]\t Match failed, actual is %d but oracle got %d, at remove_min call %d\n", actual_out, oracle_out, i);
+      //printf("[DEBUG]\t Match failed, actual is %d but oracle got %d, at remove_min call %d\n", actual_out, oracle_out, i);
       result = false;
     }
   }

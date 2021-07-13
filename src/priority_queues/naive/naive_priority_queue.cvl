@@ -50,9 +50,11 @@ NPQueue* duplicate_naive_priority_queue(NPQueue* original) {
 }
 
 void naive_priority_queue_add(NPQueue* q, int item, int priority) {
+  /*
   for (int i = 0; i < CAPACITY; i++) {
     if (q->items[i] == item && q->scores[i] == priority) return;
   }
+  */
   for (int i = 0; i < CAPACITY; i++) {
     if (q->items[i] < 0) {
       q->items[i] = item;
@@ -65,17 +67,24 @@ void naive_priority_queue_add(NPQueue* q, int item, int priority) {
 }
 
 int naive_priority_queue_remove_min(NPQueue* q) {
-  int max_priority = -1;
-  int max_index = -1;
+  int min_priority = INT_MAX;
+  int min_index = INT_MAX;
   for (int i = 0; i < CAPACITY; i++) {
-    if (q->scores[i] > max_priority) {
-      max_priority = q->scores[i];
-      max_index = i;
+#if EQUAL_PRIORITY_MODE == 0
+    if (q->scores[i] < min_priority && q->scores[i] >= 0) {
+      min_priority = q->scores[i];
+      min_index = i;
     }
+#else
+    if (q->scores[i] <= min_priority && q->scores[i] >= 0) {
+      min_priority = q->scores[i];
+      min_index = i;
+    }
+#endif
   }
-  if (max_index < 0) return -1;
-  int result = q->items[max_index];
-  for (int i = max_index; i < CAPACITY - 1; i++) {
+  if (min_index == INT_MAX) return -1;
+  int result = q->items[min_index];
+  for (int i = min_index; i < CAPACITY - 1; i++) {
     q->items[i] = q->items[i + 1];
     q->scores[i] = q->scores[i + 1];
     q->items[i + 1] = -1;
