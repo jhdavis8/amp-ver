@@ -7,14 +7,11 @@
 CC = gcc
 CIVL = civl verify -checkMemoryLeak=false
 
-ifndef VAL_BND
-	VAL_BND = 2
+ifndef THD_B
+	THD_B = 2
 endif
-ifndef THD_BND
-	THD_BND = 2
-endif
-ifndef STP_BND
-	STP_BND = 2
+ifndef STP_B
+	STP_B = 2
 endif
 ifndef PATCH
 	PATCH = 1
@@ -25,10 +22,14 @@ endif
 ifndef LNR_CHECK
 	LNR_CHECK = 1
 endif
+ifndef SYM_GEN
+	SYM_GEN = 1
+endif
+
 
 DEPS = driver/list_max_driver.cvl ../util/perm_util.c include/list.cvh
-INPUTS = -inputVAL_B=$(VAL_BND) -inputTHD_B=$(THD_BND) -inputSTP_B=$(STP_BND)
-DEFINES = -DENABLE_PATCH=$(PATCH) -DHASH_FN_OPTION=$(HASH_OPT) -DVAL_BND=$(VAL_BND) -DLNR_CHECK=$(LNR_CHECK)
+INPUTS = -inputTHD_B=$(THD_B) -inputSTP_B=$(STP_B)
+DEFINES = -DENABLE_PATCH=$(PATCH) -DHASH_FN_OPTION=$(HASH_OPT) -DLNR_CHECK=$(LNR_CHECK) -DSYM_GEN=$(SYM_GEN)
 
 .PHONY: coarse_list fine_list optimistic_list lock_free_list
 

@@ -22,7 +22,7 @@
 
 int THRESHOLD = PROBE_SIZE / 2;
 
-int hash_vals[2][VAL_BND+1]; 
+int hash_vals[2][STP_BND]; 
 
 typedef struct _probe Probe;
 
@@ -55,7 +55,7 @@ typedef struct _set Set;
 
 void init_hash_functions() {
   for (int t = 0; t < 2; t++){ 
-    for (int i = 0; i < VAL_BND; i++){
+    for (int i = 0; i < STP_BND - 1; i++){
       hash_vals[t][i] = -1;
     }
   }
@@ -64,7 +64,7 @@ void init_hash_functions() {
 void print_hashes() {
   for (int t = 0; t < 2; t++){ 
     printf("hashes %d\n", t);
-    for (int i = 0; i < VAL_BND; i++){
+    for (int i = 0; i < STP_BND - 1; i++){
       printf("%s ", hash_vals[t][i]);
     }
     printf("\n");
@@ -507,7 +507,7 @@ int test1() {
 int test_par() {
   Set* s = set_create();
 
-  $parfor (int val : 0 .. VAL_BND-1)
+  $parfor (int val : 0 .. STP_BND - 2)
     set_add(s, val);
 
   set_print(s);
@@ -516,7 +516,7 @@ int test_par() {
   $assert(set_contains(s, 1));
   $assert(set_contains(s, 2));
 
-  $parfor (int val : 0 .. VAL_BND-1)
+  $parfor (int val : 0 .. STP_BND - 2)
     set_remove(s, val);
 
   set_print(s);

@@ -1,15 +1,14 @@
 #include <stdio.h>
 
-
 #define ADD 1
 #define REMOVE 0
 
-$input int STP_B;           // upper bound on the total number of steps
-$input int nthreads;        // number of threads, chosen from within the input bound
-int num_steps = 0;          // total number of steps across all threads
-int nsteps[nthreads];       // number of steps per thread
-_Bool ops[nthreads][STP_B]; // operations schedule per thread, True represents ADD and False REMOVE
-int vals[nthreads][STP_B];  // value schedule per thread
+$input int STP_B;            // upper bound on the total number of steps
+$input int nthreads;         // number of threads, chosen from within the input bound
+int num_steps = 0;           // total number of steps across all threads
+int nsteps[nthreads];        // number of steps per thread
+_Bool ops[nthreads][STP_B];  // operations schedule per thread, True represents ADD and False REMOVE
+int vals[nthreads][STP_B];   // value schedule per thread
 
 // sets num_steps and nsteps[]
 void choose_lengths() {

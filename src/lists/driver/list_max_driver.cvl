@@ -7,24 +7,29 @@
 // Dependencies
 #include "../include/list.cvh"
 #include "../../util/perm_util.c"
+#include "../../util/sym.cvl"
 #include <stdio.h>	// Printing outputs
 #include <string.h>	// Output content.
 #include <stdbool.h>
 
 // Defs
-#define ADD true
-#define DEL false
+#ifndef ADD
+#define ADD 1
+#endif
+#ifndef DEL
+#define DEL 0
+#endif
 #define ACTUAL -1
 #define RESULT -2
 
 //CIVL Inputs
-$input int VAL_B = 1;	// Vals are in [0, VAL_B]
-$input int THD_B = 2;   // Maximum number of threads
-$input int STP_B = 2;	// Maximum number of total steps
+$input int THD_B;   // Maximum number of threads
+$input int STP_B;	// Maximum number of total steps
 $input int nthreads;	// Actual number of threads
 $assume(1 <= nthreads && nthreads <= THD_B);
 
 //Global Vars
+int VAL_B = STP_B - 1;	// Vals are in [0, VAL_B]
 int num_vals;
 int num_steps;
 int num_perms;
@@ -109,7 +114,8 @@ void printEquivSeqInfo(int* perms, _Bool* results) {
 void init() {
   num_vals = VAL_B + 1;
   num_steps = 0;
-  
+
+#if SYM_GEN == 0
   for (int tid = 0; tid < nthreads; tid++) {
     int num_steps_local = $choose_int(STP_B+1-num_steps);
     
@@ -120,6 +126,11 @@ void init() {
       num_steps++;
     }
   }
+#else
+  choose_lengths();
+  choose_ops();
+  choose_vals();
+#endif
   num_perms = calc_num_perms(nthreads, nsteps);
 }
 

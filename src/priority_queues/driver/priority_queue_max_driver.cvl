@@ -8,7 +8,7 @@
 #include "../include/priority_queue.cvh"
 #include "../include/naive_priority_queue.cvh"
 #include "../../util/perm_util.c"
-#include "../../util/sym.cvl"
+#include "../../util/symp.cvl"
 #include <stdio.h>	// Printing outputs
 #include <string.h>	// Output content.
 #include <stdbool.h>
@@ -193,7 +193,7 @@ void init() {
 #else
   choose_lengths();
   choose_ops();
-  choose_vals();
+  choose_scores();
 #endif
   num_perms = calc_num_perms(nthreads, nsteps);
 }
