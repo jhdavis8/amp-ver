@@ -12,11 +12,9 @@ static void choose_lengths(schedule_t * sched, int steps_bound) {
     sched->nsteps[i] = ns;
     sched->nsteps_sum += ns;
     sched->steps[i] = malloc(ns*sizeof(step_t));
-    for (int j=0; j<ns; j++) {
-      sched->steps[i][j].result = -1;
-      sched->steps[i][j].start_time = -1;
-      sched->steps[i][j].stop_time = -1;
-    }
+    for (int j = 0; j < ns; j++)
+      sched->steps[i][j].result = sched->steps[i][j].start_time = 
+	sched->steps[i][j].stop_time = -1;
     remain -= ns;
     cap = ns <= remain ? ns : remain;
   }
@@ -110,24 +108,21 @@ static void choose_pqueue_vals(schedule_t * sched) {
     if (sched->steps[tid][idx].op == ADD) {
       int p = $choose_int(pb);
       sched->steps[tid][idx].args = (int[]) { used[p], p };
-      if (used[p] == 0) num_gaps--;
-      used[p]++;
+      if (++used[p] == 1) num_gaps--;
       remain--;
       $assume(remain >= num_gaps);
-    } else {
+    } else
       sched->steps[tid][idx].args = (int[]) { -1, -1 };
-    }
   }
   
   for (int i = 0; i < sched->nthreads; i++) {
     int ns = sched->nsteps[i], j = 0;
-    if (!new_block(sched, i)) {
+    if (!new_block(sched, i))
       for (; j < ns; j++) {
 	int p1 = sched->steps[i-1][j].args[1];
 	choose_priority(i, j, p1+1);
 	if (sched->steps[i][j].args[1] != p1) { j++; break; }
       }
-    }
     for (; j < ns; j++) choose_priority(i, j, num_priorities);
   }
 }
@@ -172,18 +167,16 @@ void schedule_print(schedule_t sched) {
     printf("Thread %d: [", i);
     for (int j=0; j<sched.nsteps[i]; j++) {
       step_t step = sched.steps[i][j];
-      int op = step.op;
-
-      if (op == ADD) {
+      if (step.op == ADD) {
 	printf(" ADD(%d", step.args[0]);
 	if (kind == PQUEUE) printf(",%d", step.args[1]);
 	printf(")");
-      } else if (op == REMOVE) {
+      } else if (step.op == REMOVE) {
 	printf(" REMOVE");
 	if (kind == SET) printf("(%d)", step.args[0]);
-      } else if (op == CONTAINS) {
+      } else if (step.op == CONTAINS) {
 	printf(" CONTAINS(%d)", step.args[0]);
-      }
+      } else $assert($false);
     }
     printf(" ]\n");
   }
