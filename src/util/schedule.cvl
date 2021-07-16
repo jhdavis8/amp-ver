@@ -1,0 +1,190 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include "schedule.h"
+
+/* Sets sched fields nsteps[i], nsteps_sum, allocates each steps[i],
+   and sets all result, start_time, stop_time fields to -1.  Ensures
+   threads are ordered by decreasing nsteps[i]. */
+static void choose_lengths(schedule_t * sched, int steps_bound) {
+  int remain = steps_bound, cap = remain;
+  for (int i=0; i<sched->nthreads; i++) {
+    int ns = $choose_int(cap+1);
+    sched->nsteps[i] = ns;
+    sched->nsteps_sum += ns;
+    sched->steps[i] = malloc(ns*sizeof(step_t));
+    for (int j=0; j<ns; j++) {
+      sched->steps[i][j].result = -1;
+      sched->steps[i][j].start_time = -1;
+      sched->steps[i][j].stop_time = -1;
+    }
+    remain -= ns;
+    cap = ns <= remain ? ns : remain;
+  }
+}
+
+/* Sets all op fields of all steps in sched. Ensures that if two
+   threads have same nsteps[i], they are ordered by decreasing
+   lexiographic order on the op fields.  */
+static void choose_ops(schedule_t * sched) {
+  for (int i = 0; i < sched->nthreads; i++) {
+    int ns = sched->nsteps[i], j = 0;
+    if (i >= 1 && ns == sched->nsteps[i-1])
+      for (; j < ns; j++) {
+	int op1 = sched->steps[i-1][j].op, op2 = $choose_int(op1 + 1);
+	sched->steps[i][j].op = op2;
+	if (op2 < op1) break;
+      }
+    for (; j < ns; j++)
+      sched->steps[i][j].op = $choose_int(sched->num_ops);
+  }
+}
+
+/* Choose arguments for set steps.  All three operations (ADD, REMOVE,
+   CONTAINS) consume one int argument.  Ensures: the first value is 0,
+   and for all i (1<=i<nsteps_sum), exists j (0<=j<i) s.t. value i is
+   less than or equal to 1 + value j.  The second argument is not used
+   for sets so is assigned -1. */
+static void choose_set_vals(schedule_t * sched) {
+  int max = -1;
+  for (int i = 0; i < sched->nthreads; i++)
+    for (int j = 0; j < sched->nsteps[i]; j++) {
+      int val = $choose_int(max + 2);
+      if (val == max + 1) max++;
+      sched->steps[i][j].args = (int[]){ val, -1 };
+    }
+}
+
+/* Choose arguments for queue steps.  There are two kinds of
+   operations: ADD (enqueue) takes one int argument; REMOVE (dequeue)
+   takes none.  Similar to the choose_set_vals, but only ADD ops are
+   considered; REMOVE ops are assigned args -1, -1.  */
+static void choose_queue_vals(schedule_t * sched) {
+  int max = -1;
+  for (int i = 0; i < sched->nthreads; i++)
+    for (int j = 0; j < sched->nsteps[i]; j++) {
+      int val = -1;
+      if (sched->steps[i][j].op == ADD) {
+	val = $choose_int(max + 2);
+	if (val == max + 1) max++;
+      }
+      sched->steps[i][j].args = (int[]) { val, -1 };
+    }
+}
+
+/* Get the total number of ADD ops in the schedule.  This is an upper
+   bound on the number of priorities needed for a PQUEUE. */
+static int get_num_adds(schedule_t * sched) {
+  int result = 0;
+  for (int i = 0; i < sched->nthreads; i++)
+    for (int j = 0; j < sched->nsteps[i]; j++)
+      if (sched->steps[i][j].op == ADD) result++;
+  return result;      
+}
+
+/* Is thread i the beginning of a new block? I.e., is its op
+   sequence different from the op sequence of thread i-1? */
+static _Bool new_block(schedule_t * sched, int i) {
+  if (i == 0) return $true;
+  int ns = sched->nsteps[i];
+  if (ns != sched->nsteps[i-1]) return $true;
+  return $exists (int j | 0<=j && j<ns)
+    sched->steps[i][j].op != sched->steps[i-1][j].op;
+}
+
+/* For a PQUEUE (Priority Queue) there are two operations: ADD
+   consumes two int args (value and "score" (priority)); REMOVE
+   consumes none.  Ensures: threads with the same op sequence are
+   ordered by decreasing lexiographic order on priorities.  Also
+   ensures there are no gaps in the set of priorities.  Values are
+   assigned deterministically: for each priority: 0, 1, ...  in the
+   order in which they occur.  */
+static void choose_pqueue_vals(schedule_t * sched) {
+  int num_adds = get_num_adds(sched);
+  if (num_adds == 0) return;
+  int num_priorities = 1 + $choose_int(num_adds);
+  int used[num_priorities] = (int[num_priorities])$lambda(int k) 0;
+  int num_gaps = num_priorities; // number of 0s in used[]
+  int remain = num_adds; // number of add ops not yet assigned a priority
+
+  void choose_priority(int tid, int idx, int pb) {
+    if (sched->steps[tid][idx].op == ADD) {
+      int p = $choose_int(pb);
+      sched->steps[tid][idx].args = (int[]) { used[p], p };
+      if (used[p] == 0) num_gaps--;
+      used[p]++;
+      remain--;
+      $assume(remain >= num_gaps);
+    } else {
+      sched->steps[tid][idx].args = (int[]) { -1, -1 };
+    }
+  }
+  
+  for (int i = 0; i < sched->nthreads; i++) {
+    int ns = sched->nsteps[i], j = 0;
+    if (!new_block(sched, i)) {
+      for (; j < ns; j++) {
+	int p1 = sched->steps[i-1][j].args[1];
+	choose_priority(i, j, p1+1);
+	if (sched->steps[i][j].args[1] != p1) { j++; break; }
+      }
+    }
+    for (; j < ns; j++) choose_priority(i, j, num_priorities);
+  }
+}
+
+schedule_t schedule_create(kind_t kind, int nthreads, int steps_bound) {
+  schedule_t result;
+  result.kind = kind;
+  result.num_ops = kind == SET ? 3 : 2;
+  result.nthreads = nthreads;
+  result.nsteps_sum = 0;
+  result.nsteps = malloc(nthreads*sizeof(int));
+  result.steps = malloc(nthreads*sizeof(step_t*));
+  choose_lengths(&result, steps_bound);
+  choose_ops(&result);
+  if (kind == SET) choose_set_vals(&result);
+  else if (kind == QUEUE) choose_queue_vals(&result);
+  else choose_pqueue_vals(&result);
+  return result;
+}
+
+void schedule_destroy(schedule_t sched) {
+  for (int i=0; i<sched.nthreads; i++)
+    free(sched.steps[i]);
+  free(sched.steps);
+  free(sched.nsteps);
+}
+
+static char * kind2str(kind_t kind) {
+  switch(kind) {
+  case SET: return "SET";
+  case QUEUE: return "QUEUE";
+  case PQUEUE: return "PQUEUE";
+  default: $assert($false);
+  }
+}
+
+void schedule_print(schedule_t sched) {
+  kind_t kind = sched.kind;
+  printf("Schedule[kind=%s, nthreads=%d, nsteps_sum=%d]:\n",
+	 kind2str(kind), sched.nthreads, sched.nsteps_sum);
+  for (int i=0; i<sched.nthreads; i++) {
+    printf("Thread %d: [", i);
+    for (int j=0; j<sched.nsteps[i]; j++) {
+      step_t step = sched.steps[i][j];
+      int op = step.op;
+
+      if (op == ADD) {
+	printf(" ADD(%d", step.args[0]);
+	if (kind == PQUEUE) printf(",%d", step.args[1]);
+	printf(")");
+      } else if (op == REMOVE) {
+	printf(" REMOVE");
+	if (kind == SET) printf("(%d)", step.args[0]);
+      } else if (op == CONTAINS) {
+	printf(" CONTAINS(%d)", step.args[0]);
+      }
+    }
+    printf(" ]\n");
+  }
+}

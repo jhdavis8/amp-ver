@@ -1,0 +1,17 @@
+
+#include <stdio.h>
+#include "schedule.h"
+
+$input int kind;
+$input int nthreads;
+$input int steps_bound;
+$assume(kind == SET || kind == QUEUE || kind == PQUEUE);
+$assume(0<=nthreads);
+$assume(0<=steps_bound);
+
+int main() {
+  schedule_t sched = schedule_create(kind, nthreads, steps_bound);
+  schedule_print(sched);
+  printf("\n");
+  schedule_destroy(sched);
+}
