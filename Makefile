@@ -599,5 +599,17 @@ test: $(MAIN_CLASS) $(UNBOUNDEDQUEUE_DEP)
 
 all_schedules: hashset_schedules list_schedules queue_schedules pqueue_schedules
 
+all_S1: out/CoarseHashSet_S1 out/CoarseList_S1 out/UnboundedQueue_S1 \
+	out/LockFreeQueue_S1 out/FineGrainedHeap_S1 out/FineGrainedHeapFair_S1 \
+	out/FineGrainedHeapNoCycles_S1 out/SkipQueue_S1 out/SkipQueuePatched_S1
+
+all_S2: out/CoarseHashSet_S2 out/CoarseList_S2 out/UnboundedQueue_S2 \
+	out/LockFreeQueue_S2 out/FineGrainedHeap_S2 out/FineGrainedHeapFair_S2 \
+	out/FineGrainedHeapNoCycles_S2 out/SkipQueue_S2 out/SkipQueuePatched_S2
+
+all_S3: out/CoarseHashSet_S3 out/CoarseList_S3 out/UnboundedQueue_S3 \
+	out/LockFreeQueue_S3 out/FineGrainedHeap_S3 out/FineGrainedHeapFair_S3 \
+	out/FineGrainedHeapNoCycles_S3 out/SkipQueue_S3 out/SkipQueuePatched_S3
+
 .PHONY: all test CoarseList2 UnboundedQueue1 SkipQueue1 SkipQueue2 FineGrainedHeap1 \
   list_0 list_1 list_2
