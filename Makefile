@@ -43,6 +43,11 @@
 # described below. These variants are included in the core experiment targets
 # described above.
 #
+# LockFreeList: LockFreeListOriginal
+#  - Original: uses the original version of the LockFreeList data structure as
+#    presented in the 1st edition of the book, which contains a bug in the
+#    remove method corrected in later editions and the errata.
+#
 # FineGrainedHeap: FineGrainedHeapFair, FineGrainedHeapNoCycles
 #  - Fair: uses a fair ReentrantLock instead of the original ReentrantLock. Also
 #    passes the -fair flag to AMPVer, which indicates thread scheduling must be
@@ -104,18 +109,20 @@ $(MAIN_CLASS): $(SOURCES)
 HASHSET_LIMITS_1  = -kind=set -hashKind=ident -valueBound=2 -nthread=1..2 \
      -nstep=1..2 -npreAdd=0 -threadSym -checkTermination -ncore=$(NCORE)
 
-HASHSET_LIMITS_1ND = -kind=set -hashKind=nd -hashRangeBound=2 -hashDomainBound=2 -valueBound=2 \
-     -nthread=1..2 -nstep=1..2 -npreAdd=0 -threadSym -checkTermination \
+HASHSET_LIMITS_1ND = -kind=set -hashKind=nd -hashRangeBound=2 -hashDomainBound=2 \
+     -valueBound=2 -nthread=1..2 -nstep=1..2 -npreAdd=0 -threadSym -checkTermination \
      -ncore=$(NCORE)
 
-HASHSET_LIMITS_1.5ND = -kind=set -hashKind=nd -hashRangeBound=2 -hashDomainBound=3 -valueBound=3 -nthread=1..3 \
-     -nstep=1..3 -npreAdd=0 -threadSym -checkTermination -ncore=$(NCORE)\
+HASHSET_LIMITS_1.5ND = -kind=set -hashKind=nd -hashRangeBound=2 -hashDomainBound=3 \
+     -valueBound=3 -nthread=1..3 -nstep=1..3 -npreAdd=0 -threadSym \
+     -checkTermination -ncore=$(NCORE)
 
 HASHSET_LIMITS_2  = -kind=set -hashKind=ident -valueBound=3 -nthread=1..3 \
      -nstep=1..3 -npreAdd=0 -threadSym -checkTermination -ncore=$(NCORE)
 
-HASHSET_LIMITS_2ND = -kind=set -hashKind=nd -hashRangeBound=4 -hashDomainBound=3 -valueBound=3 -nthread=1..3 \
-     -nstep=1..3 -npreAdd=0 -threadSym -checkTermination -ncore=$(NCORE)\
+HASHSET_LIMITS_2ND = -kind=set -hashKind=nd -hashRangeBound=4 -hashDomainBound=3 \
+     -valueBound=3 -nthread=1..3 -nstep=1..3 -npreAdd=0 -threadSym -checkTermination \
+     -ncore=$(NCORE)
 
 HASHSET_LIMITS_3  = -kind=set -hashKind=ident -valueBound=3 -nthread=1..3 \
      -nstep=1..3 -npreAdd=1..3 -threadSym -checkTermination -ncore=$(NCORE)
@@ -222,7 +229,7 @@ LIST_COMMON_SRC = $(DRIVER_SRC) $(DRIVER_SET)
 
 list_1 list_2 list_3 list_4: list_%: out/CoarseList_%.out \
   out/FineList_%.out out/OptimisticList_%.out out/LazyList_%.out \
-  out/LockFreeList_%.out
+  out/LockFreeList_%.out out/LockFreeListOriginal_%.out
 
 # CoarseList
 
@@ -304,6 +311,7 @@ LOCKFREELIST = $(LIST_DIR)/LockFreeList.cvl
 LOCKFREELIST_DEP = $(LIST_COMMON_DEP) $(LOCKFREELIST) \
      $(HASH_INC) $(HASH_SRC) $(AMR_INC) $(AMR_SRC)
 LockFreeList_Outs = $(addsuffix .out,$(addprefix out/LockFreeList_,1 2 3 4))
+LockFreeListOriginal_Outs = $(addsuffix .out,$(addprefix out/LockFreeListOriginal_,1 2 3 4))
 
 $(LockFreeList_Outs): out/LockFreeList_%.out: $(MAIN_CLASS) $(LOCKFREELIST_DEP)
 	rm -rf $(TMP)/LockFreeList_$*.dir.tmp
@@ -314,6 +322,16 @@ $(LockFreeList_Outs): out/LockFreeList_%.out: $(MAIN_CLASS) $(LOCKFREELIST_DEP)
           >$(TMP)/LockFreeList_$*.out.tmp
 	mv $(TMP)/LockFreeList_$*.out.tmp out/LockFreeList_$*.out
 	mv $(TMP)/LockFreeList_$*.dir.tmp out/LockFreeList_$*.dir
+
+$(LockFreeListOriginal_Outs): out/LockFreeListOriginal_%.out: $(MAIN_CLASS) $(LOCKFREELIST_DEP)
+	rm -rf $(TMP)/LockFreeListOriginal_$*.dir.tmp
+	rm -rf out/LockFreeListOriginal_$*.dir
+	-$(AMPVER) $(LIST_LIMITS_$*) -tmpDir=$(TMP)/LockFreeListOriginal_$*.dir.tmp \
+          -checkMemoryLeak=false -DORIGINAL \
+          $(LOCKFREELIST) $(HASH_SRC) $(AMR_SRC) \
+          >$(TMP)/LockFreeListOriginal_$*.out.tmp
+	mv $(TMP)/LockFreeListOriginal_$*.out.tmp out/LockFreeListOriginal_$*.out
+	mv $(TMP)/LockFreeListOriginal_$*.dir.tmp out/LockFreeListOriginal_$*.dir
 
 
 #################################  Queues  #################################

@@ -5,9 +5,24 @@ Sets
 HASHSET_LIMITS_1  = -kind=set -hashKind=ident -valueBound=2 -nthread=1..2 \
      -nstep=1..2 -npreAdd=0 -threadSym -checkTermination -ncore=$(NCORE)
 
+# 63 schedules
+HASHSET_LIMITS_1ND = -kind=set -hashKind=nd -hashRangeBound=2 -hashDomainBound=2 \
+     -valueBound=2 -nthread=1..2 -nstep=1..2 -npreAdd=0 -threadSym -checkTermination \
+     -ncore=$(NCORE)
+
+# 63 schedules
+HASHSET_LIMITS_1.5ND = -kind=set -hashKind=nd -hashRangeBound=2 -hashDomainBound=3 \
+     -valueBound=3 -nthread=1..3 -nstep=1..3 -npreAdd=0 -threadSym \
+     -checkTermination -ncore=$(NCORE)
+
 # 1758 schedules
 HASHSET_LIMITS_2 = -kind=set -hashKind=ident -valueBound=3 -nthread=1..3 \
      -nstep=1..3 -npreAdd=0 -threadSym -checkTermination -ncore=$(NCORE)
+
+# 1758 schedules
+HASHSET_LIMITS_2ND = -kind=set -hashKind=nd -hashRangeBound=4 -hashDomainBound=3 \
+     -valueBound=3 -nthread=1..3 -nstep=1..3 -npreAdd=0 -threadSym -checkTermination \
+     -ncore=$(NCORE)
 
 # 5274 schedules:
 HASHSET_LIMITS_3  = -kind=set -hashKind=ident -valueBound=3 -nthread=1..3 \
@@ -17,14 +32,6 @@ HASHSET_LIMITS_3  = -kind=set -hashKind=ident -valueBound=3 -nthread=1..3 \
 HASHSET_LIMITS_4  = -kind=set -hashKind=ident -valueBound=3 -nthread=3 \
      -nstep=4 -npreAdd=0 -threadSym -checkTermination -ncore=$(NCORE)
 
-ASUS Zephyrus G14 (4 threads): time in seconds
-                       1      2      3      4     1ND   1.5ND  2ND
-      	              --------------------------------------------
-CoarseHashSet.......  26     636    1912   ????   28    ????   ????
-StripedHashSet......  26     678    2123   ????   31    ????   ????
-StripedCuckooHashSet  31     293*    804*  ????   40    ????   ????
-
-* Early finish due to finding out of bounds error in relocate method
 
 On MabBookPro (4 threads): time in seconds
                        1      2      3      4     1ND   1.5ND  2ND
@@ -32,6 +39,8 @@ On MabBookPro (4 threads): time in seconds
 CoarseHashSet......... 15    324    954    17427  15    736    3593
 StripedHashSet.........15    347   1064    18127  16    899    4338
 StripedCuckooHashSet...16    394    566*   22460  22  infty    ----
+
+* Early finish due to finding out of bounds error in relocate method
 
 Lists
 
@@ -59,6 +68,9 @@ FineList............  14    305   1069   17755
 OptimisticList......  14    365   1295   23211
 LazyList............  13    347   1168   23771
 LockFreeList........  15    348   1381   23174
+LockFreeListOriginal  ??    ???   ????   ?????
+
+* Early finish due to finding sequential consistency violation
 
 Caviness (32 threads):
 CoarseList..........   ?    356/379  (dropping this now)
@@ -98,19 +110,6 @@ PQUEUE_LIMITS_2 = -kind=pqueue -genericVals -threadSym -nthread=1..3 \
 PQUEUE_LIMITS_3 = -kind=pqueue -genericVals -threadSym -nthread=1..3 \
      -nstep=1..3 -npreAdd=1..3 -distinctPriorities -addsDominate -ncore=$(NCORE)
 
-ASUS Zephyrus G14 (4 threads): time in seconds
-                         1    2      3
-		        --------------
-FineGrainedHeap........  7*   12*    ????*
-FineGrainedHeapNoCycles  7    20+    ????+
-FineGrainedHeapFair....  7    22+    ????+
-SkipQueue..............  10   1002   ????x
-SkipQueuePatched.......  10   918    ????
-
-* = early stop due to finding cycle violation in add
-+ = early stop due to finding deadlock violation between add and removeMin
-x = expected to stop early due to finding cycle violation in findAndMarkMin
-
 Mac:
 
                           1      2      3
@@ -122,3 +121,7 @@ SkipQueue..............  10    1172    432x
 SkipQueuePatched.......   9    1109    ?
 
 SkipQueuePatchedS1: 2356s, defect detected
+
+* = early stop due to finding cycle violation in add
++ = early stop due to finding deadlock violation between add and removeMin
+x = expected to stop early due to finding cycle violation in findAndMarkMin
