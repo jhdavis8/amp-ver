@@ -4,23 +4,25 @@
 
 schedule_t make_schedule() {
   schedule_t sched;
-  int nthread = 2;
+  int nthread = 3;
 
   sched.kind = QUEUE;
   sched.num_ops = 2;
   sched.nthread = nthread;
-  sched.npreAdd = 0;
-  sched.preAdds = NULL;
-  sched.nstep = 2*nthread;
+  sched.npreAdd = 1;
+  sched.preAdds = malloc(sizeof(step_t));
+  sched.preAdds[0] = schedule_make_step_1(ADD, 0);
+  sched.nstep = 4;
   sched.nsteps = malloc(nthread*sizeof(int));
-  for (int i=0; i<nthread; i++)
-    sched.nsteps[i] = 2;
+  sched.nsteps[0] = 2;
+  sched.nsteps[1] = 1;
+  sched.nsteps[2] = 1;
   sched.steps = malloc(nthread*sizeof(step_t*));
   for (int i=0; i<nthread; i++)
     sched.steps[i] = malloc(sched.nsteps[i]*sizeof(step_t));
-  for (int i=0; i<nthread; i++) {
-    sched.steps[i][0] = schedule_make_step_1(ADD, i);
-    sched.steps[i][1] = schedule_make_step_0(REMOVE);
-  }
+  sched.steps[0][0] = schedule_make_step_1(ADD, 1);
+  sched.steps[0][1] = schedule_make_step_1(ADD, 2);
+  sched.steps[1][0] = schedule_make_step_0(REMOVE);
+  sched.steps[2][0] = schedule_make_step_0(REMOVE);
   return sched;
 }

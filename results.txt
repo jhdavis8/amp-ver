@@ -34,11 +34,11 @@ HASHSET_LIMITS_4  = -kind=set -hashKind=ident -valueBound=3 -nthread=3 \
 
 
 On MabBookPro (4 threads): time in seconds
-                        1     2      3       4   1ND  1.5ND     2ND
-                       --------------------------------------------
-CoarseHashSet......... 15    324    954    17427  15    736    3593
-StripedHashSet.........15    347   1064    18127  16    899    4338
-StripedCuckooHashSet...16    394    566*   22460  22  infty    ----
+                        1     2      3       4   1ND  1.5ND     2ND  S1    S2    S3  
+                       --------------------------------------------------------------
+CoarseHashSet......... 15    324    954    17427  15    736    3593  ????  ????  ????
+StripedHashSet.........15    347   1064    18127  16    899    4338  ????  ????  ????
+StripedCuckooHashSet...16    394    566*   22460  22  infty    ----  ????  ????  ????
 
 * Early finish due to finding out of bounds error in relocate method
 
@@ -61,14 +61,14 @@ LIST_LIMITS_4  = -kind=set -hashKind=ident -valueBound=3 -nthread=3 \
      -nstep=4 -npreAdd=0 -threadSym -checkTermination -ncore=$(NCORE)
 
 Mac (4 threads): time in seconds
-                       1     2      3      4
-                      ------------------------
-CoarseList..........  14    290    915   14111
-FineList............  14    305   1069   17755
-OptimisticList......  14    365   1295   23211
-LazyList............  13    347   1168   23771
-LockFreeList........  15    348   1381   23174
-LockFreeListOriginal  15    201*  ????   ?????
+                       1     2      3      4    S1    S2    S3  
+                      ------------------------------------------
+CoarseList..........  14    290    915   14111  ????  ????  ????
+FineList............  14    305   1069   17755  ????  ????  ????
+OptimisticList......  14    365   1295   23211  ????  ????  ????
+LazyList............  13    347   1168   23771  ????  ????  ????
+LockFreeList........  15    348   1381   23174  ????  ????  ????
+LockFreeListOriginal  15    201*  ????   ?????  ????  ????  ????
 
 * Early finish due to finding sequential consistency violation
 
@@ -90,10 +90,10 @@ QUEUE_LIMITS_3  = -kind=queue -genericVals -threadSym -nthread=1..3 \
      -nstep=1..4 -npreAdd=0..2 -checkTermination -ncore=$(NCORE)
 
 Mac (4 threads): time in seconds
-                       1     2     3
-                       --------------
-UnboundedQueue.......  8    20    441
-LockFreeQueue........  9    33   1078
+                       1     2     3   S1    S2    S3  
+                       --------------------------------
+UnboundedQueue.......  8    20    441  ????  ????  ????
+LockFreeQueue........  9    33   1078  ????  ????  ????
 
 
 Priority Queues
@@ -110,18 +110,18 @@ PQUEUE_LIMITS_2 = -kind=pqueue -genericVals -threadSym -nthread=1..3 \
 PQUEUE_LIMITS_3 = -kind=pqueue -genericVals -threadSym -nthread=1..3 \
      -nstep=1..3 -npreAdd=1..3 -distinctPriorities -addsDominate -ncore=$(NCORE)
 
-Mac:
-
-                          1      2      3
-                         ------------------
-FineGrainedHeap........   4*      7*   222*
-FineGrainedHeapNoCycles   4      13+   228+
-FineGrainedHeapFair....   5      16+   235+
-SkipQueue..............  10    1172    432x
-SkipQueuePatched.......   9    1109    ?
+Mac (4 threads): time in seconds
+                          1      2      3    S1    S2    S3
+                         ------------------------------------
+FineGrainedHeap........   4*      7*   222*  2356! ????  ????
+FineGrainedHeapNoCycles   4      13+   228+  ????  ????  ????
+FineGrainedHeapFair....   5      16+   235+  ????  ????  ????
+SkipQueue..............  10    1172    432x  ????  ????  ????
+SkipQueuePatched.......   9    1109    ????  ????  ????  ????
 
 SkipQueuePatchedS1: 2356s, defect detected
 
 * = early stop due to finding cycle violation in add
 + = early stop due to finding deadlock violation between add and removeMin
-x = expected to stop early due to finding cycle violation in findAndMarkMin
+x = early stop due to finding cycle violation in findAndMarkMin
+! = early stop due to finding sequential consistency violation

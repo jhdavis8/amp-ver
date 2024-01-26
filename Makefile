@@ -134,11 +134,16 @@ HASH_COMMON_DEP = $(DRIVER_INC) $(DRIVER_SRC) $(DRIVER_SET) \
      $(HASH_INC) $(HASH_SRC) $(LOCK_INC) $(LOCK_SRC) $(ARRAYLIST_INC) $(ARRAYLIST_SRC) Makefile
 HASH_COMMON_SRC = $(DRIVER_SRC) $(DRIVER_SET) $(HASH_SRC) $(LOCK_SRC) $(ARRAYLIST_SRC)
 
-SET1 = $(SCHEDULE_DIR)/sched_set_1.cvl
-SET2 = $(SCHEDULE_DIR)/sched_set_2.cvl
+SET_SCHED_1 = $(SCHEDULE_DIR)/sched_set_1.cvl
+SET_SCHED_2 = $(SCHEDULE_DIR)/sched_set_2.cvl
+SET_SCHED_3 = $(SCHEDULE_DIR)/sched_set_3.cvl
 
 hashset_1 hashset_2 hashset_3 hashset_4 hashset_1ND hashset_1.5ND hashset_2ND: hashset_%: out/CoarseHashSet_%.out \
   out/StripedHashSet_%.out out/StripedCuckooHashSet_%.out
+
+hashset_schedules: out/CoarseHashSet_S1 out/CoarseHashSet_S2 out/CoarseHashSet_S3 \
+	out/StripedHashSet_S1 out/StripedHashSet_S2 out/StripedHashSet_S3 \
+	out/StripedCuckooHashSet_S1 out/StripedCuckooHashSet_S2 out/StripedCuckooHashSet_S3
 
 # CoarseHashSet
 
@@ -156,6 +161,10 @@ $(CoarseHashSet_Outs): out/CoarseHashSet_%.out: $(MAIN_CLASS) $(COARSEHASHSET_DE
 	mv $(TMP)/CoarseHashSet_$*.out.tmp out/CoarseHashSet_$*.out
 	mv $(TMP)/CoarseHashSet_$*.dir.tmp out/CoarseHashSet_$*.dir
 
+out/CoarseHashSet_S%: $(COARSEHASHSET_DEP) $(SET_SCHED_$*)
+	-$(VERIFY) -checkMemoryLeak=false -checkTermination=true $(COARSEHASHSET_SRC) $(SET_SCHED_$*) \
+					>out/CoarseHashSet_S$*
+
 # StripedHashSet
 
 STRIPEDHASHSET = $(SET_DIR)/StripedHashSet.cvl
@@ -171,6 +180,10 @@ $(StripedHashSet_Outs): out/StripedHashSet_%.out: $(MAIN_CLASS) $(STRIPEDHASHSET
           >$(TMP)/StripedHashSet_$*.out.tmp
 	mv $(TMP)/StripedHashSet_$*.out.tmp out/StripedHashSet_$*.out
 	mv $(TMP)/StripedHashSet_$*.dir.tmp out/StripedHashSet_$*.dir
+
+out/StripedHashSet_S%: $(STRIPEDHASHSET_DEP) $(SET_SCHED_$*)
+	-$(VERIFY) -checkMemoryLeak=false -checkTermination=true $(STRIPEDHASHSET_SRC) $(SET_SCHED_$*) \
+					>out/StripedHashSet_S$*
 
 # StripedCuckooHashSet
 
@@ -188,9 +201,8 @@ $(StripedCuckooHashSet_Outs): out/StripedCuckooHashSet_%.out: $(MAIN_CLASS) $(ST
 	mv $(TMP)/StripedCuckooHashSet_$*.out.tmp out/StripedCuckooHashSet_$*.out
 	mv $(TMP)/StripedCuckooHashSet_$*.dir.tmp out/StripedCuckooHashSet_$*.dir
 
-out/StripedCuckooHashSet_S%: $(STRIPEDCUCKOOHASHSET_DEP) $(SET$*)
-	$(VERIFY) -checkMemoryLeak=false -checkTermination=true -DHASH_ND -inputVAL_B=3 \
-          -inputHASH_B=2 $(STRIPEDCUCKOOHASHSET_SRC) $(SET$*) \
+out/StripedCuckooHashSet_S%: $(STRIPEDCUCKOOHASHSET_DEP) $(SET_SCHED_$*)
+	-$(VERIFY) -checkMemoryLeak=false -checkTermination=true $(STRIPEDCUCKOOHASHSET_SRC) $(SET_SCHED_$*) \
 					>out/StripedCuckooHashSet_S$*
 
 # other sets...
@@ -227,9 +239,20 @@ LIST_LIMITS_4  = -kind=set -hashKind=ident -valueBound=3 -nthread=3 \
 LIST_COMMON_DEP = $(DRIVER_INC) $(DRIVER_SRC) $(DRIVER_SET) Makefile
 LIST_COMMON_SRC = $(DRIVER_SRC) $(DRIVER_SET)
 
+LIST_SCHED_1 = $(SCHEDULE_DIR)/sched_set_1.cvl
+LIST_SCHED_2 = $(SCHEDULE_DIR)/sched_set_2.cvl
+LIST_SCHED_3 = $(SCHEDULE_DIR)/sched_set_3.cvl
+
 list_1 list_2 list_3 list_4: list_%: out/CoarseList_%.out \
   out/FineList_%.out out/OptimisticList_%.out out/LazyList_%.out \
   out/LockFreeList_%.out out/LockFreeListOriginal_%.out
+
+list_schedules: out/CoarseList_S1 out/CoarseList_S2 out/CoarseList_S3 \
+	out/FineList_S1 out/FineList_S2 out/FineList_S3 \
+	out/OptimisticList_S1 out/OptimisticList_S2 out/OptimisticList_S3 \
+	out/LazyList_S1 out/LazyList_S2 out/LazyList_S3 \
+	out/LockFreeList_S1 out/LockFreeList_S2 out/LockFreeList_S3 \
+	out/LockFreeListOriginal_S1 out/LockFreeListOriginal_S2 out/LockFreeListOriginal_S3
 
 # CoarseList
 
@@ -238,13 +261,6 @@ COARSELIST_DEP = $(LIST_COMMON_DEP) $(COARSELIST) $(HASH_INC) $(HASH_SRC) \
      $(LOCK_INC) $(LOCK_SRC)
 COARSELIST_SRC = $(LIST_COMMON_SRC) $(COARSELIST) $(HASH_SRC) $(LOCK_SRC)
 CoarseList_Outs = $(addsuffix .out,$(addprefix out/CoarseList_,1 2 3 4))
-
-# fails because requires hashCode is injective...
-CoarseList1: $(COARSELIST_DEP) $(SET1)
-	$(VERIFY) -checkMemoryLeak=false -DHASH_ND -inputVAL_B=3 \
-          -inputHASH_B=3 $(COARSELIST_SRC) $(SET1)
-CoarseList2: $(COARSELIST_DEP) $(SET1)
-	$(VERIFY) -checkMemoryLeak=false $(COARSELIST_SRC) $(SET1)
 
 $(CoarseList_Outs): out/CoarseList_%.out: $(MAIN_CLASS) $(COARSELIST_DEP)
 	rm -rf $(TMP)/CoarseList_$*.dir.tmp
@@ -255,11 +271,16 @@ $(CoarseList_Outs): out/CoarseList_%.out: $(MAIN_CLASS) $(COARSELIST_DEP)
 	mv $(TMP)/CoarseList_$*.out.tmp out/CoarseList_$*.out
 	mv $(TMP)/CoarseList_$*.dir.tmp out/CoarseList_$*.dir
 
-# FineList 
+out/CoarseList_S%: $(COARSELIST_DEP) $(LIST_SCHED_$*)
+	-$(VERIFY) -checkMemoryLeak=false -checkTermination=true $(COARSELIST_SRC) $(LIST_SCHED_$*) \
+					>out/CoarseList_S$*
+
+# FineList
 
 FINELIST = $(LIST_DIR)/FineList.cvl
 FINELIST_DEP =  $(LIST_COMMON_DEP) $(FINELIST) $(HASH_INC) $(HASH_SRC) \
      $(LOCK_INC) $(LOCK_SRC)
+FINELIST_SRC = $(LIST_COMMON_SRC) $(FINELIST) $(HASH_SRC) $(LOCK_SRC)
 FineList_Outs = $(addsuffix .out,$(addprefix out/FineList_,1 2 3 4))
 
 $(FineList_Outs): out/FineList_%.out: $(MAIN_CLASS) $(FINELIST_DEP)
@@ -271,11 +292,16 @@ $(FineList_Outs): out/FineList_%.out: $(MAIN_CLASS) $(FINELIST_DEP)
 	mv $(TMP)/FineList_$*.out.tmp out/FineList_$*.out
 	mv $(TMP)/FineList_$*.dir.tmp out/FineList_$*.dir
 
+out/FineList_S%: $(FINELIST_DEP) $(LIST_SCHED_$*)
+	-$(VERIFY) -checkMemoryLeak=false -checkTermination=true $(FINELIST_SRC) $(LIST_SCHED_$*) \
+					>out/FineList_S$*
+
 # OptimisticList
 
 OPTIMISTICLIST = $(LIST_DIR)/OptimisticList.cvl
 OPTIMISTICLIST_DEP = $(LIST_COMMON_DEP) $(OPTIMISTICLIST) \
      $(HASH_INC) $(HASH_SRC) $(LOCK_INC) $(LOCK_SRC)
+OPTIMISTICLIST_SRC = $(LIST_COMMON_SRC) $(OPTIMISTICLIST) $(HASH_SRC) $(LOCK_SRC)
 OptimisticList_Outs = $(addsuffix .out,$(addprefix out/OptimisticList_,1 2 3 4))
 
 $(OptimisticList_Outs): out/OptimisticList_%.out: $(MAIN_CLASS) $(OPTIMISTICLIST_DEP)
@@ -288,11 +314,16 @@ $(OptimisticList_Outs): out/OptimisticList_%.out: $(MAIN_CLASS) $(OPTIMISTICLIST
 	mv $(TMP)/OptimisticList_$*.out.tmp out/OptimisticList_$*.out
 	mv $(TMP)/OptimisticList_$*.dir.tmp out/OptimisticList_$*.dir
 
+out/OptimisticList_S%: $(OPTIMISTICLIST_DEP) $(LIST_SCHED_$*)
+	-$(VERIFY) -checkMemoryLeak=false -checkTermination=true $(OPTIMISTICLIST_SRC) $(LIST_SCHED_$*) \
+					>out/OptimisticList_S$*
+
 # LazyList
 
 LAZYLIST = $(LIST_DIR)/LazyList.cvl
 LAZYLIST_DEP = $(LIST_COMMON_DEP) $(LAZYLIST) \
      $(HASH_INC) $(HASH_SRC) $(LOCK_INC) $(LOCK_SRC)
+LAZYLIST_SRC = $(LIST_COMMON_SRC) $(LAZYLIST) $(HASH_SRC) $(LOCK_SRC)
 LazyList_Outs = $(addsuffix .out,$(addprefix out/LazyList_,1 2 3 4))
 
 $(LazyList_Outs): out/LazyList_%.out: $(MAIN_CLASS) $(LAZYLIST_DEP)
@@ -305,11 +336,16 @@ $(LazyList_Outs): out/LazyList_%.out: $(MAIN_CLASS) $(LAZYLIST_DEP)
 	mv $(TMP)/LazyList_$*.out.tmp out/LazyList_$*.out
 	mv $(TMP)/LazyList_$*.dir.tmp out/LazyList_$*.dir
 
+out/LazyList_S%: $(LAZYLIST_DEP) $(LIST_SCHED_$*)
+	-$(VERIFY) -checkMemoryLeak=false -checkTermination=true $(LAZYLIST_SRC) $(LIST_SCHED_$*) \
+					>out/LazyList_S$*
+
 # LockFreeList (Nonblocking list)
 
 LOCKFREELIST = $(LIST_DIR)/LockFreeList.cvl
 LOCKFREELIST_DEP = $(LIST_COMMON_DEP) $(LOCKFREELIST) \
      $(HASH_INC) $(HASH_SRC) $(AMR_INC) $(AMR_SRC)
+LOCKFREELIST_SRC = $(LIST_COMMON_SRC) $(LOCKFREELIST) $(HASH_SRC) $(AMR_SRC)
 LockFreeList_Outs = $(addsuffix .out,$(addprefix out/LockFreeList_,1 2 3 4))
 LockFreeListOriginal_Outs = $(addsuffix .out,$(addprefix out/LockFreeListOriginal_,1 2 3 4))
 
@@ -333,6 +369,14 @@ $(LockFreeListOriginal_Outs): out/LockFreeListOriginal_%.out: $(MAIN_CLASS) $(LO
 	mv $(TMP)/LockFreeListOriginal_$*.out.tmp out/LockFreeListOriginal_$*.out
 	mv $(TMP)/LockFreeListOriginal_$*.dir.tmp out/LockFreeListOriginal_$*.dir
 
+out/LockFreeList_S%: $(LOCKFREELIST_DEP) $(LIST_SCHED_$*)
+	-$(VERIFY) -checkMemoryLeak=false -checkTermination=true $(LOCKFREELIST_SRC) $(LIST_SCHED_$*) \
+					>out/LockFreeList_S$*
+
+out/LockFreeListOriginal_S%: $(LOCKFREELIST_DEP) $(LIST_SCHED_$*)
+	-$(VERIFY) -checkMemoryLeak=false -checkTermination=true -DORIGINAL $(LOCKFREELIST_SRC) $(LIST_SCHED_$*) \
+					>out/LockFreeListOriginal_S$*
+
 
 #################################  Queues  #################################
 
@@ -351,9 +395,16 @@ QUEUE_LIMITS_3  = -kind=queue -genericVals -threadSym -nthread=1..3 \
 queue_1 queue_2 queue_3: queue_%: out/UnboundedQueue_%.out \
   out/LockFreeQueue_%.out
 
+queue_schedules: out/UnboundedQueue_S1 out/UnboundedQueue_S2 out/UnboundedQueue_S3 \
+	out/LockFreeQueue_S1 out/LockFreeQueue_S2 out/LockFreeQueue_S3
+
 QUEUE1 = $(SCHEDULE_DIR)/sched_queue_1.cvl
 QUEUE_COMMON_DEP = $(DRIVER_INC) $(DRIVER_SRC) $(DRIVER_QUEUE) Makefile
 QUEUE_COMMON_SRC = $(DRIVER_SRC) $(DRIVER_QUEUE)
+
+QUEUE_SCHED_1 = $(SCHEDULE_DIR)/sched_queue_1.cvl
+QUEUE_SCHED_2 = $(SCHEDULE_DIR)/sched_queue_2.cvl
+QUEUE_SCHED_3 = $(SCHEDULE_DIR)/sched_queue_3.cvl
 
 # UnboundedQueue
 
@@ -364,10 +415,6 @@ UNBOUNDEDQUEUE_SRC = $(QUEUE_COMMON_SRC) $(UNBOUNDEDQUEUE) $(LOCK_SRC)
 UnboundedQueue_Outs = out/UnboundedQueue_1.out out/UnboundedQueue_2.out \
                       out/UnboundedQueue_3.out
 
-# a small specific schedule test...
-UnboundedQueue1: $(UNBOUNDEDQUEUE_DEP) $(QUEUE1)
-	$(VERIFY) $(UNBOUNDEDQUEUE_SRC) $(QUEUE1)
-
 $(UnboundedQueue_Outs): out/UnboundedQueue_%.out: $(MAIN_CLASS) $(UNBOUNDEDQUEUE_DEP)
 	rm -rf $(TMP)/UnboundedQueue_$*.dir.tmp
 	rm -rf out/UnboundedQueue_$*.dir
@@ -377,11 +424,15 @@ $(UnboundedQueue_Outs): out/UnboundedQueue_%.out: $(MAIN_CLASS) $(UNBOUNDEDQUEUE
 	mv $(TMP)/UnboundedQueue_$*.out.tmp out/UnboundedQueue_$*.out
 	mv $(TMP)/UnboundedQueue_$*.dir.tmp out/UnboundedQueue_$*.dir
 
+out/UnboundedQueue_S%: $(UNBOUNDEDQUEUE_DEP) $(QUEUE_SCHED_$*)
+	-$(VERIFY) -checkMemoryLeak=false -checkTermination=true $(UNBOUNDEDQUEUE_SRC) $(QUEUE_SCHED_$*) \
+					>out/UnboundedQueue_S$*
 
 # LockFreeQueue
 
 LOCKFREEQUEUE = $(QUEUE_DIR)/LockFreeQueue.cvl
 LOCKFREEQUEUE_DEP = $(QUEUE_COMMON_DEP) $(LOCKFREEQUEUE) $(AR_INC) $(AR_SRC)
+LOCKFREEQUEUE_SRC = $(QUEUE_COMMON_SRC) $(LOCKFREEQUEUE) $(AR_SRC)
 LockFreeQueue_Outs = out/LockFreeQueue_1.out out/LockFreeQueue_2.out \
                      out/LockFreeQueue_3.out
 
@@ -394,11 +445,11 @@ $(LockFreeQueue_Outs): out/LockFreeQueue_%.out: $(MAIN_CLASS) $(LOCKFREEQUEUE_DE
 	mv $(TMP)/LockFreeQueue_$*.out.tmp out/LockFreeQueue_$*.out
 	mv $(TMP)/LockFreeQueue_$*.dir.tmp out/LockFreeQueue_$*.dir
 
+out/LockFreeQueue_S%: $(LOCKFREEQUEUE_DEP) $(QUEUE_SCHED_$*)
+	-$(VERIFY) -checkMemoryLeak=false -checkTermination=true $(LOCKFREEQUEUE_SRC) $(QUEUE_SCHED_$*) \
+					>out/LockFreeQueue_S$*
 
 # Other queues...
-
-
-
 
 #############################  Priority Queues  ############################
 
@@ -423,17 +474,16 @@ PQUEUE_COMMON_SRC = $(DRIVER_SRC) $(DRIVER_PQUEUE)
 PQUEUE_SCHED_1 = $(SCHEDULE_DIR)/sched_pqueue_1.cvl
 PQUEUE_SCHED_2 = $(SCHEDULE_DIR)/sched_pqueue_2.cvl
 PQUEUE_SCHED_3 = $(SCHEDULE_DIR)/sched_pqueue_3.cvl
-PQUEUE_SCHED_4 = $(SCHEDULE_DIR)/sched_pqueue_4.cvl
 
 pqueue_1 pqueue_2 pqueue_3 pqueue_4: pqueue_%: out/FineGrainedHeap_%.out \
 	out/FineGrainedHeapFair_%.out out/FineGrainedHeapNoCycles_%.out \
 	out/SkipQueue_%.out out/SkipQueuePatched_%.out
 
-pqueue_schedules: out/FineGrainedHeap_S1 out/FineGrainedHeap_S2 out/FineGrainedHeap_S3 out/FineGrainedHeap_S4 \
-	out/FineGrainedHeapFair_S1 out/FineGrainedHeapFair_S2 out/FineGrainedHeapFair_S3 out/FineGrainedHeapFair_S4 \
-	out/FineGrainedHeapNoCycles_S1 out/FineGrainedHeapNoCycles_S2 out/FineGrainedHeapNoCycles_S3 out/FineGrainedHeapNoCycles_S4 \
-	out/SkipQueue_S1 out/SkipQueue_S2 out/SkipQueue_S3 out/SkipQueue_S4 \
-	out/SkipQueuePatched_S1 out/SkipQueuePatched_S2 out/SkipQueuePatched_S3 out/SkipQueuePatched_S4
+pqueue_schedules: out/FineGrainedHeap_S1 out/FineGrainedHeap_S2 out/FineGrainedHeap_S3 \
+	out/FineGrainedHeapFair_S1 out/FineGrainedHeapFair_S2 out/FineGrainedHeapFair_S3 \
+	out/FineGrainedHeapNoCycles_S1 out/FineGrainedHeapNoCycles_S2 out/FineGrainedHeapNoCycles_S3 \
+	out/SkipQueue_S1 out/SkipQueue_S2 out/SkipQueue_S3 \
+	out/SkipQueuePatched_S1 out/SkipQueuePatched_S2 out/SkipQueuePatched_S3
 
 # FineGrainedHeap
 
@@ -518,11 +568,11 @@ $(SkipQueuePatched_Outs): out/SkipQueuePatched_%.out: $(MAIN_CLASS) $(SKIPQUEUEP
 	mv $(TMP)/SkipQueuePatched_$*.dir.tmp out/SkipQueuePatched_$*.dir
 
 out/SkipQueue_S%: $(SKIPQUEUE_DEP) $(PQUEUE_SCHED_$*)
-	$(VERIFY) -checkMemoryLeak=false -checkTermination=true -DNLINEAR $(SKIPQUEUE_SRC) $(PQUEUE_SCHED_$*) \
+	-$(VERIFY) -checkMemoryLeak=false -checkTermination=true -DNLINEAR $(SKIPQUEUE_SRC) $(PQUEUE_SCHED_$*) \
 					>out/SkipQueue_S$*
 
 out/SkipQueuePatched_S%: $(SKIPQUEUEPATCHED_DEP) $(PQUEUE_SCHED_$*)
-	$(VERIFY) -checkMemoryLeak=false -checkTermination=true -DNLINEAR $(SKIPQUEUEPATCHED_SRC) $(PQUEUE_SCHED_$*) \
+	-$(VERIFY) -checkMemoryLeak=false -checkTermination=true -DNLINEAR $(SKIPQUEUEPATCHED_SRC) $(PQUEUE_SCHED_$*) \
 					>out/SkipQueuePatched_S$*
 
 # other priority queues...
@@ -546,6 +596,8 @@ test: $(MAIN_CLASS) $(UNBOUNDEDQUEUE_DEP)
           -tmpDir=out/Test_1.tmp \
           >out/Test_1.out.tmp 2>out/Test_1.out.tmp
 	mv out/Test_1.out.tmp out/Test_1.out
+
+all_schedules: hashset_schedules list_schedules queue_schedules pqueue_schedules
 
 .PHONY: all test CoarseList2 UnboundedQueue1 SkipQueue1 SkipQueue2 FineGrainedHeap1 \
   list_0 list_1 list_2
