@@ -1,0 +1,124 @@
+
+Sets
+
+# 63 schedules
+HASHSET_LIMITS_1  = -kind=set -hashKind=ident -valueBound=2 -nthread=1..2 \
+     -nstep=1..2 -npreAdd=0 -threadSym -checkTermination -ncore=$(NCORE)
+
+# 1758 schedules
+HASHSET_LIMITS_2 = -kind=set -hashKind=ident -valueBound=3 -nthread=1..3 \
+     -nstep=1..3 -npreAdd=0 -threadSym -checkTermination -ncore=$(NCORE)
+
+# 5274 schedules:
+HASHSET_LIMITS_3  = -kind=set -hashKind=ident -valueBound=3 -nthread=1..3 \
+     -nstep=1..3 -npreAdd=1..3 -threadSym -checkTermination -ncore=$(NCORE)
+
+# 3645 schedules:
+HASHSET_LIMITS_4  = -kind=set -hashKind=ident -valueBound=3 -nthread=3 \
+     -nstep=4 -npreAdd=0 -threadSym -checkTermination -ncore=$(NCORE)
+
+ASUS Zephyrus G14 (4 threads): time in seconds
+                       1      2      3      4     1ND   1.5ND  2ND
+      	              --------------------------------------------
+CoarseHashSet.......  26     636    1912   ????   28    ????   ????
+StripedHashSet......  26     678    2123   ????   31    ????   ????
+StripedCuckooHashSet  31     293*    804*  ????   40    ????   ????
+
+* Early finish due to finding out of bounds error in relocate method
+
+On MabBookPro (4 threads): time in seconds
+                       1      2      3      4     1ND   1.5ND  2ND
+      	              --------------------------------------------
+CoarseHashSet......... 15    324    954    17427  15    736    3593
+StripedHashSet.........15    347   1064    18127  16    899    4338
+StripedCuckooHashSet...16    394    566*   ----   22  infty    ----
+
+Lists
+
+# 63 schedules
+LIST_LIMITS_1  = -kind=set -hashKind=ident -valueBound=2 -nthread=1..2 \
+     -nstep=1..2 -npreAdd=0 -threadSym -checkTermination -ncore=$(NCORE)
+
+# 1758 schedules
+LIST_LIMITS_2 = -kind=set -hashKind=ident -valueBound=3 -nthread=1..3 \
+     -nstep=1..3 -npreAdd=0 -threadSym -checkTermination -ncore=$(NCORE)
+
+# 5274 schedules: approx 15 minutes on Mac
+LIST_LIMITS_3  = -kind=set -hashKind=ident -valueBound=3 -nthread=1..3 \
+     -nstep=1..3 -npreAdd=1..3 -threadSym -checkTermination -ncore=$(NCORE)
+
+# 3645 schedules: estimate 5 hours on Mac
+LIST_LIMITS_4  = -kind=set -hashKind=ident -valueBound=3 -nthread=3 \
+     -nstep=4 -npreAdd=0 -threadSym -checkTermination -ncore=$(NCORE)
+
+Mac (4 threads): time in seconds
+                       1     2      3      4
+		      ------------------------
+CoarseList..........  14    290    915   14111
+FineList............  14    305   1069   17755
+OptimisticList......  14    365   1295   23211
+LazyList............  13    347   1168   23771
+LockFreeList........  15    348   1381   23174
+
+Caviness (32 threads):
+CoarseList..........   ?    356/379  (dropping this now)
+
+Queues
+
+# 25 schedules
+QUEUE_LIMITS_1  = -kind=queue -genericVals -threadSym -nthread=1..2 \
+     -nstep=1..3 -npreAdd=0 -checkTermination -ncore=$(NCORE)
+
+# 58 schedules
+QUEUE_LIMITS_2 = -kind=queue -genericVals -threadSym -nthread=1..3 \
+     -nstep=1..3 -npreAdd=0..1 -checkTermination -ncore=$(NCORE)
+
+# 249 schedules
+QUEUE_LIMITS_3  = -kind=queue -genericVals -threadSym -nthread=1..3 \
+     -nstep=1..4 -npreAdd=0..2 -checkTermination -ncore=$(NCORE)
+
+Mac (4 threads): time in seconds
+                       1    2      3
+		       --------------
+UnboundedQueue.......  8    20    441
+LockFreeQueue........  9    33   1078
+
+
+Priority Queues
+
+# 7 schedules
+PQUEUE_LIMITS_1 = -kind=pqueue -genericVals -threadSym -nthread=1..2 \
+     -nstep=1..2 -npreAdd=0 -distinctPriorities -addsDominate -ncore=$(NCORE)
+
+# 33 schedules
+PQUEUE_LIMITS_2 = -kind=pqueue -genericVals -threadSym -nthread=1..3 \
+     -nstep=1..3 -npreAdd=0 -distinctPriorities -addsDominate -ncore=$(NCORE)
+
+# 3467 schedules
+PQUEUE_LIMITS_3 = -kind=pqueue -genericVals -threadSym -nthread=1..3 \
+     -nstep=1..3 -npreAdd=1..3 -distinctPriorities -addsDominate -ncore=$(NCORE)
+
+ASUS Zephyrus G14 (4 threads): time in seconds
+                         1    2      3
+		        --------------
+FineGrainedHeap........  7*   12*    ????*
+FineGrainedHeapNoCycles  7    20+    ????+
+FineGrainedHeapFair....  7    22+    ????+
+SkipQueue..............  10   1002   ????x
+SkipQueuePatched.......  10   918    ????
+
+* = early stop due to finding cycle violation in add
++ = early stop due to finding deadlock violation between add and removeMin
+x = expected to stop early due to finding cycle violation in findAndMarkMin
+
+Mac:
+
+                          1      2      3
+		        -------------------
+FineGrainedHeap........   4*      7*   222*
+FineGrainedHeapNoCycles   4      13+   228+
+FineGrainedHeapFair....   5      16+   235+
+SkipQueue..............  10    1172    432x
+SkipQueuePatched.......   9    1109    ?
+
+SkipQueuePatchedS1: 2356s, defect detected

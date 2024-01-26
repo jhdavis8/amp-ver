@@ -1,0 +1,184 @@
+/* CIVL model of class FineList, from "The Art of Multiprocessor
+ * Programming", 2nd ed, by Herlihy, Luchangco, Shavit, and Spear,
+ * Sec. 9.5 "Fine-Grained Synchronization" and companion code
+ * ch9/src/lists/FineList.java.
+ *
+ * This is a concurrent fine grained list using one lock per node.
+ *
+ * Authors : Wenhao Wu, Eric Kurtz, Josh Davis, Stephen F. Siegel
+ * Created : 2018-May-01
+ * Modified: 2024-Jan-09
+ *
+ * Verified Software Lab, Dept. Computer & Info. Sci., 
+ * University of Delaware
+ */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <limits.h>
+#include "Set.h"
+#include "hash.cvh"
+#include "Lock.h"
+#include "types.h"
+
+typedef struct Node {
+  T item;
+  int key;
+  struct Node * next;
+  Lock lock;
+} * Node;
+
+static Node node_create(T item) {
+  Node this = malloc(sizeof(struct Node));
+  this->item = item;
+  this->key = hash_code(item);
+  this->lock = Lock_create();
+  this->next = NULL;
+  return this;
+}
+
+static Node node_create_sentinel(int key) {
+  Node this = malloc(sizeof(struct Node));
+  this->key = key;
+  this->item = -1; // null
+  this->lock = Lock_create();
+  this->next = NULL;
+  return this;
+}
+
+static void node_destroy(Node node) {
+  Lock_destroy(node->lock);
+  free(node);
+}
+
+static void node_destroy_rec(Node node) {
+  if (node == NULL) return;
+  node_destroy_rec(node->next);
+  node_destroy(node);
+}
+
+struct Set {
+  Node head;
+};
+
+Set Set_create() {
+  Set this = malloc(sizeof(struct Set));
+  this->head = node_create_sentinel(INT_MIN);
+  this->head->next = node_create_sentinel(INT_MAX);
+  return this;
+}
+
+void Set_destroy(Set list) {
+  node_destroy_rec(list->head);
+  free(list);
+}
+
+bool Set_add(Set this, T item) {
+  int key = hash_code(item);
+  Lock_acquire(this->head->lock);
+  Node pred = this->head;
+  // try...
+  Node curr = pred->next;
+  Lock_acquire(curr->lock);
+  // try...
+  while (curr->key < key) {
+    Lock_release(pred->lock);
+    pred = curr;
+    curr = curr->next;
+    Lock_acquire(curr->lock);
+  }
+  if (curr->key == key) {
+    Lock_release(curr->lock); // finally
+    Lock_release(pred->lock); // finally
+    return false;
+  }
+  Node node = node_create(item);
+  node->next = curr;
+  pred->next = node;
+  Lock_release(curr->lock); // finally
+  Lock_release(pred->lock); // finally
+  return true;
+}
+
+bool Set_remove(Set this, T item) {
+  int key = hash_code(item);
+  Lock_acquire(this->head->lock);
+  Node pred = this->head;
+  // try...
+  Node curr = pred->next;
+  Lock_acquire(curr->lock);
+  // try...
+  while (curr->key < key) {
+    Lock_release(pred->lock);
+    pred = curr;
+    curr = curr->next;
+    Lock_acquire(curr->lock);
+  }
+  if (curr->key == key) {
+    pred->next = curr->next;
+    Lock_release(curr->lock); // finally
+    Lock_release(pred->lock); // finally
+    node_destroy(curr); // not in original, but seems to work fine
+    return true;
+  }
+  Lock_release(curr->lock); // finally
+  Lock_release(pred->lock); // finally
+  return false;
+}
+
+// this method from companion code...
+bool Set_contains(Set this, T item) {
+  // companion code contains unused variable last
+  Node pred = NULL, curr = NULL;
+  int key = hash_code(item);
+  Lock_acquire(this->head->lock);
+  // try...
+  pred = this->head;
+  curr = pred->next;
+  Lock_acquire(curr->lock);
+  // try...
+  while (curr->key < key) {
+    Lock_release(pred->lock);
+    pred = curr;
+    curr = curr->next;
+    Lock_acquire(curr->lock);
+  }
+  bool result = (curr->key == key);
+  Lock_release(curr->lock); // finally
+  Lock_release(pred->lock); // finally
+  return result;
+}
+
+void Set_print(Set this) {
+  Node curr = this->head->next;
+  printf("{ ");
+  while (curr->next != NULL) {
+    printf("%d ", curr->item);
+    curr = curr->next;
+  }
+  printf("}");
+}
+
+#ifdef _FINE_LIST_MAIN
+void main() {
+  Set list = Set_create();
+  $parfor(int i : 0 .. 2) {
+    Set_add(list, i);
+  }
+  Set_print(list);
+  printf("\n");
+  $for(int j : 0 .. 2) {
+    $assert(Set_contains(list, j));
+  }
+  $parfor(int i : 0 .. 2) {
+    Set_remove(list, i);
+  }
+  Set_print(list);
+  printf("\n");
+  $for(int j : 0 .. 2) {
+    $assert(!Set_contains(list, j));
+  }
+  Set_destroy(list);
+}
+#endif

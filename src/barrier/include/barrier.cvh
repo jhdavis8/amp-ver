@@ -1,0 +1,14 @@
+// barrier.cvh
+#ifndef BARRIER_H
+#define BARRIER_H
+
+struct _barrier;
+typedef struct _barrier Barrier;
+
+Barrier* create_barrier(int n, int r);
+
+void barrier_wait(Barrier* b, int tid);
+
+void destroy_barrier(Barrier* b);
+
+#endif

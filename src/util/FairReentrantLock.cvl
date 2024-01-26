@@ -1,0 +1,81 @@
+/* FairRentrantLock.cvl: model of Java ReentrantLock for data structure
+ * verification with fairness enabled
+ * Created 7-Apr-2023
+ * Josh Davis, Stephen Siegel
+ * Verified Software Lab, CIS Dept.
+ * University of Delaware
+ */
+#pragma CIVL ACSL
+#include <stdlib.h>
+#include <stdbool.h>
+#include <seq.cvh>
+#include "Lock.h"
+
+struct Lock {
+  $proc owner;
+  int count;
+  $proc waitset[]; // empty sequence of procs
+};
+
+Lock Lock_create() {
+  Lock result = malloc(sizeof(struct Lock));
+  result->owner = $proc_null;
+  result->count = 0;
+  $seq_init(&result->waitset, 0, NULL);
+  return result;
+}
+
+void Lock_destroy(Lock l) {
+  free(l);
+}
+
+/*@ depends_on \access(l); */
+static $atomic_f void Lock_acquire_aux_1(Lock l) {
+  int n = $seq_length(&l->waitset);
+  $proc self = $self;
+  if (!$exists (int i: 0..(n - 1)) l->waitset[i] == $self) {
+    $seq_append(&l->waitset, &self, 1);
+  }
+}
+
+// depends on nothing because if you are first in line,
+// and the lock is free, you will get the lock no matter
+// what anyone else does...
+/*@ depends_on \nothing; */
+static $atomic_f void Lock_acquire_aux_2(Lock l) {
+  $when(l->owner == $proc_null && l->waitset[0] == $self) {
+    l->owner = $self;
+    $assert(l->waitset[0] == $self);
+    $seq_remove(&l->waitset, 0, NULL, 1);
+  }
+}
+
+/*@ depends_on \nothing; */
+static $atomic_f void lock_increment(Lock l) {
+  l->count++;
+}
+
+/*@ depends_on \nothing; */
+static $atomic_f bool am_owner(Lock l) {
+  return $self == l->owner;
+}
+
+void Lock_acquire(Lock l) {
+  if (!am_owner(l)) {
+    Lock_acquire_aux_1(l);
+    Lock_acquire_aux_2(l);
+  }
+  lock_increment(l);
+}
+
+// necessary to fully enable at release only to detect fair cycles...
+#ifdef FAIR
+/*@ depends_on \access(l); */
+#else
+/*@ depends_on \nothing; */
+#endif
+$atomic_f void Lock_release(Lock l) {
+  $assert($self == l->owner);
+  l->count--;
+  if (l->count == 0) l->owner = $proc_null;
+}

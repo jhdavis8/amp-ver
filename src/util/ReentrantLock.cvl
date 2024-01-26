@@ -1,0 +1,60 @@
+/* reentrant_lock.cvl: model of Java ReentrantLock for data structure verification
+ * Created 6-Aug-2021
+ * Josh Davis, Stephen Siegel
+ * Verified Software Lab, CIS Dept.
+ * University of Delaware
+ */
+#pragma CIVL ACSL
+
+#include <stdlib.h>
+#include <stdbool.h>
+#include "Lock.h"
+
+struct Lock {
+  $proc owner;
+  int count;
+};
+
+Lock Lock_create() {
+  Lock result = malloc(sizeof(struct Lock));
+  result->owner = $proc_null;
+  result->count = 0;
+  return result;
+}
+
+void Lock_destroy(Lock l) {
+  free(l);
+}
+
+/*@ depends_on \access(l); */
+static $atomic_f void Lock_acquire_aux(Lock l) {
+  $when(l->owner == $proc_null) l->owner = $self;
+}
+
+/*@ depends_on \nothing; */
+static $atomic_f void lock_increment(Lock l) {
+  l->count++;
+}
+
+/*@ depends_on \nothing; */
+static $atomic_f bool am_owner(Lock l) {
+  return $self == l->owner;
+}
+
+void Lock_acquire(Lock l) {
+  if (!am_owner(l)) {
+    Lock_acquire_aux(l);
+  }
+  lock_increment(l);
+}
+
+#ifdef FAIR
+/*@ depends_on \access(l); */
+#else
+/*@ depends_on \nothing; */
+#endif
+$atomic_f void Lock_release(Lock l) {
+  $assert($self == l->owner);
+  l->count--;
+  if (l->count == 0) l->owner = $proc_null;
+}

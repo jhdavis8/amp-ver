@@ -1,0 +1,17 @@
+*~
+*.out
+*.tmp
+*.dir
+CIVLREP
+AVREP_*
+logs
+results
+.project
+hold
+java/bin
+config/config.mk
+batch/exp*.qs
+out/*S1
+out/*S2
+out/*S3
+out/*S4

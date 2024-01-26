@@ -1,0 +1,24 @@
+#ifndef _ATOMICBOOLEAN_H
+#define _ATOMICBOOLEAN_H
+/*
+ * AtomicBoolean.cvh: Header file for AtomicBoolean.cvl
+ * Created 13-Jan-2024
+ * Josh Davis, Stephen Siegel
+ * Verified Software Lab, CIS Dept.
+ * University of Delaware
+ */
+
+#include <stdbool.h>
+
+typedef struct AtomicBoolean * AtomicBoolean;
+
+AtomicBoolean AtomicBoolean_create(bool initialValue);
+
+void AtomicBoolean_destroy(AtomicBoolean b);
+
+bool AtomicBoolean_compareAndSet(AtomicBoolean b,
+                                 bool expect, bool update);
+
+bool AtomicBoolean_get(AtomicBoolean b);
+
+#endif

@@ -1,0 +1,61 @@
+/*
+ * AtomicReference.cvl: this implements a model of the Java class AtomicReference
+ * Created 21-Dec-2023
+ * Josh Davis, Stephen Siegel
+ * Verified Software Lab, CIS Dept.
+ * University of Delaware
+ */
+#pragma CIVL ACSL
+
+#include <stdlib.h>
+#include "AtomicReference.cvh"
+
+struct AtomicReference {
+  void* value;
+};
+
+AtomicReference AtomicReference_create(void* initial_value) {
+  AtomicReference ref = malloc(sizeof(struct AtomicReference));
+  ref->value = initial_value;
+  return ref;
+}
+
+void AtomicReference_destroy(AtomicReference ref) {
+  free(ref);
+}
+
+/*@ depends_on \access(ref); */
+$atomic_f bool AtomicReference_compare_and_set(AtomicReference ref,
+                                                void* expect, void* update) {
+  if (ref->value == expect) {
+    ref->value = update;
+    return true;
+  } else {
+    return false;
+  }
+}
+
+void* AtomicReference_get(AtomicReference ref) {
+  return ref->value;
+}
+
+#ifdef ATOMICREFERENCE_MAIN
+#include <stdio.h>
+
+int main() {
+  int p = 0, q = 1, r = 2;
+  AtomicReference ar = AtomicReference_create(&p);
+  $parfor(int i : 1 .. 2) {
+    if (i == 1) {
+      AtomicReference_compare_and_set(ar, &p, &q);
+    } if (i == 2) {
+      AtomicReference_compare_and_set(ar, &p, &r);
+    }
+  }
+  int* x = AtomicReference_get(ar);
+  AtomicReference_destroy(ar);
+  printf("%d\n", *x);
+  $assert(p == 0 && q == 1 && r == 2);
+  $assert(x == &q || x == &r);
+}
+#endif

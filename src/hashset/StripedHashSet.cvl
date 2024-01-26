@@ -1,0 +1,222 @@
+/* CIVL model of StripedHashSet class from "The Art of Multiprocessor
+ * Programming" 2nd ed, by Herlihy, Luchangco, Shavit, and Spear,
+ * Sec. 13.2.2 "A striped hash set", and companion code
+ * ch13/src/hash/StripedHashSet.java.
+ *
+ * This is a concurrent closed-address hashset using lock striping
+ *
+ * Created : 2017-Nov-30
+ * Modified: 2023-Jan-05
+ * Authors : Josh Davis and Stephen F. Siegel
+ * Verified Software Laboratory, Dept. Computer & Info. Sciences,
+ * University of Delaware.
+ */
+#pragma CIVL ACSL
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdbool.h>
+#include "Set.h"
+#include "Lock.h"
+#include "hash.cvh"
+#include "ArrayList.h"
+#include "types.h"
+
+#define INITIAL_CAPACITY 1
+
+struct Set {
+  ArrayList* table;
+  int size;
+  int table_length;
+  int locks_length;
+  Lock* locks;
+};
+
+Set Set_create() {
+  Set s = malloc(sizeof(struct Set));
+  s->table_length = INITIAL_CAPACITY;
+  s->size = 0;
+  s->locks_length = s->table_length;
+
+  s->table = malloc(s->table_length * sizeof(ArrayList));
+  for (int i = 0; i < s->table_length; i++) {
+    s->table[i] = ArrayList_create();
+  }
+
+  s->locks = malloc(s->locks_length * sizeof(Lock));
+  for (int k = 0; k < s->locks_length; k++) {
+    s->locks[k] = Lock_create();
+  }
+
+  return s;
+}
+
+void Set_destroy(Set s) {
+  for (int l = 0; l < s->table_length; l++) {
+    ArrayList_destroy(s->table[l]);
+  }
+  for (int l = 0; l < s->locks_length; l++) {
+    Lock_destroy(s->locks[l]);
+  }
+  free(s->table);
+  free(s->locks);
+  free(s);
+}
+
+static void resize(Set s);
+
+static void initializeFrom(Set s, ArrayList* oldTable, int oldCapacity);
+
+static void acquire(Set s, T x);
+
+static void release(Set s, T x);
+
+static bool policy(Set s);
+
+bool Set_contains(Set s, T x) {
+  acquire(s, x);
+  // try
+  int myBucket = hash_code_bound(x, s->table_length);
+  bool result = ArrayList_contains(s->table[myBucket], x);
+  release(s, x); // finally
+  return result;
+}
+
+bool Set_add(Set s, T x) {
+  bool result = false;
+  acquire(s, x);
+  // try
+  int myBucket = hash_code_bound(x, s->table_length);
+  // difference between 2nd ed. book text and companion code;
+  // we use the book's version
+  if (!ArrayList_contains(s->table[myBucket], x)) {
+    ArrayList_add(s->table[myBucket], x);
+    result = true;
+    s->size = result ? s->size + 1 : s->size;
+  }
+  release(s, x); // finally
+  if (policy(s))
+    resize(s);
+  return result;
+}
+
+bool Set_remove(Set s, T x) {
+  acquire(s, x);
+  // try
+  int myBucket = hash_code_bound(x, s->table_length);
+  bool result = ArrayList_remove_item(s->table[myBucket], x);
+  s->size = result ? s->size - 1 : s->size;
+  release(s, x); // finally
+  return result;
+}
+
+// called if policy is true or a bucket is overfull
+static void resize(Set s) {
+  int oldCapacity = s->table_length;
+  for (int i = 0; i < s->locks_length; i++)
+    Lock_acquire(s->locks[i]);
+  // try
+  if (oldCapacity != s->table_length) {
+    // finally
+    for (int i = 0; i < s->locks_length; i++)
+      Lock_release(s->locks[i]);
+    return; // someone beat us to it
+  }
+  int newCapacity = 2 * oldCapacity;
+  ArrayList* oldTable = s->table;
+  s->table = malloc(newCapacity * sizeof(ArrayList));
+  s->table_length = newCapacity;
+  for (int i = 0; i < newCapacity; i++)
+    s->table[i] = ArrayList_create();
+  initializeFrom(s, oldTable, oldCapacity);
+  for (int i = 0; i < oldCapacity; i++)
+    ArrayList_destroy(oldTable[i]);
+  free(oldTable);
+  // finally
+  for (int i = 0; i < s->locks_length; i++)
+    Lock_release(s->locks[i]);
+}
+
+static void initializeFrom(Set s, ArrayList* oldTable, int oldCapacity) {
+  for (int i = 0; i < oldCapacity; i++) {
+    for (int j = 0; j < ArrayList_size(oldTable[i]); j++) {
+      T x = ArrayList_get(oldTable[i], j);
+      int myBucket = hash_code_bound(x, s->table_length);
+      ArrayList_add(s->table[myBucket], x);
+    }
+  }
+}
+
+static void acquire(Set s, T x) {
+  int myBucket = hash_code_bound(x, s->locks_length);
+  Lock_acquire(s->locks[myBucket]);
+}
+
+static void release(Set s, T x) {
+  int myBucket = hash_code_bound(x, s->locks_length);
+  Lock_release(s->locks[myBucket]);
+}
+
+// resize policy to check if load factor exceeds a set limit
+static bool policy(Set s) {
+  return s->size / s->table_length > 4;
+}
+
+void Set_print(Set s) {
+  for (int i = 0; i < s->table_length; i++) {
+    printf("Bucket %d: ", i);
+    ArrayList_print(s->table[i]);
+    printf("\n");
+  }
+  printf("\n");
+}
+
+#ifdef _STRIPED_HASH_SET_MAIN
+int main() {
+  Set s = Set_create();
+
+  $parfor (int val : 0 .. 4) {
+    Set_add(s, val);
+  }
+
+  Set_print(s);
+
+  $for (int val : 0 .. 4) {
+    $assert(Set_contains(s, val));
+  }
+
+  $parfor (int val : 1 .. 2) {
+    Set_remove(s, val);
+  }
+
+  Set_print(s);
+
+  $for (int val : 0 .. 4) {
+    if (val == 1 || val == 2) {
+      $assert(!Set_contains(s, val));
+    } else {
+      $assert(Set_contains(s, val));
+    }
+  }
+
+  $parfor (int val : 0 .. 4) {
+    if (val == 2) {
+      Set_add(s, val);
+    } else {
+      Set_remove(s, val);
+    }
+  }
+
+  Set_print(s);
+
+  $for (int val : 0 .. 4) {
+    if (val == 2) {
+      $assert(Set_contains(s, val));
+    } else {
+      $assert(!Set_contains(s, val));
+    }
+  }
+
+  Set_destroy(s);
+}
+#endif

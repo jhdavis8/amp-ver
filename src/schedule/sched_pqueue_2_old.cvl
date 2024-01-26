@@ -1,0 +1,11 @@
+#include "driver.h"
+#include "schedule.h"
+#include <stdlib.h>
+
+// a nondeterministically chosen schedule
+schedule_t make_schedule() {
+  int nthread = 3;
+  int step_bound = 3;
+
+  return schedule_create(PQUEUE, nthread, step_bound);
+}

@@ -1,0 +1,39 @@
+#ifndef _ATOMICMARKABLEREF_H
+#define _ATOMICMARKABLEREF_H
+/*
+ * AtomicMarkableReference implementation
+ * Josh Davis, Aamir Majeed
+ * Apr-2018
+ * VIP-HPC, Univ. of Delaware
+ */
+
+typedef struct AtomicMarkableReference * AtomicMarkableReference;
+
+AtomicMarkableReference
+AtomicMarkableReference_create(void* ref, bool m);
+
+void
+AtomicMarkableReference_destroy(AtomicMarkableReference ref);
+
+bool
+AtomicMarkableReference_compare_and_set(AtomicMarkableReference ref,
+                    void* exp_ref, void* new_ref,
+                    bool exp_mark, bool new_mark);
+
+bool
+AtomicMarkableReference_attempt_mark(AtomicMarkableReference ref,
+                 void* exp_ref, bool new_mark);
+
+void
+AtomicMarkableReference_set(AtomicMarkableReference ref, void* r, bool m);
+
+void*
+AtomicMarkableReference_get(AtomicMarkableReference amr, bool* mark_out);
+
+void*
+AtomicMarkableReference_get_reference(AtomicMarkableReference amr);
+
+bool
+AtomicMarkableReference_is_marked(AtomicMarkableReference amr);
+
+#endif

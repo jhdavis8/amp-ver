@@ -1,0 +1,94 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <limits.h>
+#include "types.h"
+#include "Queue.h"
+#include "AtomicReference.cvh"
+
+// TODO: work in progress.  need an atomic int.
+
+typedef enum NodeType {ITEM, RESERVATION} NodeType;
+
+typedef struct Node {
+  NodeType type;
+  T item;
+  AtomicReference next;
+} * Node;
+
+static Node node_create(T myItem, NodeType myType) {
+  Node this = malloc(sizeof(struct Node));
+  this->item = myItem;
+  this->next = AtomicReference_create(NULL);
+  this->type = myType;
+  return this;
+}
+
+// not in original code...
+static void node_destroy(Node this) {
+  AtomicReference_destroy(this->next);
+  free(this);
+}
+
+struct Queue {
+  AtomicReference head;
+  AtomicReference tail;
+};
+
+Queue Queue_create() {
+  Queue this = malloc(sizeof(struct Queue));
+  Node sentinel = node_create(-1, ITEM); // new Node(null, ITEM)
+  this->head = AtomicReference_create(sentinel);
+  this->tail = AtomicReference_create(sentinel);
+  return this;
+}
+
+// not in original code...
+void Queue_destroy(Queue queue) {
+  // if node is not null, its next is not null
+  Node curr = AtomicReference_get(queue->head);
+  Node prev = NULL;
+  while (curr != NULL) {
+    prev = curr;
+    curr = AtomicReference_get(curr->next);
+    node_destroy(prev);
+  }
+  AtomicReference_destroy(queue->head);
+  AtomicReference_destroy(queue->tail);
+  free(queue);
+}
+
+void Queue_enq(Queue this, T e) {
+  Node offer = node_create(e, ITEM);
+  while (true) {
+    Node t = AtomicReference_get(this->tail),
+      h = AtomicReference_get(this->head);
+    if (h == t || t.type == ITEM) {
+      Node n = AtomicReference_get(t->next);
+      if (t == AtomicReference_get(this->tail)) {
+        if (n != NULL) {
+          AtomicReference_compare_and_set(this->tail, t, n);
+        } else if (AtomicReference_compare_and_set(t->next, n, offer)) {
+          AtomicReference_compare_and_set(this->tail, t, offer);
+          // this won't work because offer->item is an int
+          while (AtomicReference_get(offer->item) == e);
+          h = AtomicReference_get(this->head);
+          if (offer == AtomicReference_get(h->next))
+            AtomicReference_compare_and_set(this->head, h, offer);
+          return;
+        }
+      }
+    } else {
+      Node n = AtomicReference_get(h->next);
+      if (t != AtomicReference_get(this->tail) ||
+          h != AtomicReference_get(this->head) ||
+          n == NULL) {
+        continue;
+      }
+      //bool success = AtomicReference_compare_and_set(n->item, -1, e);
+      
+}
+
+T Queue_deq(Queue this) {
+
+}

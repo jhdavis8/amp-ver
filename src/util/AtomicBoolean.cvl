@@ -1,0 +1,61 @@
+/*
+ * AtomicBoolean.cvl: this implements a model of the Java class AtomicBoolean
+ * Created 21-Dec-2023
+ * Josh Davis, Stephen Siegel
+ * Verified Software Lab, CIS Dept.
+ * University of Delaware
+ */
+#pragma CIVL ACSL
+
+#include <stdlib.h>
+#include "AtomicBoolean.cvh"
+
+struct AtomicBoolean {
+  bool value;
+};
+
+AtomicBoolean AtomicBoolean_create(bool initialValue) {
+  AtomicBoolean b = malloc(sizeof(struct AtomicBoolean));
+  b->value = initialValue;
+  return b;
+}
+
+void AtomicBoolean_destroy(AtomicBoolean b) {
+  free(b);
+}
+
+/*@ depends_on \access(b); */
+$atomic_f bool AtomicBoolean_compareAndSet(AtomicBoolean b,
+                                           bool expect, bool update) {
+  if (b->value == expect) {
+    b->value = update;
+    return true;
+  } else {
+    return false;
+  }
+}
+
+bool AtomicBoolean_get(AtomicBoolean b) {
+  return b->value;
+}
+
+#ifdef ATOMICBOOLEAN_MAIN
+#include <stdio.h>
+
+int main() {
+  bool p = false, q = true, r = false;
+  AtomicBoolean ab = AtomicBoolean_create(p);
+  $parfor(int i : 1 .. 2) {
+    if (i == 1) {
+      AtomicBoolean_compareAndSet(ab, p, q);
+    } if (i == 2) {
+      AtomicBoolean_compareAndSet(ab, p, r);
+    }
+  }
+  bool x = AtomicBoolean_get(ab);
+  AtomicBoolean_destroy(ab);
+  printf("%d\n", x);
+  $assert(p == false && q == true && r == false);
+  $assert(x == q || x == r);
+}
+#endif

@@ -1,0 +1,82 @@
+/* hash.cvl: model of Java hashCode for data structure implementations
+ * Currently two options:
+ *   default: hash function is identity
+ *   HASH_ND: hash function is chosen nondeterminsitically.  Client
+ *            must specify two parameters: VAL_B and HASH_B.  The first
+ *            is a strict upper bound on the inputs to the hash function.
+ *            The second is a strict upper bound on the output.
+ * This module also provides a dual hash function which is required for
+ * certain data structures.   The dual has function takes a second argument
+ * which is 0 or 1.
+
+ * Created 6-Aug-2021
+ * Modified 27-Dec-2023
+ * Josh Davis, Stephen Siegel
+ * Verified Software Lab, CIS Dept.
+ * University of Delaware
+ */
+#pragma CIVL ACSL
+#include <limits.h>
+#include <stdbool.h>
+#ifdef DEBUG
+#include <stdio.h>
+#endif
+#include "hash.cvh"
+
+$input int VAL_B=8; // (strict) upper bound on values (domain of hash)
+$input int HASH_B=3; // strict upper bound on hash values (range of hash)
+bool hash_init = false;
+int hash_vals[2][VAL_B];
+
+#ifdef HASH_ND
+/*@ depends_on \nothing; */
+static $atomic_f void init_hash() {
+  for (int t = 0; t < 2; t++) {
+    for (int i = 0; i < VAL_B; i++) {
+      hash_vals[t][i] = -1;
+    }
+  }
+}
+
+/*@ depends_on \nothing; */
+$atomic_f int hash_code_dual(int x, int which) {
+  if (!hash_init) {
+    hash_init = true;
+    init_hash();
+  }
+  if (x < 0) x = -x;
+  if (x >= VAL_B) x = x % VAL_B;
+  if (hash_vals[which][x] == -1) {
+    hash_vals[which][x] = $choose_int(HASH_B);
+#ifdef DEBUG
+    printf("hash[%d][%d] = %d\n", which, x, hash_vals[which][x]);
+#endif    
+  }
+  return hash_vals[which][x];
+}
+
+/*@ depends_on \nothing; */
+$atomic_f int hash_code(int x) {
+  return hash_code_dual(x, 0);
+}
+#else
+/*@ depends_on \nothing; */
+$atomic_f int hash_code(int x) {
+  return x;
+}
+
+/*@ depends_on \nothing; */
+$atomic_f int hash_code_dual(int x, int which) {
+  return which ? x + 1 : x;
+}
+#endif
+
+/*@ depends_on \nothing; */
+$atomic_f int hash_code_bound(int x, int bound) {
+  return hash_code(x) % bound;
+}
+
+/*@ depends_on \nothing; */
+$atomic_f int hash_code_dual_bound(int x, int bound, int which) {
+  return hash_code_dual(x, which) % bound;
+}

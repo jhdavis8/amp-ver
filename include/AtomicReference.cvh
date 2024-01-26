@@ -1,0 +1,25 @@
+#ifndef _ATOMICREFERENCE_H
+#define _ATOMICREFERENCE_H
+/*
+ * AtomicReference.cvh: Header file for AtomicReference.cvl
+ * Created 21-Dec-2023
+ * Josh Davis, Stephen Siegel
+ * Verified Software Lab, CIS Dept.
+ * University of Delaware
+ */
+
+#include <stdbool.h>
+
+typedef struct AtomicReference * AtomicReference;
+
+AtomicReference AtomicReference_create(void* initial_value);
+
+void AtomicReference_destroy(AtomicReference ref);
+
+
+bool AtomicReference_compare_and_set(AtomicReference ref,
+                                     void* expect, void* update);
+
+void* AtomicReference_get(AtomicReference ref);
+
+#endif

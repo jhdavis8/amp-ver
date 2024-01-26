@@ -1,0 +1,17 @@
+#ifndef _HASH_H
+#define _HASH_H
+/* hashCode.cvh: header for hashCode.cvl
+ * Updated 26-Dec-2023
+ * Josh Davis, Stephen Siegel
+ * Verified Software Lab, CIS Dept.
+ * University of Delaware
+ */
+$atomic_f int hash_code(int x);
+
+$atomic_f int hash_code_dual(int x, int which);
+
+$atomic_f int hash_code_bound(int x, int bound);
+
+$atomic_f int hash_code_dual_bound(int x, int bound, int which);
+
+#endif

@@ -1,0 +1,213 @@
+/* CIVL model of class LockFreeList from "The Art of Multiprocessor
+ * Programming" 2nd ed, by Herlihy, Luchangco, Shavit, and Spear,
+ * Sec. 9.8, "Nonblocking synchronization", and companion code
+ * ch9/src/lists/LockFreeList.java.
+ *
+ * This is a concurrent list-based set using lock-free
+ * synchronization.  It leaks memory (the original code relies on the
+ * Java garbage collector).
+ *
+ * Authors : Josh Davis and Stpehen F. Siegel
+ * Created : 2021-Jun-30
+ * Modified: 2024-Jun-09
+ *
+ * Verified Software Lab, Dept. Computer & Info. Sci.,
+ * University of Delaware
+ */
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <limits.h>
+#include "Set.h"
+#include "AtomicMarkableReference.cvh"
+#include "hash.cvh"
+#include "types.h"
+
+typedef struct Node {
+  T item;
+  int key;
+  AtomicMarkableReference next;
+} * Node;
+
+struct Set {
+  Node head;
+};
+
+typedef struct Window {
+  Node pred;
+  Node curr;
+} Window;
+
+static Node node_create(T item) {
+  Node result = malloc(sizeof(struct Node));
+  result->key = hash_code(item);
+  result->item = item;
+  result->next = AtomicMarkableReference_create(NULL, false);
+  return result;
+}
+
+static Node sentinel_node_create(int key) {
+  Node result = malloc(sizeof(struct Node));
+  result->key = key;
+  result->item = -1; // null
+  result->next = AtomicMarkableReference_create(NULL, false);
+  return result;
+}
+
+static void node_destroy(Node node) {
+  AtomicMarkableReference_destroy(node->next);
+  free(node);
+}
+
+static void node_destroy_rec(Node node) {
+  if (node == NULL) return;
+  node_destroy_rec(AtomicMarkableReference_get_reference(node->next));
+  node_destroy(node);
+}
+
+static Window make_window(Node p, Node c) {
+  return (Window){p, c};
+}
+
+Set Set_create() {
+  Set this = malloc(sizeof(struct Set));
+  this->head = sentinel_node_create(INT_MIN);
+  Node tail = sentinel_node_create(INT_MAX);
+  while (!AtomicMarkableReference_compare_and_set
+         (this->head->next, NULL, (void*) tail, false, false));
+  return this;
+}
+
+void Set_destroy(Set list) {
+  node_destroy_rec(list->head);
+  free(list);
+}
+
+static Window find(Node head, int key) {
+  Node pred = NULL, curr = NULL, succ = NULL;
+  bool f = false;
+  bool* marked = &f;
+  bool snip;
+ retry: while (true) {
+    pred = head;
+    curr = AtomicMarkableReference_get_reference(pred->next);
+    while (true) {
+      succ = AtomicMarkableReference_get(curr->next, marked);
+      while (*marked) {
+	snip = AtomicMarkableReference_compare_and_set
+          (pred->next, curr, succ, false, false);
+	if (!snip) goto retry;
+	// companion code: curr = pred->next->reference;
+        curr = succ;
+	succ = AtomicMarkableReference_get(curr->next, marked);
+      }
+      if (curr->key >= key)
+	return make_window(pred, curr);
+      pred = curr;
+      curr = succ;
+    }
+  }
+}
+
+bool Set_add(Set this, T item) {
+  int key = hash_code(item);
+  bool splice;
+  while (true) {
+    Window window = find(this->head, key);
+    Node pred = window.pred, curr = window.curr;
+    if (curr->key == key) {
+      return false;
+    } else {
+      Node node = node_create(item);
+      free(node->next); // TODO: really?  node destroy?
+      node->next = AtomicMarkableReference_create(curr, false);
+      if (AtomicMarkableReference_compare_and_set
+          (pred->next, curr, node, false, false)) {
+	return true;
+      }
+    }
+  }
+}
+
+bool Set_remove(Set this, T item) {
+  int key = hash_code(item);
+  bool snip;
+  while (true) {
+    Window window = find(this->head, key);
+    Node pred = window.pred, curr = window.curr;
+    if (curr->key != key) {
+      return false;
+    } else {
+      Node succ = AtomicMarkableReference_get_reference(curr->next);
+#ifdef ORIGINAL // companion code, known bug
+      snip = AtomicMarkableReference_attempt_mark(curr->next, succ, true);
+#else
+      snip = AtomicMarkableReference_compare_and_set
+        (curr->next, succ, succ, false, true);
+#endif
+      if (!snip)
+	continue;
+      AtomicMarkableReference_compare_and_set
+        (pred->next, curr, succ, false, false);
+      return true;
+    }
+  }
+}
+
+/* The companion code has this:
+bool Set_contains(Set this, T item) {
+  int key = hash_code(item);
+  Window window = find(this->head, key);
+  Node pred = window.pred;
+  Node curr = window.curr;
+  return (curr->key == key);
+}
+*/
+
+bool Set_contains(Set this, T item) {
+  int key = hash_code(item);
+  Node curr = this->head;
+  while (curr->key < key) {
+    curr = AtomicMarkableReference_get_reference(curr->next);
+  }
+  return (curr->key == key && !AtomicMarkableReference_is_marked(curr->next));
+}
+
+void Set_print(Set list) {
+  Node curr = AtomicMarkableReference_get_reference(list->head->next);
+  printf("{ ");
+  while (true) {
+    Node next = AtomicMarkableReference_get_reference(curr->next);
+    if (next == NULL) break;
+    printf("%d ", curr->item);
+    curr = next;
+  }
+  printf("}");
+}
+
+#ifdef _LOCK_FREE_LIST_MAIN
+int main() {
+  const int N=3; // number of threads
+  Set list = Set_create();
+  $parfor(int i: 0 .. N-1)
+    Set_add(list, i);
+  Set_print(list);
+  printf("\n");
+  Set_destroy(list);
+  list = Set_create();
+  $parfor (int i: 0 .. N-1) {
+    int result = Set_add(list, i);
+    $assert(result);
+    result = Set_contains(list, i);
+    $assert(result);
+    result = Set_remove(list, i);
+    $assert(result);
+    result = Set_contains(list, i);
+    $assert(!result);
+  }
+  Set_print(list);
+  printf("\n");
+  Set_destroy(list);
+}
+#endif
+

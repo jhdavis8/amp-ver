@@ -1,0 +1,102 @@
+/* Static tree barrier in CIVL from AMP-VER
+ * Jun-24-2021
+ * Josh Davis
+ * Verified Software Lab, Univ. of Delaware
+ */
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <stdbool.h>
+#include <math.h>
+#include "../include/barrier.cvh"
+
+typedef struct _node Node;
+
+struct _node
+{
+  int children;
+  Node* parent;
+  int child_count;
+};
+
+struct _barrier
+{
+  int radix;
+  bool sense;
+  bool* thread_sense;
+  Node** node;
+  int nodes;
+};
+
+typedef struct _barrier Barrier;
+
+Node* create_node(int c, Node* p) {
+  Node* new_node = (Node*) malloc(sizeof(Node));
+  new_node->children = c;
+  new_node->parent = p;
+  new_node->child_count = c;
+  return new_node;
+}
+
+void destroy_node(Node* node) {
+  free(node);
+}
+
+void node_wait(Node* n, Barrier* b, int tid) {
+  bool my_sense = b->thread_sense[tid];
+  $when (n->child_count <= 0) {/* continue */}
+  $atomic {
+    n->child_count = n->children;
+  }
+  if (n->parent != NULL) {
+    $atomic {
+      n->parent->child_count--;
+    }
+    $when (b->sense == my_sense) {/* continue */}
+  } else {
+    b->sense = !b->sense;
+  }
+  b->thread_sense[tid] = !my_sense;
+}
+
+void build(Barrier* b, Node* parent, int depth) {
+  if (depth == 0) {
+    b->node[b->nodes++] = create_node(0, parent);
+  } else {
+    Node* my_node = create_node(b->radix, parent);
+    b->node[b->nodes++] = my_node;
+    for (int i = 0; i < b->radix; i++) {
+      build(b, my_node, depth - 1);
+    }
+  }
+}
+
+Barrier* create_barrier(int n, int r) {
+  Barrier* new_barrier = (Barrier*) malloc(sizeof(Barrier));
+  new_barrier->radix = r;
+  new_barrier->nodes = 0;
+  new_barrier->node = (Node**) malloc(sizeof(Node*)*n);
+  int depth = 0;
+  int curr_size = n;
+  while (curr_size > 1) {
+    depth++;
+    curr_size = curr_size / r;
+    $assert(curr_size > 0);
+  }
+  build(new_barrier, NULL, depth);
+  new_barrier->sense = false;
+  new_barrier->thread_sense = (bool*) malloc(sizeof(bool)*n);
+  for (int i = 0; i < n; i++) new_barrier->thread_sense[i] = true;
+  return new_barrier;
+}
+
+void barrier_wait(Barrier* b, int tid) {
+  node_wait(b->node[tid], b, tid);
+}
+
+void destroy_barrier(Barrier* b) {
+  for (int i = 0; i < (b->nodes); i++) destroy_node(b->node[i]);
+  free(b->node);
+  free(b->thread_sense);
+  free(b);
+}

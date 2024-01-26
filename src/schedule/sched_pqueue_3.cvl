@@ -1,0 +1,26 @@
+/* This schedule reveals the cycle violation in SkipQueue. */
+#include "driver.h"
+#include "schedule.h"
+#include <stdlib.h>
+
+schedule_t make_schedule() {
+  schedule_t sched;
+  int nthread = 2;
+
+  sched.kind = PQUEUE;
+  sched.num_ops = 2;
+  sched.nthread = nthread;
+  sched.npreAdd = 1;
+  sched.preAdds = malloc(sched.npreAdd*sizeof(step_t));
+  sched.preAdds[0] = schedule_make_step_2(ADD, 0, 1);
+  sched.nstep = 2;
+  sched.nsteps = malloc(nthread*sizeof(int));
+  sched.nsteps[0] = 1;
+  sched.nsteps[1] = 1;
+  sched.steps = malloc(nthread*sizeof(step_t*));
+  for (int i=0; i<nthread; i++)
+    sched.steps[i] = malloc(sched.nsteps[i]*sizeof(step_t));
+  sched.steps[0][0] = schedule_make_step_0(REMOVE);
+  sched.steps[1][0] = schedule_make_step_0(REMOVE);
+  return sched;
+}

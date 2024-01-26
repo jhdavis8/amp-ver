@@ -1,0 +1,26 @@
+#include "driver.h"
+#include "schedule.h"
+#include <stdlib.h>
+
+schedule_t make_schedule() {
+  schedule_t sched;
+  int nthread = 2;
+
+  sched.kind = QUEUE;
+  sched.num_ops = 2;
+  sched.nthread = nthread;
+  sched.npreAdd = 0;
+  sched.preAdds = NULL;
+  sched.nstep = 2*nthread;
+  sched.nsteps = malloc(nthread*sizeof(int));
+  for (int i=0; i<nthread; i++)
+    sched.nsteps[i] = 2;
+  sched.steps = malloc(nthread*sizeof(step_t*));
+  for (int i=0; i<nthread; i++)
+    sched.steps[i] = malloc(sched.nsteps[i]*sizeof(step_t));
+  for (int i=0; i<nthread; i++) {
+    sched.steps[i][0] = schedule_make_step_1(ADD, i);
+    sched.steps[i][1] = schedule_make_step_0(REMOVE);
+  }
+  return sched;
+}

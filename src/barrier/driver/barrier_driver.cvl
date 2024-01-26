@@ -1,0 +1,58 @@
+/* Barrier driver in CIVL for AMP-VER project
+ * Jun-6-2021
+ * Josh Davis, Stephen Siegel
+ * Verified Software Lab, Univ. of Delaware
+ */
+
+#include <stdio.h>
+#include <string.h>
+#include <stdbool.h>
+#include <math.h>
+#include "../include/barrier.cvh"
+
+$input int STP_B = 10;                        // Max number of iterations in barrier test loop
+$input int RADIX = 2;                         // Radix for the tree (children per node)
+$input int D_B = 2;                           // Max tree depth
+$input int depth;                             // Actual tree depth
+$assume(1 <= depth && depth <= D_B);
+
+#ifdef THREADS_ARE_LEAVES
+$input int THD_B = pow(RADIX, depth + 1);
+int nthread = THD_B;
+
+#else
+
+#ifdef THREADS_ARE_NODES
+$input int THD_B = pow(RADIX, depth + 1) - 1;
+int nthread = THD_B;
+
+#else
+$input int THD_B = 4;
+$input int nthread;
+$assume(1 <= nthread && nthread <= THD_B);
+
+#endif
+#endif
+
+
+Barrier* curr_barrier;
+bool thread_state[nthread];
+
+void driver(int tid) {
+  int iter = 0;
+  
+  while (iter < STP_B) {
+    thread_state[tid] = !thread_state[tid];
+    barrier_wait(curr_barrier, tid);
+    $assert($forall (int i : 0..nthread-1) thread_state[i] == thread_state[tid]);
+    barrier_wait(curr_barrier, tid);
+    if (tid == 0) printf("[STEP]\t Iteration %d completed\n", iter);
+    iter++;
+  }
+}
+
+int main() {
+  curr_barrier = create_barrier(nthread, RADIX);
+  $parfor (int i : 0..nthread-1) driver(i);
+  destroy_barrier(curr_barrier);
+}

@@ -1,0 +1,360 @@
+/* CIVL model of StripedCuckooHashSet class from "The Art of Multiprocessor
+ * Programming" 2nd ed, by Herlihy, Luchangco, Shavit, and Spear,
+ * Sec. 13.4.3 "Striped concurrent cuckoo hashing", and companion code
+ * ch13/src/hash/StripedCuckooHashSet.java.
+ *
+ * This is a concurrent cuckoo hashset using lock striping and phasing
+ *
+ * Created : 2018-Apr-26
+ * Modified: 2023-Jan-05
+ * Authors : Josh Davis and Stephen F. Siegel
+ * Verified Software Laboratory, Dept. Computer & Info. Sciences,
+ * University of Delaware.
+ */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include "Set.h"
+#include "hash.cvh"
+#include "Lock.h"
+#include "ArrayList.h"
+#include "types.h"
+
+#define LIMIT 8
+#define PROBE_SIZE 2
+#define THRESHOLD (PROBE_SIZE / 2)
+#define INITIAL_CAPACITY 1
+// need this because our interface doesn't have a constructor that takes an initial size
+
+struct Set {
+  int capacity;
+  Lock* lock[2];
+  ArrayList* table[2];
+};
+
+
+Set Set_create() {
+  // PhasedCuckooHashSet constructor
+  Set result = malloc(sizeof(struct Set));
+  result->capacity = INITIAL_CAPACITY;
+  for (int i = 0; i < 2; i++) {
+    result->table[i] = malloc(result->capacity*sizeof(ArrayList));
+    for (int j = 0; j < result->capacity; j++) {
+      result->table[i][j] = ArrayList_create();
+    }
+  }
+  // StripedCuckooHashSet constructor
+  for (int i = 0; i < 2; i++) {
+    result->lock[i] = malloc(result->capacity*sizeof(Lock));
+    for (int j = 0; j < result->capacity; j++) {
+      result->lock[i][j] = Lock_create();
+    }
+  }
+  return result;
+}
+
+void Set_destroy(Set s) {
+  for (int i = 0; i < 2; i++) {
+    for (int j = 0; j < s->capacity; j++) {
+      ArrayList_destroy(s->table[i][j]);
+    }
+    for (int j = 0; j < INITIAL_CAPACITY; j++) {
+      Lock_destroy(s->lock[i][j]);
+    }
+    free(s->table[i]);
+    free(s->lock[i]);
+  }
+  free(s);
+}
+
+// hash0 provided by hash.cvh
+static int hash0(Set s, T x) {
+  return hash_code_dual(x, 0);
+}
+
+// hash1 provided by hash.cvh
+static int hash1(Set s, T x) {
+  return hash_code_dual(x, 1);
+}
+
+static void acquire(Set s, T x) {
+  Lock lock0 = s->lock[0][hash0(s, x) % INITIAL_CAPACITY];
+  Lock lock1 = s->lock[1][hash1(s, x) % INITIAL_CAPACITY];
+  Lock_acquire(lock0);
+  Lock_acquire(lock1);
+}
+
+static void release(Set s, T x) {
+  Lock lock0 = s->lock[0][hash0(s, x) % INITIAL_CAPACITY];
+  Lock lock1 = s->lock[1][hash1(s, x) % INITIAL_CAPACITY];
+  Lock_release(lock0);
+  Lock_release(lock1);
+}
+
+bool Set_contains(Set s, T x) {
+  acquire(s, x);
+  // try
+  int h0 = hash0(s, x) % s->capacity;
+  if (ArrayList_contains(s->table[0][h0], x)) {
+    release(s, x); // finally
+    return true;
+  } else {
+    int h1 = hash1(s, x) % s->capacity;
+    if (ArrayList_contains(s->table[1][h1], x)) {
+      release(s, x); // finally
+      return true;
+    }
+  }
+  release(s, x); // finally
+  return false;
+}
+
+bool Set_remove(Set s, T x) {
+  acquire(s, x);
+  // try
+  ArrayList set0 = s->table[0][hash0(s, x) % s->capacity];
+  if (ArrayList_contains(set0, x)) {
+    ArrayList_remove_item(set0, x);
+    release(s, x); // finally
+    return true;
+  } else {
+    ArrayList set1 = s->table[1][hash1(s, x) % s->capacity];
+    if (ArrayList_contains(set1, x)) {
+      ArrayList_remove_item(set1, x);
+      release(s, x); // finally
+      return true;
+    }
+  }
+  release(s, x); // finally
+  return false;
+}
+
+// Unsynchronized version of contains()
+static bool present(Set s, T x) {
+  int h0 = hash0(s, x) % s->capacity;
+  if (ArrayList_contains(s->table[0][h0], x)) {
+    return true;
+  } else {
+    int h1 = hash1(s, x) % s->capacity;
+    if (ArrayList_contains(s->table[1][h1], x)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+// Forward declaration needed for Set_add
+static bool relocate(Set s, T i, int hi);
+
+// Forward declaration needed for Set_ad
+static void resize(Set s);
+
+bool Set_add(Set s, T x) {
+  T y = -1; // null
+  acquire(s, x);
+  int h0 = hash0(s, x) % s->capacity;
+  int h1 = hash1(s, x) % s->capacity;
+  int i = -1, h = -1;
+  bool mustResize = false;
+  // try
+  if (present(s, x)) {
+    release(s, x); // finally
+    return false;
+  }
+  ArrayList set0 = s->table[0][hash0(s, x) % s->capacity];
+  ArrayList set1 = s->table[1][hash1(s, x) % s->capacity];
+  if (ArrayList_size(set0) < THRESHOLD) {
+    ArrayList_add(set0, x);
+    release(s, x); // finally
+    return true;
+  } else if (ArrayList_size(set1) < THRESHOLD) {
+    ArrayList_add(set1, x);
+    release(s, x); // finally
+    return true;
+  } else if (ArrayList_size(set0) < PROBE_SIZE) {
+    ArrayList_add(set0, x);
+    i = 0; h = h0;
+  } else if (ArrayList_size(set1) < PROBE_SIZE) {
+    ArrayList_add(set1, x);
+    i = 1; h = h1;
+  } else {
+    mustResize = true;
+  }
+  release(s, x); // finally
+  if (mustResize) {
+    resize(s);
+    Set_add(s, x);
+  } else if (!relocate(s, i, h)) {
+    resize(s);
+  }
+  return true; // x must have been present
+}
+
+static void resize(Set s) {
+  int oldCapacity = s->capacity;
+  for (int i = 0; i < INITIAL_CAPACITY; i++) {
+    Lock_acquire(s->lock[0][i]);
+  }
+  // try
+  if (s->capacity != oldCapacity) { // someone else resized first
+    for (int i = 0; i < INITIAL_CAPACITY; i++) { // finally
+      Lock_release(s->lock[0][i]);
+    }
+    return;
+  }
+
+  ArrayList* oldTable[2] = {s->table[0], s->table[1]};
+
+  s->capacity = 2 * s->capacity;
+#ifdef DEBUG
+  printf("Resizing.  New size = %d\n", s->capacity);
+#endif
+  for (int i = 0; i < 2; i++) {
+    s->table[i] = malloc(s->capacity*sizeof(ArrayList));
+    for (int j = 0; j < s->capacity; j++) {
+      s->table[i][j] = ArrayList_create();
+    }
+  }
+  for (int i = 0; i < 2; i++) {
+    for (int j = 0; j < oldCapacity; j++) {
+      for (int k = 0; k < ArrayList_size(oldTable[i][j]); k++) {
+        Set_add(s, ArrayList_get(oldTable[i][j], k));
+      }
+    }
+  }
+
+  // clean up oldTable
+  for (int i = 0; i < 2; i++) {
+    for (int j = 0; j < oldCapacity; j++) {
+      ArrayList_destroy(oldTable[i][j]);
+    }
+    free(oldTable[i]);
+  }
+  // end clean up oldTable
+
+  for (int i = 0; i < INITIAL_CAPACITY; i++) { // finally
+    Lock_release(s->lock[0][i]);
+  }
+}
+
+/*
+#ifdef ENABLE_PATCH
+    Lock_acquire(s->lock[i][hi % INITIAL_CAPACITY]);
+#endif
+#ifdef ENABLE_PATCH
+    if (ArrayList_size(iSet) > 0) {
+#endif
+#ifdef ENABLE_PATCH
+   } else {
+      // the probe we are supposed to balance is empty
+      // so someone else must have balanced it already
+      Lock_release(s->lock[i][hi % INITIAL_CAPACITY]);
+      return true;
+    }
+    Lock_release(s->lock[i][hi % INITIAL_CAPACITY]);
+#endif
+ */
+
+static bool relocate(Set s, int i, int hi) {
+  int hj = 0;
+  int j = 1 - i;
+  for (int round = 0; round < LIMIT; round++) {
+    ArrayList iSet = s->table[i][hi];
+    T y = ArrayList_get(iSet, 0);
+    switch (i) {
+      case 0: hj = hash1(s, y) % s->capacity; break;
+      case 1: hj = hash0(s, y) % s->capacity; break;
+    }
+    acquire(s, y);
+    ArrayList jSet = s->table[j][hj];
+    // try
+    if (ArrayList_remove_item(iSet, y)) {
+      if (ArrayList_size(jSet) < THRESHOLD) {
+        ArrayList_add(jSet, y);
+        release(s, y); // finally
+        return true;
+      } else if (ArrayList_size(jSet) < PROBE_SIZE) {
+        ArrayList_add(jSet, y);
+        i = 1 - i;
+        hi = hj;
+        j = 1 - j;
+      } else {
+        ArrayList_add(iSet, y);
+        release(s, y); // finally
+        return false;
+      }
+    } else if (ArrayList_size(iSet) >= THRESHOLD) {
+      release(s, y); // finally
+      continue;
+    } else {
+      release(s, y); // finally
+      return true;
+    }
+    release(s, y); // finally
+  }
+  return false;
+}
+
+void Set_print(Set s) {
+  printf("{ ");
+  for (int i = 0; i < 2; i++) {
+    for (int j = 0; j < s->capacity; j++) {
+      int size = ArrayList_size(s->table[i][j]);
+      for (int k = 0; k < size; k++) {
+        printf("%d ", ArrayList_get(s->table[i][j], k));
+      }
+    }
+  }
+  printf("}");
+}
+
+#ifdef _STRIPED_CUCKOO_HASH_SET_MAIN
+int main() {
+  Set s = Set_create();
+
+  $parfor (int val : 0 .. 4) {
+    Set_add(s, val);
+  }
+
+  Set_print(s);
+
+  $for (int val : 0 .. 4) {
+    $assert(Set_contains(s, val));
+  }
+
+  $parfor (int val : 1 .. 2) {
+    Set_remove(s, val);
+  }
+
+  Set_print(s);
+
+  $for (int val : 0 .. 4) {
+    if (val == 1 || val == 2) {
+      $assert(!Set_contains(s, val));
+    } else {
+      $assert(Set_contains(s, val));
+    }
+  }
+
+  $parfor (int val : 0 .. 4) {
+    if (val == 2) {
+      Set_add(s, val);
+    } else {
+      Set_remove(s, val);
+    }
+  }
+
+  Set_print(s);
+
+  $for (int val : 0 .. 4) {
+    if (val == 2) {
+      $assert(Set_contains(s, val));
+    } else {
+      $assert(!Set_contains(s, val));
+    }
+  }
+
+  Set_destroy(s);
+}
+#endif

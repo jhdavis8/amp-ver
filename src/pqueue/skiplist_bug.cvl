@@ -1,0 +1,322 @@
+/* Unbounded queue implementation using lazy
+ * synchronization and no locks.
+ * Mar-2-2021
+ * Josh Davis
+ * VSL Lab; Dept. CIS; UDel
+ */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <string.h>
+#include <limits.h>
+#include <math.h>
+#include "AtomicMarkableReference.cvh"
+
+#define ROOT 1
+#define NO_ONE $proc_null
+#define CAPACITY 8
+#define MAX_LEVEL 2
+
+//int random_seed = $choose_int(8);
+
+bool do_adds = false;
+
+typedef struct _node
+{
+  int priority;
+  int item;
+  bool marked; //atomic
+  AtomicMarkableReference* next;
+  int length;
+  int top_level;
+} Node;
+
+typedef struct _priority_queue
+{
+  Node* head;
+  Node* tail;
+} PriorityQueue;
+
+int random_level() {
+  /*
+  int x = random_seed;
+  x = pow(x, x << 13);
+  x = pow(x, ((unsigned int) x) >> 17);
+  x = pow(x, x << 5);
+  random_seed = x;
+  if ((x & 0x80000001) != 0) // test highest and lowest bits
+    return 0;
+  int level = 1;
+  while (((x >>= 1) & 1) != 0) ++level;
+  return (level > MAX_LEVEL - 1) ? MAX_LEVEL - 1 : level;
+  */
+  return $choose_int(MAX_LEVEL);
+}
+
+Node* create_node() {
+  Node* result = (Node*) malloc(sizeof(Node));
+  result->priority = -1;
+  result->item = -1;
+  result->marked = false;
+  result->next = (AtomicMarkableReference*) malloc(sizeof(AtomicMarkableReference)*(MAX_LEVEL + 1));
+  result->top_level = MAX_LEVEL;
+  result->length = MAX_LEVEL + 1;
+  for (int i = 0; i < result->length; i++) {
+    result->next[i] = AtomicMarkableReference_create(NULL, false);
+  }
+  return result;
+}
+
+Node* create_node_initialized(int x, int my_priority) {
+  Node* result = (Node*) malloc(sizeof(Node));
+  result->priority = my_priority;
+  result->item = x;
+  result->marked = false;
+  int height = random_level();
+  result->next = (AtomicMarkableReference*) malloc(sizeof(AtomicMarkableReference)*(height + 1));
+  result->top_level = height;
+  result->length = height + 1;
+  for (int i = 0; i < result->length; i++) {
+    result->next[i] = AtomicMarkableReference_create(NULL, false);
+  }
+  return result;
+}
+
+PriorityQueue* create_priority_queue() {
+  PriorityQueue* q = (PriorityQueue*) malloc(sizeof(PriorityQueue));
+  q->head = create_node();
+  q->head->priority = INT_MIN;
+  q->tail = create_node();
+  q->tail->priority = INT_MAX;
+  for (int i = 0; i < q->head->length; i++) {
+    q->head->next[i] = AtomicMarkableReference_create((void*) q->tail, false);
+  }
+  return q;
+}
+
+void destroy_priority_queue(PriorityQueue* q) {
+}
+
+PriorityQueue* duplicate_priority_queue(PriorityQueue* original) {
+  PriorityQueue* result = create_priority_queue();
+  Node* curr_original = original->head->next[0]->reference;
+  Node* curr_new = result->head;
+  while (curr_original != original->tail) {
+    curr_new->next[0]->reference = create_node_initialized(curr_original->item, curr_original->priority);
+    curr_new = curr_new->next[0]->reference;
+    curr_new->next[0]->reference = result->tail;
+    curr_new->top_level = 0;
+    curr_original = curr_original->next[0]->reference;
+  }
+  return result;
+}
+
+bool find(PriorityQueue* q, Node* node, Node** preds, Node** succs) {
+  int bottom_level = 0;
+  bool marked = false;
+  bool snip;
+  Node* pred = NULL;
+  Node* curr = NULL;
+  Node* succ = NULL;
+ retry:
+  while (true) {
+    pred = q->head;
+    for (int level = MAX_LEVEL; level >= bottom_level; level--) {
+      curr = pred->next[level]->reference;
+      while (true) {
+	succ = AtomicMarkableReference_get(curr->next[level], &marked);
+	while (marked) {           // replace curr if marked
+	  snip = AtomicMarkableReference_compare_and_set(pred->next[level], curr, succ, false, false);
+	  if (!snip) goto retry;
+	  curr = pred->next[level]->reference;
+	  succ = AtomicMarkableReference_get(curr->next[level], &marked);
+	}
+	if (curr->priority < node->priority) { // move forward same level
+	  pred = curr;
+	  curr = succ;
+	} else {
+	  break; // move to next level
+	}
+      }
+      preds[level] = pred;
+      succs[level] = curr;
+    }
+    return (curr->priority == node->priority); // bottom level curr.key == v
+  }
+}
+
+bool add(PriorityQueue* q, Node* node, int tid) {
+  int bottom_level = 0;
+  Node** preds = (Node**) malloc(sizeof(Node*)*(MAX_LEVEL + 1));
+  Node** succs = (Node**) malloc(sizeof(Node*)*(MAX_LEVEL + 1));
+  while (true) {
+    bool found = find(q, node, preds, succs);
+    if (found) { // if found it's not marked
+      printf("t%d add:\t\t\t\t did not add duplicate node %d|%d\n", tid, node->item, node->priority);
+      return false;
+    } else {
+      for (int level = bottom_level; level <= node->top_level; level++) {
+	Node* succ = succs[level];
+	AtomicMarkableReference_set(node->next[level], succ, false);
+      }
+      // try to splice in new node in bottom_level going up
+      Node* pred = preds[bottom_level];
+      Node* succ = succs[bottom_level];
+      AtomicMarkableReference_set(node->next[bottom_level], succ, false);
+      if (!AtomicMarkableReference_compare_and_set(pred->next[bottom_level], succ, node, false, false)) {// lin point
+	continue; // retry from start
+      }
+      // splice in remaining levels going up
+      for (int level = bottom_level + 1; level <= node->top_level; level++) {
+	while (true) {
+	  pred = preds[level];
+	  succ = succs[level];
+	  if (AtomicMarkableReference_compare_and_set(pred->next[level], succ, node, false, false)) {
+	    break;
+	  }
+	  find(q, node, preds, succs); // find new preds and succs
+	}
+      }
+      printf("t%d add:\t\t\t\t added node %d|%d\n", tid, node->item, node->priority);
+      return true;
+    }
+  }
+}
+
+bool skipList_remove(PriorityQueue* q, Node* node, int tid) {
+  int bottom_level = 0;
+  Node** preds = (Node**) malloc(sizeof(Node*)*(MAX_LEVEL + 1));
+  Node** succs = (Node**) malloc(sizeof(Node*)*(MAX_LEVEL + 1));
+  Node* succ;
+  while (true) {
+    bool found = find(q, node, preds, succs);
+    if (!found) {
+      return false;
+    } else {
+      // proceed to mark all levels
+      // some levels could stil be unthreaded by concurrent add() while being marked
+      // other find()s could be modifying node's pointers concurrently
+      for (int level = node->top_level; level >= bottom_level + 1; level--) {
+	bool marked = false;
+	succ = AtomicMarkableReference_get(node->next[level], &marked);
+	while (!marked) { // until I succeed in marking
+	  AtomicMarkableReference_attempt_mark(node->next[level], succ, true);
+	  succ = AtomicMarkableReference_get(node->next[level], &marked);
+	}
+      }
+      // proceed to remove from bottom level
+      bool marked = false;
+      succ = AtomicMarkableReference_get(node->next[bottom_level], &marked);
+      while (true) { // until someone succeeded in marking
+	bool i_marked_it = AtomicMarkableReference_compare_and_set(node->next[bottom_level], succ, succ, false, true);
+	succ = AtomicMarkableReference_get(succs[bottom_level]->next[bottom_level], &marked);
+	if (i_marked_it) {
+	  // run find to remove links of the logically removed node
+	  find(q, node, preds, succs);
+	  printf("t%d skipList_remove:\t\t physically removed node %d|%d\n", tid, node->item, node->priority);
+	  return true;
+	} else if (marked) return false; // someone else removed node
+	// else only succ changed so repeat
+      }
+    }
+  }
+}
+
+$atomic_f bool atomic_bool_compare_and_set(bool* val, bool exp_val, bool new_val) {
+  bool result = (*val == exp_val);
+  if (result) *val = new_val;
+  return result;
+}
+
+Node* find_and_mark_min(PriorityQueue* q, int tid) {
+  Node* curr = NULL;
+  Node* succ = NULL;
+  bool marked;
+  curr = q->head->next[0]->reference;
+  while (curr != q->tail) {
+    $atomic {
+      marked = curr->marked;
+      printf("t%d find_and_mark_min:\t\t node %d|%d mark is %d\n", tid, curr->item, curr->priority, marked);
+    }
+    if (!marked) {
+      if (atomic_bool_compare_and_set(&curr->marked, false, true)) {
+	printf("t%d find_and_mark_min:\t\t logically marked node %d|%d\n", tid, curr->item, curr->priority);
+	do_adds = true;
+	return curr;
+      }
+    } else {
+      // other thread performs two adds
+      printf("t%d find_and_mark_min:\t\t moving to next node from node %d|%d\n", tid, curr->item, curr->priority);
+      curr = curr->next[0]->reference;
+    }
+  }
+  return NULL;
+}
+
+void priority_queue_add(PriorityQueue* q, int item, int priority, int tid) {
+  Node* node = create_node_initialized(item, priority);
+  add(q, node, tid);
+}
+
+int priority_queue_remove_min(PriorityQueue* q, int tid) {
+  Node* node = find_and_mark_min(q, tid);
+  if (node != NULL) {
+    // other threads start removing and adding
+    printf("t%d priority_queue_remove_min:\t found and marked min\n", tid);
+    skipList_remove(q, node, tid);
+    return node->item;
+  } else {
+    return -1;
+  }
+}
+
+bool priority_queue_contains(PriorityQueue *q, int item) {
+  bool result = false;
+  Node* curr = q->head->next[0]->reference;
+  while (curr != q->tail) {
+    if (curr->item == item) {
+      return true;
+    }
+    curr = curr->next[0]->reference;
+  }
+  return result;
+}
+
+int priority_queue_item_index(PriorityQueue* q, int i) {
+  return 0;
+}
+
+int priority_queue_score_index(PriorityQueue* q, int i) {
+  return 0;
+}
+
+void priority_queue_swap(PriorityQueue* q, int i, int j) {
+}
+
+
+int main() {
+  PriorityQueue* q = create_priority_queue();
+  int result;
+  priority_queue_add(q, 0, 2, 0);
+  $parfor (int i: 1 .. 3) {
+    if (i == 1) {
+      /*$when(do_adds)*/ $atomic {
+	printf("--- t%d begin ---\n", i);
+	priority_queue_add(q, 1, 1, i);
+	priority_queue_add(q, 2, 3, i);
+      }
+    }
+    if (i == 2) {
+      printf("--- t%d begin ---\n", i);
+      result = priority_queue_remove_min(q, i);
+    }
+    if (i == 3) {
+      printf("--- t%d begin ---\n", i);
+      priority_queue_remove_min(q, i);
+    }
+  }
+  $assert(result != 2);
+  destroy_priority_queue(q);
+}
+

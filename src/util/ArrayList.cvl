@@ -1,0 +1,98 @@
+/* ArrayList.cvl: this implements a model of Java's ArrayList class
+ * Created 14-Dec-2023
+ * Josh Davis, Stephen Siegel
+ * Verified Software lab, CIS Dept.
+ * University of Delaware
+ */
+
+#include <stdio.h>
+#include <seq.cvh>
+#include "ArrayList.h"
+
+struct ArrayList {
+  T data[];
+};
+
+$scope root = $here;
+
+ArrayList ArrayList_create() {
+  ArrayList result = (ArrayList) $malloc(root, sizeof(struct ArrayList));
+  $seq_init(&result->data, 0, NULL);
+  return result;
+}
+
+void ArrayList_destroy(ArrayList a) {
+  $free(a);
+}
+
+void ArrayList_add(ArrayList a, T item) {
+  $seq_append(&a->data, &item, 1);
+}
+
+bool ArrayList_remove_item(ArrayList a, T item) {
+  int n = $seq_length(&a->data);
+  for (int i = 0; i < n; i++) {
+    if (a->data[i] == item) {
+      $seq_remove(&a->data, i, NULL, 1);
+      return true;
+    }
+  }
+  return false;
+}
+
+T ArrayList_remove_index(ArrayList a, int index) {
+  $assert(0 <= index && index < $seq_length(&a->data));
+  T result;
+  $seq_remove(&a->data, index, &result, 1);
+  return result;
+}
+
+bool ArrayList_contains(ArrayList a, T item) {
+  int n = $seq_length(&a->data);
+  for (int i = 0; i < n; i++) {
+    if (a->data[i] == item) {
+      return true;
+    }
+  }
+  return false;
+}
+
+T ArrayList_get(ArrayList a, int index) {
+  return a->data[index];
+}
+
+int ArrayList_size(ArrayList a) {
+  return $seq_length(&a->data);
+}
+
+void ArrayList_print(ArrayList a) {
+  int n = ArrayList_size(a);
+  printf("{ ");
+  for (int i = 0; i < n; i++)
+    printf("%d ", a->data[i]);
+  printf("}");
+}
+
+#ifdef ARRAY_LIST_MAIN
+int main() {
+  ArrayList a = ArrayList_create();
+  $assert(ArrayList_size(a) == 0);
+  ArrayList_add(a, 3);
+  ArrayList_add(a, 2);
+  ArrayList_add(a, 3);
+  ArrayList_print(a);
+  $assert(ArrayList_size(a) == 3);
+  $assert(ArrayList_contains(a, 3));
+  $assert(ArrayList_contains(a, 2));
+  $assert(!ArrayList_contains(a, 1));
+  $assert(ArrayList_get(a, 1) == 2);
+  bool r = ArrayList_remove_item(a, 3);
+  $assert(r);
+  r = ArrayList_remove_item(a, 1);
+  $assert(!r);
+  T x = ArrayList_remove_index(a, 1);
+  $assert(x == 3);
+  $assert(ArrayList_size(a) == 1);
+  ArrayList_destroy(a);
+}
+#endif

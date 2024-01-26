@@ -1,0 +1,203 @@
+/* CIVL model of class OptimisticList from "The Art of Multiprocessor
+ * Programming" 2nd ed, by Herlihy, Luchangco, Shavit, and Spear,
+ * Sec. 9.6, "Optimistic synchronization", and companion code
+ * ch9/src/lists/OptimisticList.java.
+ *
+ * This is a concurrent list using a lock per node and an optimisitic
+ * synchronization strategy.  We don't deal with destruction of nodes
+ * since the original code relies on the garbage collector and to do
+ * it manually is complicated.
+ *
+ * Note it is assumed that the hash function is injective.
+ *
+ * Authors : Wenhao Wu, Eric Kurtz, Josh Davis, Stephen F. Siegel
+ * Created : 2018-May-01
+ * Modified: 2024-Jan-09
+ *
+ * Verified Software Lab, Dept. Computer & Info. Sci., 
+ * University of Delaware
+ */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <limits.h>
+#include "Set.h"
+#include "Lock.h"
+#include "hash.cvh"
+#include "types.h"
+
+typedef struct Node {
+  T item;
+  int key;
+  struct Node * next;
+  Lock lock;
+} * Node;
+
+static Node node_create(T item){
+  Node this = malloc(sizeof(struct Node));
+  this->lock = Lock_create();
+  this->key = hash_code(item);
+  this->item = item;
+  this->next = NULL;
+  return this; 
+}
+
+static void node_destroy(Node node) {
+  Lock_destroy(node->lock);
+  free(node);
+}
+
+static void node_destroy_rec(Node node) {
+  if (node == NULL) return;
+  node_destroy_rec(node->next);
+  node_destroy(node);
+}
+
+struct Set {
+  Node head;
+};
+
+Set Set_create() {
+  Set this = malloc(sizeof(struct Set));
+  this->head = node_create(INT_MIN);
+  this->head->next = node_create(INT_MAX); 
+  return this;
+}
+
+void Set_destroy(Set list) {
+  node_destroy_rec(list->head);
+  free(list);
+}
+
+void Set_print(Set this) {
+  Node curr = this->head->next;
+  printf("{ ");
+  while (curr->next != NULL) {
+    printf("%d ", curr->item);
+    curr = curr->next;
+  }
+  printf("}");
+}
+
+static bool validate(Set this, Node pred, Node curr) {
+  Node node = this->head;
+  while (node->key <= pred->key) {
+    if (node == pred) {
+      return (pred->next == curr);
+    }
+    node = node->next;
+  }
+  return false;
+}
+
+bool Set_add(Set this, T item) {
+  int key = hash_code(item);
+  while (true) {
+    Node pred = this->head;
+    Node curr = pred->next;
+    while (curr->key < key) {
+      pred = curr;
+      curr = curr->next;
+    }
+    Lock_acquire(pred->lock);
+    // try...
+    Lock_acquire(curr->lock);
+    // try...
+    if (validate(this, pred, curr)) {
+      if (curr->key == key) {
+	Lock_release(curr->lock); // finally
+	Lock_release(pred->lock); // finally
+	return false;
+      } else {
+	Node node = node_create(item);
+        node->next = curr;
+	pred->next = node;
+	Lock_release(curr->lock); // finally
+	Lock_release(pred->lock); // finally
+	return true;
+      }
+    }
+    Lock_release(curr->lock); // finally
+    Lock_release(pred->lock); // finally
+  }
+}
+
+bool Set_remove(Set this, T item) {
+  int key = hash_code(item);
+  while (true) {
+    Node pred = this->head;
+    Node curr = pred->next;
+    while (curr->key < key) {
+      pred = curr;
+      curr = curr->next;
+    }
+    // try...
+    Lock_acquire(pred->lock);
+    // try...
+    Lock_acquire(curr->lock);
+    if (validate(this, pred, curr)) {
+      if (curr->key == key) {
+	pred->next = curr->next;
+        Lock_release(curr->lock); // finally
+	// node_destroy(curr); not a good time, other
+        // threads may hold references to curr
+	Lock_release(pred->lock); // finally
+	return true;
+      } else {
+	Lock_release(curr->lock); // finally
+	Lock_release(pred->lock); // finally
+	return false;
+      }
+    }
+    Lock_release(curr->lock); // finally
+    Lock_release(pred->lock); // finally
+  }
+}
+
+bool Set_contains(Set this, T item) {
+  int key = hash_code(item);
+  while (true) {
+    Node pred = this->head;
+    Node curr = pred->next;
+    while (curr->key < key) {
+      pred = curr;
+      curr = curr->next;
+    }
+    Lock_acquire(pred->lock);
+    // try...
+    Lock_acquire(curr->lock);
+    // try...
+    if (validate(this, pred, curr)) {
+      bool result = (curr->key == key);
+      Lock_release(pred->lock); // finally
+      Lock_release(curr->lock); // finally
+      return result;
+    }
+    Lock_release(pred->lock); // finally
+    Lock_release(curr->lock); // finally
+  }
+}
+
+#ifdef _OPTIMISTIC_LIST_MAIN
+void main() {
+  const int N = 3; // number of threads
+  Set list = Set_create();
+  
+  $parfor(int i : 0 .. N-1) {
+    Set_add(list, i);
+  }
+  $for(int j : 0 .. N-1) {
+    $assert(Set_contains(list, j));
+  }
+  $parfor(int i : 0 .. N-1) {
+    Set_remove(list, i);
+  }
+  $for(int j : 0 .. N-1) {
+    $assert(!Set_contains(list, j));
+  }
+  Set_print(list);
+  printf("\n");
+  Set_destroy(list);
+}
+#endif

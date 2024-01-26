@@ -1,0 +1,640 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include "schedule.h"
+
+step_t schedule_make_step_0(kind_t kind) {
+  return (step_t){kind, {-1,-1}, -2, -2, -2};
+}
+
+step_t schedule_make_step_1(kind_t kind, int arg) {
+  return (step_t){kind, {arg, -1}, -2, -2, -2};
+}
+
+step_t schedule_make_step_2(kind_t kind, int arg0, int arg1) {
+  return (step_t){kind, {arg0, arg1}, -2, -2, -2};
+}
+
+/* Sets sched fields nsteps[i], nstep, allocates each steps[i],
+   and sets all result, start_time, stop_time fields to -2.  Ensures
+   threads are ordered by decreasing nsteps[i].
+
+   For now, no pre-adds will be created.
+ */
+static void choose_lengths(schedule_t * sched, int steps_bound) {
+  step_t undef_step = (step_t){ -2, { -2, -2 }, -2, -2, -2 };
+  int remain = steps_bound, cap = remain;
+
+  for (int i=0; i<sched->nthread; i++) {
+    int ns = $choose_int(cap+1);
+    sched->nsteps[i] = ns;
+    sched->nstep += ns;
+    sched->steps[i] = malloc(ns*sizeof(step_t));
+    for (int j = 0; j < ns; j++)
+      sched->steps[i][j] = undef_step;
+    remain -= ns;
+    cap = ns <= remain ? ns : remain;
+  }
+}
+
+/* Sets all op fields of all steps in sched. Ensures that if two
+   threads have same nsteps[i], they are ordered by decreasing
+   lexiographic order on the op fields.  */
+static void choose_ops(schedule_t * sched) {
+  for (int i = 0; i < sched->nthread; i++) {
+    int ns = sched->nsteps[i], j = 0;
+    if (i >= 1 && ns == sched->nsteps[i-1])
+      for (; j < ns; j++) {
+        int op1 = sched->steps[i-1][j].op, op2 = $choose_int(op1 + 1);
+        sched->steps[i][j].op = op2;
+        if (op2 < op1) break;
+      }
+    for (; j < ns; j++)
+      sched->steps[i][j].op = $choose_int(sched->num_ops);
+  }
+}
+
+/* Choose arguments for set steps.  All three operations (ADD, REMOVE,
+   CONTAINS) consume one int argument.  Ensures: the first value is 0,
+   and for all i (1<=i<nstep), exists j (0<=j<i) s.t. value i is
+   less than or equal to 1 + value j.  The second argument is not used
+   for sets so is assigned -1. */
+static void choose_set_vals(schedule_t * sched) {
+  int max = -1;
+  for (int i = 0; i < sched->nthread; i++)
+    for (int j = 0; j < sched->nsteps[i]; j++) {
+      int val = $choose_int(max + 2);
+      if (val == max + 1) max++;
+      sched->steps[i][j].args = (int[]){ val, -1 };
+    }
+}
+
+/* Choose arguments for queue steps.  There are two kinds of
+   operations: ADD (enqueue) takes one int argument; REMOVE (dequeue)
+   takes none.  Similar to the choose_set_vals, but only ADD ops are
+   considered; REMOVE ops are assigned args -1, -1.  */
+static void choose_queue_vals(schedule_t * sched) {
+  int max = -1;
+  for (int i = 0; i < sched->nthread; i++)
+    for (int j = 0; j < sched->nsteps[i]; j++) {
+      int val = -1;
+      if (sched->steps[i][j].op == ADD) {
+        val = $choose_int(max + 2);
+        if (val == max + 1) max++;
+      }
+      sched->steps[i][j].args = (int[]) { val, -1 };
+    }
+}
+
+/* Get the total number of ADD ops in the schedule.  This is an upper
+   bound on the number of priorities needed for a PQUEUE. */
+static int get_num_adds(schedule_t * sched) {
+  int result = 0;
+  for (int i = 0; i < sched->nthread; i++)
+    for (int j = 0; j < sched->nsteps[i]; j++)
+      if (sched->steps[i][j].op == ADD) result++;
+  return result;
+}
+
+/* Is thread i the beginning of a new block? I.e., is its op
+   sequence different from the op sequence of thread i-1? */
+static bool new_block(schedule_t * sched, int i) {
+  if (i == 0) return $true;
+  int ns = sched->nsteps[i];
+  if (ns != sched->nsteps[i-1]) return $true;
+  return $exists (int j | 0<=j && j<ns)
+    sched->steps[i][j].op != sched->steps[i-1][j].op;
+}
+
+/* For a PQUEUE (Priority Queue) there are two operations: ADD
+   consumes two int args (value and "score" (priority)); REMOVE
+   consumes none.  Ensures: threads with the same op sequence are
+   ordered by decreasing lexiographic order on priorities.  Also
+   ensures there are no gaps in the set of priorities.
+
+   Values are assigned deterministically: for each priority: 1, 2, ...
+   in the order in which they occur.  */
+static void choose_pqueue_vals(schedule_t * sched) {
+  int num_adds = get_num_adds(sched);
+  if (num_adds == 0) return;
+  int num_priorities = 1 + $choose_int(num_adds);
+  int used[num_priorities] = (int[num_priorities])$lambda(int k) 0;
+  int num_gaps = num_priorities; // number of 0s in used[]
+  int remain = num_adds; // number of add ops not yet assigned a priority
+
+  void choose_priority(int tid, int idx, int pb) {
+    if (sched->steps[tid][idx].op == ADD) {
+      int p = $choose_int(pb);
+      //      sched->steps[tid][idx].args = (int[]) { used[p], p };
+      sched->steps[tid][idx].args = (int[]) { num_adds-remain+1, p };
+      if (++used[p] == 1) num_gaps--;
+      remain--;
+      $assume(remain >= num_gaps);
+    } else
+      sched->steps[tid][idx].args = (int[]) { -1, -1 };
+  }
+
+  for (int i = 0; i < sched->nthread; i++) {
+    int ns = sched->nsteps[i], j = 0;
+    if (!new_block(sched, i))
+      for (; j < ns; j++) {
+        int p1 = sched->steps[i-1][j].args[1]; // args[1]=priority of prev row
+        choose_priority(i, j, p1+1);
+        if (sched->steps[i][j].args[1] != p1) { j++; break; }
+      }
+    for (; j < ns; j++) choose_priority(i, j, num_priorities);
+  }
+}
+
+schedule_t schedule_create(kind_t kind, int nthread, int steps_bound) {
+  schedule_t result;
+  result.kind = kind;
+  result.num_ops = kind == SET ? 3 : 2;
+  result.nthread = nthread;
+  result.npreAdd = 0;
+  result.preAdds = NULL;
+  result.nstep = 0;
+  result.nsteps = malloc(nthread*sizeof(int));
+  result.steps = malloc(nthread*sizeof(step_t*));
+  choose_lengths(&result, steps_bound);
+  choose_ops(&result);
+  if (kind == SET) choose_set_vals(&result);
+  else if (kind == QUEUE) choose_queue_vals(&result);
+  else choose_pqueue_vals(&result);
+  return result;
+}
+
+void schedule_destroy(schedule_t sched) {
+  for (int i=0; i<sched.nthread; i++)
+    free(sched.steps[i]);
+  free(sched.steps);
+  free(sched.nsteps);
+  if (sched.npreAdd > 0) free(sched.preAdds);
+}
+
+static char * kind2str(kind_t kind) {
+  switch(kind) {
+  case SET: return "SET";
+  case QUEUE: return "QUEUE";
+  case PQUEUE: return "PQUEUE";
+  default: $assert($false);
+  }
+}
+
+void schedule_print(schedule_t sched) {
+  kind_t kind = sched.kind;
+  printf("Schedule[kind=%s, nthread=%d, npreAdd=%d, nstep=%d]:\n",
+         kind2str(kind), sched.nthread, sched.npreAdd, sched.nstep);
+  printf("  Preadds : [");
+  for (int j=0; j<sched.npreAdd; j++) {
+    step_t step = sched.preAdds[j];
+    $assert(step.op == ADD);
+    printf(" ADD(%d", step.args[0]);
+    if (kind == PQUEUE) printf(",%d", step.args[1]);
+    printf(")");
+  }
+  printf(" ]\n");
+  for (int i=0; i<sched.nthread; i++) {
+    printf("  Thread %d: [", i);
+    for (int j=0; j<sched.nsteps[i]; j++) {
+      step_t step = sched.steps[i][j];
+      if (step.op == ADD) {
+        printf(" ADD(%d", step.args[0]);
+        if (kind == PQUEUE) printf(",%d", step.args[1]);
+        printf(")");
+      } else if (step.op == REMOVE) {
+        printf(" REMOVE");
+        if (kind == SET) printf("(%d)", step.args[0]);
+      } else if (step.op == CONTAINS) {
+        printf(" CONTAINS(%d)", step.args[0]);
+      } else $assert($false);
+      if (step.result != -2)
+	printf("->%d", step.result);
+      if (step.start_time > -1) printf("[%d,%d]", step.start_time, step.stop_time);
+    }
+    printf(" ]\n");
+  }
+}
+
+typedef struct node {
+  int tid; // thread ID
+  int idx; // index into that thread's step list
+  int result; // result of operation
+  int score; // 2nd result (score of returnMin for PQueue)
+  int end_min; // end_min before pushing this node
+} node_t;
+
+#define UNDEF_NODE (node_t){ -1, -1, -1, -1, -1 }
+
+static void print_stack(schedule_t sched, int length, node_t * stack) {
+  for (int i=0; i<length; i++) {
+    int tid = stack[i].tid, idx = stack[i].idx;
+    step_t step = sched.steps[tid][idx];
+    kind_t kind = sched.kind;
+
+    printf("  Thread[%d]: ", tid);
+    switch (step.op) {
+    case ADD:
+      if (kind == SET || kind == QUEUE)
+        printf("ADD(%d) -> %d\n", step.args[0], step.result);
+      else if (kind == PQUEUE)
+        printf("ADD(%d, %d) -> %d\n", step.args[0], step.args[1], step.result);
+      break;
+    case REMOVE:
+      if (kind == SET)
+        printf("REMOVE(%d) -> %d\n", step.args[0], step.result);
+      else if (kind == QUEUE || kind == PQUEUE)
+        printf("REMOVE() -> %d\n", step.result);
+      break;
+    case CONTAINS:
+      printf("CONTAINS(%d) -> %d\n", step.args[0], step.result);
+    }
+  }
+}
+
+/* Searches for a sequentialization of the schedule that is consistent
+   with the results and observed start/end times of the concurrent
+   execution.  A sequentialization of the schedule is a total order on
+   the set of all steps that preserves the order in each thread.  It
+   is consistent if (1) the results of executing the sequentialization
+   (by a single thread) are the same as the results from the
+   concurrent execution, and (2) if linearize is true, then if the end
+   time of step A is less than the start time of event B in the
+   concurrent execution, then A occurs before B in the
+   sequentialization.
+
+   Strategy: let S be the empty sequence.  Choose a process with a
+   nonempty list of steps and remove its first step and add append it
+   to S, as long as it does not violate the linearizability condition
+   (if linearize) and upon execution it yields the same result as
+   concurrent.  Repeat until all steps have been used.  Now search
+   this space using DFS.
+
+   Invariant: end_min is the minimum over all threads i of
+   sched.steps[i][j].stop_time, j in front[i]..sched.nsteps[i]-1].
+
+   Linearity Invariant: this invariant holds if linearize is true.
+   At each point in time, S must satisfy: given any steps x and y,
+   if x is in S and the end time of y is less than the start time of
+   x, then y occurs before x in S.
+ */
+static bool consistent_aux(schedule_t sched, bool linearize) {
+  int nthread = sched.nthread;
+  int nstep = sched.nstep;
+  int step_cap = nstep + sched.npreAdd;
+  int front[nthread] = (int[nthread])$lambda(int i) 0;
+  int end_min = nstep+1;
+  node_t stack[nstep];
+  int stack_len = 0;
+
+  //printf("** STARTING DFS! **\n");
+  //printf("nthread=%d\n", nthread);
+
+  int compute_numVals(int k) {
+    int arg_max = -1;
+    for (int j=0; j<sched.npreAdd; j++) {
+      if (sched.preAdds[j].args[k] > arg_max)
+        arg_max = sched.preAdds[j].args[k];
+    }
+    for (int i=0; i<nthread; i++) {
+      //printf("sched.nsteps[i] = %d\n", sched.nsteps[i]);
+      for (int j=0; j<sched.nsteps[i]; j++) {
+        //printf("i=%d, j=%d, k=%d, sched.steps[i][j].args[k]=%d\n",
+        //i, j, k, sched.steps[i][j].args[k]);
+        if (sched.steps[i][j].args[k] > arg_max)
+          arg_max = sched.steps[i][j].args[k];
+      }
+    }
+    return arg_max+1;
+  }
+
+  int nvals = compute_numVals(0);
+  int nscores = compute_numVals(1);
+
+  // Three oracles defined here, although only one will be used...
+  // Maybe use a union?
+
+  bool set[] = (bool[nvals])$lambda(int i) $false; // oracle for SET
+  int queue[] = (int[step_cap])$lambda(int i) -1; // oracle for queue
+  int queue_head=0, queue_tail=0; // part of queue oracle
+  // oracle for Priority Queues: pqueue[i][j]=multiplicity of value i, score j
+  int pqueue[][] = (int[nvals][nscores])$lambda(int i,j) $false;
+  int pqueue_size = 0;
+
+  /* Initializes stack and end_min.  Executes preAdds on oracle. */
+  void init() {
+    for (int i=0; i<nthread; i++)
+      if (sched.nsteps[i] > 0) {
+        int stop = sched.steps[i][0].stop_time;
+        if (stop < end_min) end_min = stop;
+      }
+    for (int i=0; i<nstep; i++)
+      stack[i] = UNDEF_NODE;
+    for (int i=0; i<sched.npreAdd; i++) {
+      int arg0 = sched.preAdds[i].args[0];
+      int arg1 = sched.preAdds[i].args[1];
+      switch (sched.kind) {
+      case SET:
+        set[arg0] = $true;
+        break;
+      case QUEUE:
+        $assert(queue_tail < step_cap);
+        queue[queue_tail++] = arg0;
+        break;
+      case PQUEUE:
+        pqueue[arg0][arg1]++;
+        pqueue_size++;
+        break;
+      default: $assert($false);
+      }
+    }
+  }
+
+  /* Is the given thread a valid choice for next action */
+  bool is_valid(int tid) {
+    if (front[tid] >= sched.nsteps[tid]) return $false;
+    if (linearize) {
+      if (end_min < sched.steps[tid][front[tid]].start_time)
+        return $false;
+    }
+    return $true;
+  }
+
+  /*
+    Executes a node, updating the oracle accordingly and setting
+    node->result, and node->score (for PQUEUEs).
+
+    Precondition: is_valid(node->tid).
+
+    Postcondition: node->result >= -2.
+
+    Postcondition: If node->result >= 0 this represents a normal,
+    non-exceptional return value.  The oracle was updated
+    successfully.
+
+    Postcondition: if node->result == -1 then execution of this step
+    in the sequential has some kind of exception.  This is OK as long
+    as it is consistent with the concurrent execution.  No change
+    was made to oracle.
+
+    Postcondition: if node->result == -2 then execution of this node
+    is not consistent with the concurrent execution.  No change was
+    made to oracle.
+   */
+  void execute(node_t * node) {
+    int tid = node->tid;
+    int idx = node->idx;
+    step_t step = sched.steps[tid][idx];
+    int a0 = step.args[0], a1 = step.args[1];
+
+    node->score = -1;
+    switch (sched.kind) {
+    case SET:
+      switch (step.op) {
+      case ADD:
+        node->result = set[a0] ? 0 : 1;
+        set[a0] = $true;
+        return;
+      case REMOVE:
+        node->result = set[a0] ? 1 : 0;
+        set[a0] = $false;
+        return;
+      case CONTAINS:
+        node->result = set[a0] ? 1 : 0;
+        return;
+      default: $assert($false);
+      }
+    case QUEUE:
+      switch (step.op) {
+      case ADD:
+        $assert(queue_tail < step_cap);
+        queue[queue_tail++] = a0;
+        node->result = 1;
+        return;
+      case REMOVE:
+        if (queue_head == queue_tail) {
+          node->result = -1; // queue is empty
+        } else {
+          $assert(queue_head < step_cap);
+          node->result = queue[queue_head++];
+        }
+        return;
+      case CONTAINS:
+      default: $assert($false);
+      }
+    case PQUEUE:
+      switch (step.op) {
+      case ADD:
+        //printf("Adding result=%d, score=%d\n", a0, a1);
+        pqueue[a0][a1]++;
+        node->result = 1;
+        node->score = a1;
+        pqueue_size++;
+        return;
+      case REMOVE: {
+        int result = step.result;
+
+        if (result >= 0) { // concurrent execution returned a valid value
+          if (pqueue_size == 0) { // oracle is empty
+            node->result = -2;  // error, no change
+            return;
+          }
+          for (int score=0; score<nscores; score++) {
+            for (int val=0; val<nvals; val++) {
+              if (pqueue[val][score] > 0) {
+                // choose same value used in concurrent exec:
+                if (pqueue[result][score] > 0) {
+                  //printf("Removing result=%d, score=%d\n", result, score);
+                  pqueue[result][score]--;
+                  pqueue_size--;
+                  node->result = result;
+                  node->score = score;
+                  return;
+                } else { // must be incorrect: don't do it
+                  node->result = -2;
+                  return; // error, no change
+                }
+              }
+            }
+          }
+          $assert($false);
+        } else if (result == -1) { // concurrent algorithm says empty
+          if (pqueue_size == 0)
+            node->result = -1; // oracle agrees
+          else
+            node->result = -2; // error
+          return;
+        }
+      }
+      case CONTAINS:
+      default: $assert($false);
+      }
+    }
+  }
+
+  /* Reverses the oracle state update that was done by execute. If
+     execute(u) takes on from state s to s'.  Then undo(u) should take
+     the state from s' to s.
+   */
+  void undo(node_t node) {
+    int result = node.result;
+
+    if (result < 0) return; // nothing to undo for -1 or -2
+
+    int tid = node.tid;
+    int idx = node.idx;
+    int score = node.score;
+    step_t step = sched.steps[tid][idx];
+    int a0 = step.args[0], a1 = step.args[1];
+
+    switch (sched.kind) {
+    case SET:
+      switch (step.op) {
+      case ADD:
+        if (result == 1) set[a0] = $false;
+        return;
+      case REMOVE:
+        if (result == 1) set[a0] = $true;
+        return;
+      case CONTAINS:
+        return;
+      default: $assert($false);
+      }
+    case QUEUE:
+      switch (step.op) {
+      case ADD:
+        $assert(result == 1);
+        queue_tail--;
+        return;
+      case REMOVE:
+        queue_head--;
+        $assert(queue[queue_head] == result);
+        return;
+      default: $assert($false);
+      }
+    case PQUEUE:
+      switch (step.op) {
+      case ADD:
+        pqueue[a0][a1]--;
+        pqueue_size--;
+        return;
+      case REMOVE:
+        pqueue[result][score]++;
+        pqueue_size++;
+        return;
+      default: $assert($false);
+      }
+    }
+  }
+
+  /* Push a new step onto the stack.  The step is the next available
+     step in thread tid.  Also executes the step, updating the oracle
+     data.
+
+     Precondition: is_valid(tid).
+
+     Postcondition: if true is returned then the result was consistent
+     with that of the concurrent execution, the oracle state and
+     end_min are updated, and a new node is pushed onto the stack.  If
+     false is returned then the result was not consistent with that of
+     the concurrent execution and the state (including the stack,
+     oracle, and end_min) is unchanged.
+  */
+  bool push(int tid) {
+
+    //printf("** PUSH! **\n");
+
+    int idx = front[tid];
+    step_t step = sched.steps[tid][idx];
+    node_t node = (node_t){tid, idx, -1, -1, end_min};
+
+    execute(&node);
+    if (node.result != step.result) {
+      undo(node);
+      return $false;
+    }
+    stack[stack_len] = node;
+    stack_len++;
+    front[tid]++;
+    // if the step you are removing is not the one with end_min end
+    // time, then end_min is unchanged.  Otherwise, compute it
+    // again...
+    if (step.stop_time == end_min) {
+      // re-compute end_min
+      end_min = nstep+1;
+      for (int i=0; i<nthread; i++) {
+        int f = front[i];
+        if (f < sched.nsteps[i]) {
+          int stop = sched.steps[i][f].stop_time;
+          if (stop < end_min) end_min = stop;
+        }
+      }
+    }
+    return $true;
+  }
+
+  /* Pop the stack and restore the state.  The action on the oracle is
+     "undone".  front[tid] is decremented, where tid is the thread ID
+     of the node that was popped, and end_min is restored to the value
+     it had before the node was pushed (this value is cached in the
+     node, so no big computation is required).
+   */
+  void pop() {
+    //printf("** POP! **\n");
+    $assert(stack_len > 0);
+    stack_len--;
+
+    node_t node = stack[stack_len]; // node that was just popped
+    int tid = node.tid;
+
+    stack[stack_len] = UNDEF_NODE;
+    undo(node);
+    $assert(front[tid] > 0);
+    front[tid]--;
+    end_min = node.end_min;
+  }
+
+  // main code: DFS
+
+
+  init();
+  // invariant: the stack forms a (partial) sequential execution
+  // consistent with the concurrent execution
+
+
+ top:
+  while (stack_len < nstep) {
+    // try to find the next thing to push...
+    for (int i=0; i<nthread; i++) {
+      if (is_valid(i) && push(i))
+        goto top;
+    }
+    // backtrack...
+    while (stack_len > 0) {
+      int tid = stack[stack_len - 1].tid;
+
+      pop();
+      for (int i=tid+1; i<nthread; i++) {
+        if (is_valid(i) && push(i))
+          goto top;
+      }
+    }
+    printf("[FAIL]   No matching sequentialization found\n");
+    return $false;
+  }
+  printf("[PASS]   Equivalent sequential execution:\n");
+  print_stack(sched, stack_len, stack);
+  printf("\n");
+  return $true;
+}
+
+bool schedule_isSC(schedule_t sched) {
+  return consistent_aux(sched, $false);
+}
+
+bool schedule_isLinearizable(schedule_t sched) {
+  //printf("Beginning linearizabilty check.\n");
+  bool result = consistent_aux(sched, $true);
+  //printf("Finished linearizability check.  Result = %d\n", result);
+  return result;
+}

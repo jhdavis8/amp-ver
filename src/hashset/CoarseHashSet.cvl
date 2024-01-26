@@ -1,0 +1,161 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include "Set.h"
+#include "hash.cvh"
+#include "Lock.h"
+#include "ArrayList.h"
+
+#define INIT_CAP 1
+
+struct Set {
+  int length; // length of array table
+  ArrayList* table;
+  int size;
+  Lock lock;
+};
+
+static void acquire(Set set, T x);
+
+static void release(Set set, T x);
+
+static bool policy(Set set);
+
+static void resize(Set set);
+
+Set Set_create() {
+  Set set = malloc(sizeof(struct Set));
+  set->length = INIT_CAP;
+  set->size = 0;
+  set->table = malloc(set->length*sizeof(ArrayList));
+  for (int i = 0; i < set->length; i++) {
+    set->table[i] = ArrayList_create();
+  }
+  set->lock = Lock_create();
+  return set;
+}
+
+void Set_destroy(Set set) {
+  for(int i = 0; i < set->length; i++){
+    ArrayList_destroy(set->table[i]);
+  }
+  free(set->table);
+  Lock_destroy(set->lock);
+  free(set);
+}
+
+bool Set_contains(Set set, T value) {
+  acquire(set, value);
+  // try
+  int myBucket = hash_code_bound(value, set->length); // hashCode
+  bool result = ArrayList_contains(set->table[myBucket], value);
+  release(set, value); // finally
+  return result;
+}
+
+bool Set_add(Set set, T value) {
+  bool result = false;
+  acquire(set, value);
+  // try
+  int myBucket = hash_code_bound(value, set->length);
+  // difference between 2nd ed. book text and companion code;
+  // we use the book's version
+  if (!ArrayList_contains(set->table[myBucket], value)) {
+    ArrayList_add(set->table[myBucket], value);
+    result = true;
+    set->size = result ? set->size + 1 : set->size;
+  }
+  release(set, value); // finally
+  if (policy(set))
+    resize(set);
+  return result;
+}
+
+bool Set_remove(Set set, T value) {
+  acquire(set, value);
+  // try
+  int myBucket = hash_code_bound(value, set->length);
+  bool result = ArrayList_remove_item(set->table[myBucket], value);
+  set->size = result ? set->size - 1 : set->size;
+  release(set, value); // finally
+  return result;
+}
+
+static void resize(Set set) {
+  int oldCapacity = set->length;
+  Lock_acquire(set->lock);
+  // try
+  if (oldCapacity != set->length) {
+    Lock_release(set->lock); // finally
+    return; // someone beat us to it
+  }
+  int newCapacity = 2 * oldCapacity;
+  ArrayList* oldTable = set->table;
+  set->table = (ArrayList*) malloc(newCapacity*sizeof(ArrayList));
+  set->length = newCapacity;
+  for (int i = 0; i < newCapacity; i++)
+    set->table[i] = ArrayList_create();
+  for (int i = 0; i < oldCapacity; i++) {
+    int m = ArrayList_size(oldTable[i]);
+    for (int j = 0; j < m; j++) {
+      T x = ArrayList_get(oldTable[i], j);
+      int myBucket = hash_code_bound(x, set->length);
+      ArrayList_add(set->table[myBucket], x);
+    }
+    ArrayList_destroy(oldTable[i]);
+  }
+  Lock_release(set->lock); // finally
+  free(oldTable);
+}
+
+static void acquire(Set set, T x) {
+  Lock_acquire(set->lock);
+}
+
+static void release(Set set, T x) {
+  Lock_release(set->lock);
+}
+
+static bool policy(Set set) {
+  return set->size / set->length > 4;
+}
+
+void Set_print(Set set) {
+  int n = set->length;
+  printf("{ ");
+  for (int i = 0; i < n; i++) {
+    ArrayList row = set->table[i];
+    int m = ArrayList_size(row);
+    for (int j = 0; j < m; j++)
+      printf("%d ", ArrayList_get(row, j));
+  }
+  printf("}");        
+}
+
+#ifdef _COARSE_HASH_SET_MAIN
+int main() {
+  Set set = Set_create();
+  Set_print(set);
+
+  $for (int i : 0 .. 3) {
+    Set_add(set, i);
+  }
+  for (int i=0; i<4; i++)
+    printf("hash(%d)=%d ", i, hash_code(i));
+  printf("\n");
+  Set_print(set);
+  $for (int i : 0 .. 3) {
+    $assert(Set_contains(set, i));
+  }
+  Set_print(set);
+  $for (int i : 0 .. 3) {
+    Set_remove(set, i);
+  }
+  Set_print(set);
+  $for (int i : 0 .. 3) {
+    $assert(!Set_contains(set, i));
+  }
+  Set_print(set);
+  Set_destroy(set);
+}
+#endif

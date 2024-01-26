@@ -1,0 +1,221 @@
+/* Concurrent coarse grained list using one lock
+ * Wenhao Wu, Eric Kurtz, and Josh Davis
+ * May-1-2018
+ * VIP-HPC University of Delaware
+ */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <limits.h>
+#include "Set.h"
+#define MAX_LOCKS 1
+
+typedef struct _node Node;
+
+struct _node {
+    int item;
+    int key;
+    Node* next;
+};
+
+struct _lock {
+    $proc owner;
+    int count;
+};
+
+typedef struct _lock Lock;
+
+typedef struct _lock_registry LockRegistry;
+
+struct Set {
+    int size;
+    Node* head;
+    Lock*  lock;
+    LockRegistry* registry;
+};
+
+struct _lock_registry
+{    
+    Set* ptr_register[MAX_LOCKS];
+    Lock** lock_register[MAX_LOCKS];
+    int lock_count;
+};
+
+Lock* LOCK_OF(Set p) {
+    LockRegistry* r = p->registry;
+    for (int i = 0; i < MAX_LOCKS; i++) {
+	if (*r->ptr_register[i] == p) {
+	    return *r->lock_register[i];
+	}
+    }
+    return NULL;
+}
+
+void REGISTER_LOCK(Set list, Lock* lock) {
+    LockRegistry* r = list->registry;
+    *r->ptr_register[r->lock_count] = list;
+    *r->lock_register[r->lock_count] = lock;
+    r->lock_count++;
+}
+
+Set Set_create() {
+    Set result = malloc(sizeof(struct Set));
+    result->size = 0;
+    result->head = (Node*) malloc(sizeof(Node));
+    
+    result->lock = (Lock*) malloc(sizeof(Lock));
+    result->lock->owner = $proc_null;
+    result->lock->count = 0;
+  
+    LockRegistry* reg = (LockRegistry*) malloc(sizeof(LockRegistry));
+    reg->lock_count = 0;
+    result->registry = reg;
+    REGISTER_LOCK(result, result->lock);
+  
+    result->head->next = (Node*) malloc(sizeof(Node));
+    result->head->item = -1;
+    result->head->next->item = -1;
+    result->head->key = INT_MIN;
+    result->head->next->key = INT_MAX;
+    result->head->next->next = NULL;
+    return result;
+}
+
+void Lock_acquire(Lock* l) {
+    $atomic {
+	if ($self != l->owner) {
+	    $when(l->owner == $proc_null) l->owner = $self;
+	}
+	l->count++;
+    }
+}
+
+void Lock_release(Lock * l) {
+    $atomic {
+	$assert($self == l->owner);
+	l->count--;
+	if (l->count == 0) l->owner = $proc_null;
+    }
+}
+
+int hash(int i) {
+    return i;
+}
+
+void node_destroy(Node* head) {
+    Node* current_node = head;
+    if (current_node->next != NULL) {
+	node_destroy(current_node->next);
+    }
+    free(current_node);
+}
+
+bool Set_destroy(Set list) {
+    node_destroy(list->head);
+    free(list->lock);
+    free(list);
+    return true;
+}
+
+void Set_print(Set list) {
+    Node* curr = list->head;
+    while (curr != NULL) {
+	printf("(%d,%d) ", curr->key, curr->item);
+	curr = curr->next;
+    }
+    printf("\n");
+}
+
+bool Set_contains(Set list, int item) {
+    Node* curr;
+    int key = hash(item);
+    Lock_acquire(list->lock);
+    $assert(LOCK_OF(list)->owner == $self);
+    curr = list->head;
+    while (curr->key < key) {
+	curr = curr->next;
+    }
+    if (curr->key == key) {
+	Lock_release(list->lock);
+	return true;
+    } else {
+	Lock_release(list->lock);
+	return false;
+    }
+}
+
+bool Set_add(Set list, int item) {
+    Node* pred;
+    Node* curr;
+    int key = hash(item);
+    Lock_acquire(list->lock);
+    $assert(LOCK_OF(list)->owner == $self);
+    pred = list->head;
+    curr = pred->next;
+    while (curr->key < key) {
+	pred = curr;
+	curr = pred->next;
+    }
+    if (curr->key == key) {
+	Lock_release(list->lock);
+	return false;
+    } else {
+	Node* node = (Node*) malloc(sizeof(Node));
+	node->next = curr;
+	pred->next = node;
+	list->size++;
+	node->key = key;
+	node->item = item;
+	Lock_release(list->lock);
+	return true;
+    }
+}
+
+bool Set_remove(Set list, int item) {
+    Node* pred;
+    Node* curr;
+    int key = hash(item);
+    Lock_acquire(list->lock);
+    $assert(LOCK_OF(list)->owner == $self);
+    pred = list->head;
+    curr = pred->next;
+    while (curr->key < key) {
+	pred = curr;
+	curr = pred->next;
+    }
+    if (curr->key == key) {
+	pred->next = curr->next;
+	curr->next = NULL;
+	curr->key = -1;
+	curr->item = -1;
+	free(curr);
+	Lock_release(list->lock);
+	return true;
+    } else {
+	Lock_release(list->lock);
+	return false;
+    }
+}
+
+#ifdef COARSE_LIST_MAIN
+
+void main() {
+    Set list = Set_create();
+    $parfor(int i : 0 .. 2) {
+	Set_add(list, i);
+    }
+    $for(int j : 0 .. 2) {
+	$assert(Set_contains(list, j));
+    }
+    $parfor(int i : 0 .. 2) {
+	Set_remove(list, i);
+    }
+    $for(int j : 0 .. 2) {
+	$assert(!Set_contains(list, j));
+    }
+    Set_print(list);
+    Set_destroy(list);
+}
+
+#endif

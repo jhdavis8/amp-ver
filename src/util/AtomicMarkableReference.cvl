@@ -1,0 +1,72 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include "AtomicMarkableReference.cvh"
+#pragma CIVL ACSL
+
+struct AtomicMarkableReference {
+  void* reference;
+  bool mark;
+};
+
+AtomicMarkableReference AtomicMarkableReference_create(void* ref, bool m) {
+  AtomicMarkableReference amr =
+    malloc(sizeof(struct AtomicMarkableReference));
+  amr->reference = ref;
+  amr->mark = m;
+  return amr;
+}
+
+void AtomicMarkableReference_destroy(AtomicMarkableReference ref) {
+  free(ref);
+}
+
+/*@ depends_on \access(amr); */
+$atomic_f bool
+AtomicMarkableReference_compare_and_set(AtomicMarkableReference amr,
+                    void* exp_ref, void* new_ref,
+                    bool exp_mark, bool new_mark) {
+  if (amr->reference == exp_ref && amr->mark == exp_mark) {
+    amr->reference = new_ref;
+    amr->mark = new_mark;
+    return true;
+  } else {
+    return false;
+  }
+}
+
+/*@ depends_on \access(amr); */
+$atomic_f bool
+AtomicMarkableReference_attempt_mark(AtomicMarkableReference amr,
+                 void* exp_ref, bool new_mark) {
+  if (amr->reference == exp_ref) {
+    amr->mark = new_mark;
+    return true;
+  } else {
+    return false;
+  }
+}
+
+/*@ depends_on \access(amr); */
+$atomic_f void
+AtomicMarkableReference_set(AtomicMarkableReference amr, void* r, bool m) {
+  amr->reference = r;
+  amr->mark = m;
+}
+
+/*@ depends_on \access(amr); */
+$atomic_f void*
+AtomicMarkableReference_get(AtomicMarkableReference amr, bool* mark_out) {
+  *mark_out = amr->mark;
+  return amr->reference;
+}
+
+void*
+AtomicMarkableReference_get_reference(AtomicMarkableReference amr) {
+  return amr->reference;
+}
+
+bool
+AtomicMarkableReference_is_marked(AtomicMarkableReference amr) {
+  return amr->mark;
+}
