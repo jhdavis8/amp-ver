@@ -31,7 +31,7 @@ On MabBookPro (4 threads): time in seconds
       	              --------------------------------------------
 CoarseHashSet......... 15    324    954    17427  15    736    3593
 StripedHashSet.........15    347   1064    18127  16    899    4338
-StripedCuckooHashSet...16    394    566*   ----   22  infty    ----
+StripedCuckooHashSet...16    394    566*   22460  22  infty    ----
 
 Lists
 
