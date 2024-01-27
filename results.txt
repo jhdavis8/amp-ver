@@ -116,7 +116,7 @@ FineGrainedHeap........   4*      7*   222*     3+    3+
 FineGrainedHeapNoCycles   4      13+   228+     3+    3+
 FineGrainedHeapFair....   5      16+   235+     3+    4+
 SkipQueue..............  10    1172    432x   288x  OOM
-SkipQueuePatched.......   9    1109    OOM    ????  ????
+SkipQueuePatched.......   9    1109    OOM   2356?  ????
 
 SkipQueuePatchedS1: 2356s, defect detected
 
