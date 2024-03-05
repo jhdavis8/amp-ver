@@ -2,6 +2,14 @@
 
 This repository contains implementations of data structures from *The Art of Multiprocessor Programming* in CIVL-C for model checking with CIVL.
 
+## Installation directions:
+
+Documentation for how to run various experiment cases can be found in the Makefile.
+
+A recent installation of the CIVL model checker is required. Installation directions can be found here: http://vsl.cis.udel.edu:8080/civl/index.html. 
+
+To tell amp-ver where to find your CIVL installation, make a copy of `config/config_default.mk` called `config/config.mk` and set the `CIVL_ROOT` and `VSL_DEPS` arguments appropriately.
+
 ## Concurrent data structures implemented:
 
 *All page numbers taken from the 2nd Edition*
