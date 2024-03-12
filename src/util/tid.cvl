@@ -1,0 +1,35 @@
+#include "tid.h"
+#include "seq.cvh"
+
+static $proc threads[];
+
+void tid_init(int nthread) {
+  $proc v = $proc_null;
+  $seq_init(&threads, nthread, &v);
+}
+
+void tid_destroy() {
+  $seq_init(&threads, 0, NULL);
+}
+    
+void tid_register(int tid) {
+  int n = $seq_length(&threads);
+  $assert(0<=tid && tid<n);
+  $assert(threads[tid] == $proc_null);
+  threads[tid] = $self;
+}
+
+void tid_unregister() {
+  int tid = tid_get();
+  $assert(tid >= 0);
+  threads[tid] = $proc_null;
+}
+
+int tid_get() {
+  int n = $seq_length(&threads);
+  for (int i=0; i<n; i++)
+    if (threads[i] == $self)
+      return i;
+  return -1;
+}
+

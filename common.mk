@@ -37,9 +37,10 @@ LOCK_SRC = $(SRC)/util/ReentrantLock.cvl
 FAIRLOCK_SRC = $(SRC)/util/FairReentrantLock.cvl
 ARRAYLIST_INC = $(INC)/ArrayList.h
 ARRAYLIST_SRC = $(SRC)/util/ArrayList.cvl
-DRIVER_INC = $(INC)/driver.h $(INC)/perm.h $(INC)/schedule.h $(INC)/types.h
+DRIVER_INC = $(INC)/driver.h $(INC)/perm.h $(INC)/schedule.h $(INC)/types.h \
+     $(INC)/tid.h
 DRIVER_SRC = $(DRIVER_DIR)/driver_base.cvl $(DRIVER_DIR)/perm.c \
-     $(DRIVER_DIR)/schedule.cvl
+     $(DRIVER_DIR)/schedule.cvl $(SRC)/util/tid.cvl
 DRIVER_SET = $(DRIVER_DIR)/driver_set.cvl
 DRIVER_QUEUE = $(DRIVER_DIR)/driver_queue.cvl
 DRIVER_PQUEUE = $(DRIVER_DIR)/driver_pqueue.cvl

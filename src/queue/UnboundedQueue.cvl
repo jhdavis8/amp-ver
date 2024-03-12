@@ -18,6 +18,7 @@
 #include "types.h"
 #include "Queue.h"
 #include "Lock.h"
+#include "tid.h"
 
 typedef struct Node {
   T value;
@@ -68,6 +69,7 @@ void Queue_enq(Queue this, T x) {
   Node e = node_create(x);
   Lock_acquire(this->enqLock);
   // try...
+  printf("Thread %d is enqueing %d\n", tid_get(), x);
   this->tail->next = e;
   this->tail = e;
   // finally...

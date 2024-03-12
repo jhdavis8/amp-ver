@@ -238,24 +238,6 @@ static void resize(Set s) {
   }
 }
 
-/*
-#ifdef ENABLE_PATCH
-    Lock_acquire(s->lock[i][hi % INITIAL_CAPACITY]);
-#endif
-#ifdef ENABLE_PATCH
-    if (ArrayList_size(iSet) > 0) {
-#endif
-#ifdef ENABLE_PATCH
-   } else {
-      // the probe we are supposed to balance is empty
-      // so someone else must have balanced it already
-      Lock_release(s->lock[i][hi % INITIAL_CAPACITY]);
-      return true;
-    }
-    Lock_release(s->lock[i][hi % INITIAL_CAPACITY]);
-#endif
- */
-
 static bool relocate(Set s, int i, int hi) {
   int hj = 0;
   int j = 1 - i;

@@ -6,6 +6,7 @@
 #include "perm.h"
 #include "schedule.h"
 #include "driver.h"
+#include "tid.h"
 
 // Global Vars...
 schedule_t schedule;
@@ -139,6 +140,7 @@ static bool permseq(int * perm, void * oracle) {
  * structure upon which it will act.  The thread will execute the
  * sequence of steps specified in the schedule for the given ID. */
 static void thread(int tid, void * c) {
+  tid_register(tid);
   int num_steps_local = get_nsteps(tid);
   for (int s = 0; s < num_steps_local; s++) {
     step_t step = get_step(tid, s);
@@ -158,6 +160,7 @@ static void thread(int tid, void * c) {
     }
     set_result(tid, s, step.result);
   }
+  tid_unregister();
 }
 
 int main() {
@@ -177,9 +180,11 @@ int main() {
   printf("Collection initial state. ");
   collection_print(collection);
   printf("\n");
+  tid_init(nthread);
   $parfor (int tid : 0 .. nthread-1) {
     thread(tid, collection);
   }
+  tid_destroy();
   schedule_print(schedule);
   printf("Collection final state... ");
   collection_print(collection);

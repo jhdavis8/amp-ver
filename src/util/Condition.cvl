@@ -1,0 +1,45 @@
+/* Condition.cvl: model of Java Condition interface (condition variable)
+ * Created  : 26-Feb-2024
+ * Modified : 26-Feb-2024
+ * Author   : Stephen F. Siegel and Joshua H. Davis
+ */
+#pragma CIVL ACSL
+#include "Condition.h"
+
+struct Condition {
+  /* bit set: inWaitingRoom[i]==true iff thread i is in waiting room */
+  bool inWaitingRoom[];
+  /* threadAwake[i]==true means thread i is awake */
+  bool threadAwake[];
+};
+
+struct Condition {
+  Lock lock;
+  int nthread;
+  $proc waitingRoom[];
+};
+
+Condition Condition_create(Lock lock) {
+  Condition result = malloc(sizeof(struct Condition));
+  result->lock = lock;
+  $seq_init(&result->waitingRoom, 0, NULL);
+  return result;
+}
+
+/*@
+ */
+void Condition_await(Condition cond) {
+  int count = cond->lock->count; // get_count();
+  $atomic {
+    // add: int hard_release() to Lock?
+    // add to cond->waitingRoom: ($self, count)
+  }
+  $when(! $exists (int i:0..cond->nthread-1) cond->waitingRoom[i]==$self);
+  // add: hard_acquire(int multiplicity);
+}
+
+
+
+
+
+  

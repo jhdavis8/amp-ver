@@ -160,6 +160,8 @@ public class AMPVer {
     File driver2 = new File(driverDir, "driver_"+kindStr()+".cvl");
     File permsSrc = new File(driverDir, "perm.c");
     File scheduleSrc = new File(driverDir, "schedule.cvl");
+    File utilDir = new File(srcDir, "util");
+    File tidSrc = new File(utilDir, "tid.cvl");
     
     coreCommands.add("verify");
     coreCommands.addAll(civlOptions);
@@ -180,6 +182,7 @@ public class AMPVer {
     coreCommands.add(driver2.toString());
     coreCommands.add(permsSrc.toString());
     coreCommands.add(scheduleSrc.toString());
+    coreCommands.add(tidSrc.toString());
     coreCommands.addAll(filenames);
   }
 
