@@ -25,6 +25,11 @@
  */
 void tid_init(int nthread);
 
+/* Gets the number of threads specified in tid_init.  Undefined
+ * behavior if tid_init has not yet been called.
+ */
+int tid_nthread();
+
 /* This method should be called once, after the threads are destroyed.
  */
 void tid_destroy(void);

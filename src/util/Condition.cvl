@@ -5,37 +5,58 @@
  */
 #pragma CIVL ACSL
 #include "Condition.h"
+#include "tid.h"
 
-struct Condition {
-  /* bit set: inWaitingRoom[i]==true iff thread i is in waiting room */
-  bool inWaitingRoom[];
-  /* threadAwake[i]==true means thread i is awake */
-  bool threadAwake[];
-};
+// TODO: also add to tid.h     int tid_get_nthread();
 
 struct Condition {
   Lock lock;
   int nthread;
-  $proc waitingRoom[];
+  bool inWaitingRoom[];
 };
 
 Condition Condition_create(Lock lock) {
   Condition result = malloc(sizeof(struct Condition));
   result->lock = lock;
-  $seq_init(&result->waitingRoom, 0, NULL);
+  result->nthread = tid_get_nthread();
+  int x = 0;
+  result->inWaitingRoom = malloc(nthread*sizeof(bool));
+  for (int i=0; i<nthread; i++)
+    result->inWaitingRoom[i] = false;
   return result;
 }
 
-/*@
- */
+static $atomic_f void wait1(Condition cond) {
+
+}
+
+static $atomic_f void wait2(Condition cond) {
+
+}
+
+static $atomic void wait3(Condition cond) {
+
+}
+
 void Condition_await(Condition cond) {
+  wait1(cond);
+  wait2(cond);
+  wait3(cond);
+}
+
+$atomic_f void Condition_await(Condition cond) {
+  int tid = tid_get();
+  assert(cond->inWaitingRoom[tid] == 0);
   int count = cond->lock->count; // get_count();
-  $atomic {
-    // add: int hard_release() to Lock?
-    // add to cond->waitingRoom: ($self, count)
-  }
-  $when(! $exists (int i:0..cond->nthread-1) cond->waitingRoom[i]==$self);
-  // add: hard_acquire(int multiplicity);
+  for (int i=0; i<count; i++)
+    Lock_release(cond->lock);
+  cond->inWaitingRoom[tid] = true;
+  
+  $when (!cond->inWaitingRoom[tid]);
+
+  Lock_acquire(cond->lock);
+  for (int i=0; i<count-1; i++)
+    Lock_acquire(cond->lock);
 }
 
 

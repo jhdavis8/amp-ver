@@ -8,6 +8,10 @@ void tid_init(int nthread) {
   $seq_init(&threads, nthread, &v);
 }
 
+int tid_nthread() {
+  return $seq_length(&threads);
+}
+
 void tid_destroy() {
   $seq_init(&threads, 0, NULL);
 }
