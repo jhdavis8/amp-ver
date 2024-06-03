@@ -1,0 +1,53 @@
+#include "tid.h"
+#include "Condition.h"
+#include "Lock.h"
+#include <stdio.h>
+$input int BOUND = 5, NITER=5;
+int c = BOUND/2;
+Lock lock;
+Condition cond;
+
+void incrementer() {
+  tid_register(0);
+  for (int i=0; i<NITER; i++) {
+    Lock_acquire(lock);
+    while (c >= BOUND)
+      Condition_await(cond);
+    $assert(c < BOUND);
+    $assert(Lock_isHeldByCurrentThread(lock));
+    c++;
+    printf("Inc %d! c=%d\n", i, c);
+    Condition_signal(cond);
+    Lock_release(lock);
+  }
+  tid_unregister();
+}
+
+void decrementer() {
+  tid_register(1);
+  for (int i=0; i<NITER; i++) {
+    Lock_acquire(lock);
+    while (c <= 0)
+      Condition_await(cond);
+    $assert(c >= 1);
+    $assert(Lock_isHeldByCurrentThread(lock));
+    c--;
+    printf("Dec %d! c=%d\n", i, c);
+    Condition_signal(cond);
+    Lock_release(lock);
+  }
+  tid_unregister();
+}
+
+int main(void) {
+  tid_init(2);
+  lock = Lock_create();
+  cond = Condition_create(lock);
+  $proc t0 = $spawn incrementer();
+  $proc t1 = $spawn decrementer();
+  $wait(t0);
+  $wait(t1);
+  Condition_destroy(cond);
+  Lock_destroy(lock);
+  $assert(c == BOUND/2);
+}

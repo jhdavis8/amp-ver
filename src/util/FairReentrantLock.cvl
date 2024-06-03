@@ -60,6 +60,10 @@ static $atomic_f bool am_owner(Lock l) {
   return $self == l->owner;
 }
 
+_Bool Lock_isHeldByCurrentThread(Lock l) {
+  return am_owner(l);
+}
+
 void Lock_acquire(Lock l) {
   if (!am_owner(l)) {
     Lock_acquire_aux_1(l);

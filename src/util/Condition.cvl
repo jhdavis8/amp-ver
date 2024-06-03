@@ -5,62 +5,84 @@
  */
 #pragma CIVL ACSL
 #include "Condition.h"
+#include "Lock.h"
 #include "tid.h"
-
-// TODO: also add to tid.h     int tid_get_nthread();
+#include <stdbool.h>
+#include <stdlib.h>
 
 struct Condition {
   Lock lock;
   int nthread;
-  bool inWaitingRoom[];
+  bool * inWaitingRoom;
+  int nwait; // number of threads in the waiting room
 };
 
 Condition Condition_create(Lock lock) {
+  int nthread = tid_nthread();
   Condition result = malloc(sizeof(struct Condition));
   result->lock = lock;
-  result->nthread = tid_get_nthread();
+  result->nthread = nthread;
   int x = 0;
   result->inWaitingRoom = malloc(nthread*sizeof(bool));
   for (int i=0; i<nthread; i++)
     result->inWaitingRoom[i] = false;
+  result->nwait = 0;
   return result;
 }
 
-static $atomic_f void wait1(Condition cond) {
-
+void Condition_destroy(Condition cond) {
+  free(cond->inWaitingRoom);
+  free(cond);
 }
 
-static $atomic_f void wait2(Condition cond) {
-
+// Put yourself in the waiting room
+/*@ depends_on \nothing; */
+static $atomic_f void wait1(Condition cond, int tid) {
+  $assert(Lock_isHeldByCurrentThread(cond->lock));
+  cond->inWaitingRoom[tid] = true;
+  Lock_release(cond->lock);
+  cond->nwait++;
 }
 
-static $atomic void wait3(Condition cond) {
-
+// Leave the waiting room once signaled
+/*@ depends_on \nothing; */
+static $atomic_f void wait2(Condition cond, int tid) {
+  $when(!cond->inWaitingRoom[tid]);
 }
 
 void Condition_await(Condition cond) {
-  wait1(cond);
-  wait2(cond);
-  wait3(cond);
-}
-
-$atomic_f void Condition_await(Condition cond) {
   int tid = tid_get();
-  assert(cond->inWaitingRoom[tid] == 0);
-  int count = cond->lock->count; // get_count();
-  for (int i=0; i<count; i++)
-    Lock_release(cond->lock);
-  cond->inWaitingRoom[tid] = true;
-  
-  $when (!cond->inWaitingRoom[tid]);
-
+  wait1(cond, tid);
+  wait2(cond, tid);
   Lock_acquire(cond->lock);
-  for (int i=0; i<count-1; i++)
-    Lock_acquire(cond->lock);
 }
 
+/*@ depends_on \access(cond); */
+$atomic_f void Condition_signal(Condition cond) {
+  int n = tid_nthread(), tid = tid_get();
+  $assert(Lock_isHeldByCurrentThread(cond->lock));
+  if (cond->nwait == 0) return;
+  int c = $choose_int(cond->nwait); // choose c in 0..nwait-1
+  for (int i=0; i<n; i++) {
+    if (cond->inWaitingRoom[i]) {
+      if (c == 0) {
+        cond->inWaitingRoom[i] = false;
+        cond->nwait--;
+        return;
+      }
+      c--;
+    }
+  }
+}
 
-
-
-
-  
+/*@ depends_on \access(cond); */
+$atomic_f void Condition_signalAll(Condition cond) {
+  int n = tid_nthread(), tid = tid_get();
+  $assert(Lock_isHeldByCurrentThread(cond->lock));
+  for (int i=0; i<n; i++) {
+    if (cond->inWaitingRoom[i]) {
+      cond->inWaitingRoom[i] = false;
+      cond->nwait--;
+    }
+  }
+}

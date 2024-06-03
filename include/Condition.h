@@ -7,6 +7,7 @@
 
 typedef struct Condition * Condition;
 
+// note: tid_init(nthread) must be called before this function
 Condition Condition_create(Lock lock);
 
 void Condition_destroy(Condition cond);
