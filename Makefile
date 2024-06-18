@@ -409,7 +409,7 @@ QUEUE_SCHED_3 = $(SCHEDULE_DIR)/sched_queue_3.cvl
 
 # BoundedQueue
 
-BOUNDEDQUEUE = $(QUEUE_DIR)/UnboundedQueue.cvl
+BOUNDEDQUEUE = $(QUEUE_DIR)/BoundedQueue.cvl
 BOUNDEDQUEUE_DEP = $(QUEUE_COMMON_DEP) $(BOUNDEDQUEUE) \
                      $(LOCK_INC) $(LOCK_SRC) $(AI_INC) $(AI_SRC) \
 										 $(COND_INC) $(COND_SRC) $(TID_INC) $(TID_SRC)
@@ -423,6 +423,7 @@ $(BoundedQueue_Outs): out/BoundedQueue_%.out: $(MAIN_CLASS) $(BOUNDEDQUEUE_DEP)
 	rm -rf out/BoundedQueue_$*.dir
 	-$(AMPVER) $(QUEUE_LIMITS_$*) -tmpDir=$(TMP)/BoundedQueue_$*.dir.tmp \
           -checkMemoryLeak=false $(BOUNDEDQUEUE) $(LOCK_SRC) \
+          $(AI_SRC) $(COND_SRC) \
           >out/BoundedQueue_$*.out.tmp
 	mv $(TMP)/BoundedQueue_$*.out.tmp out/BoundedQueue_$*.out
 	mv $(TMP)/BoundedQueue_$*.dir.tmp out/BoundedQueue_$*.dir

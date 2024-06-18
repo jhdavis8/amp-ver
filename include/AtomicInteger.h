@@ -1,7 +1,7 @@
 #ifndef _ATOMICINTEGER_H
 #define _ATOMICINTEGER_H
 /*
- * AtomicInteger.cvh: Header file for AtomicInteger.cvl
+ * AtomicInteger.h: Header file for AtomicInteger.cvl
  * Created 17-Jun-2024
  * Josh Davis, Stephen Siegel
  * Verified Software Lab, CIS Dept.

@@ -8,7 +8,7 @@
 #pragma CIVL ACSL
 
 #include <stdlib.h>
-#include "AtomicInteger.cvh"
+#include "AtomicInteger.h"
 
 struct AtomicInteger {
   int value;
@@ -24,7 +24,7 @@ void AtomicInteger_destroy(AtomicInteger a) {
   free(a);
 }
 
-/*@ depends_on \access(i); */
+/*@ depends_on \access(a); */
 $atomic_f _Bool AtomicInteger_compareAndSet(AtomicInteger a,
                                             int expect, int update) {
   if (a->value == expect) {
@@ -35,29 +35,29 @@ $atomic_f _Bool AtomicInteger_compareAndSet(AtomicInteger a,
   }
 }
 
-/*@ depends_on \access(i); */
+/*@ depends_on \access(a); */
 $atomic_f int AtomicInteger_get(AtomicInteger a) {
   return a->value;
 }
 
-/*@ depends_on \access(i); */
+/*@ depends_on \access(a); */
 $atomic_f void AtomicInteger_set(AtomicInteger a, int newValue) {
   a->value = newValue;
 }
 
-/*@ depends_on \access(i); */
+/*@ depends_on \access(a); */
 $atomic_f int AtomicInteger_getAndSet(AtomicInteger a, int newValue) {
   int oldValue = a->value;
   a->value = newValue;
   return oldValue;
 }
 
-/*@ depends_on \access(i); */
+/*@ depends_on \access(a); */
 $atomic_f int AtomicInteger_getAndIncrement(AtomicInteger a) {
   return a->value++;
 }
 
-/*@ depends_on \access(i); */
+/*@ depends_on \access(a); */
 $atomic_f int AtomicInteger_getAndDecrement(AtomicInteger a) {
   return a->value--;
 }

@@ -9,6 +9,7 @@
 #include "tid.h"
 #include <stdbool.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 struct Condition {
   Lock lock;
@@ -19,6 +20,7 @@ struct Condition {
 
 Condition Condition_create(Lock lock) {
   int nthread = tid_nthread();
+  printf("Condition_create, nthread=%d\n", nthread);
   Condition result = malloc(sizeof(struct Condition));
   result->lock = lock;
   result->nthread = nthread;
@@ -31,6 +33,7 @@ Condition Condition_create(Lock lock) {
 }
 
 void Condition_destroy(Condition cond) {
+  printf("Condition_destroy, nthread=%d\n", cond->nthread);
   free(cond->inWaitingRoom);
   free(cond);
 }
@@ -80,6 +83,7 @@ $atomic_f void Condition_signalAll(Condition cond) {
   int n = tid_nthread(), tid = tid_get();
   $assert(Lock_isHeldByCurrentThread(cond->lock));
   for (int i=0; i<n; i++) {
+    printf("n=%d, i=%d", n, i);
     if (cond->inWaitingRoom[i]) {
       cond->inWaitingRoom[i] = false;
       cond->nwait--;
