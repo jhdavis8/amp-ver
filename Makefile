@@ -392,10 +392,11 @@ QUEUE_LIMITS_2 = -kind=queue -genericVals -threadSym -nthread=1..3 \
 QUEUE_LIMITS_3  = -kind=queue -genericVals -threadSym -nthread=1..3 \
      -nstep=1..4 -npreAdd=0..2 -checkTermination -ncore=$(NCORE)
 
-queue_1 queue_2 queue_3: queue_%: out/UnboundedQueue_%.out \
-  out/LockFreeQueue_%.out
+queue_1 queue_2 queue_3: queue_%: out/BoundedQueue_%.out \
+  out/UnboundedQueue_%.out out/LockFreeQueue_%.out
 
-queue_schedules: out/UnboundedQueue_S1 out/UnboundedQueue_S2 out/UnboundedQueue_S3 \
+queue_schedules: out/BoundedQueue_S1 out/BoundedQueue_S2 out/BoundedQueue_S3 \
+	out/UnboundedQueue_S1 out/UnboundedQueue_S2 out/UnboundedQueue_S3 \
 	out/LockFreeQueue_S1 out/LockFreeQueue_S2 out/LockFreeQueue_S3
 
 QUEUE1 = $(SCHEDULE_DIR)/sched_queue_1.cvl
@@ -405,6 +406,30 @@ QUEUE_COMMON_SRC = $(DRIVER_SRC) $(DRIVER_QUEUE)
 QUEUE_SCHED_1 = $(SCHEDULE_DIR)/sched_queue_1.cvl
 QUEUE_SCHED_2 = $(SCHEDULE_DIR)/sched_queue_2.cvl
 QUEUE_SCHED_3 = $(SCHEDULE_DIR)/sched_queue_3.cvl
+
+# BoundedQueue
+
+BOUNDEDQUEUE = $(QUEUE_DIR)/UnboundedQueue.cvl
+BOUNDEDQUEUE_DEP = $(QUEUE_COMMON_DEP) $(BOUNDEDQUEUE) \
+                     $(LOCK_INC) $(LOCK_SRC) $(AI_INC) $(AI_SRC) \
+										 $(COND_INC) $(COND_SRC) $(TID_INC) $(TID_SRC)
+BOUNDEDQUEUE_SRC = $(QUEUE_COMMON_SRC) $(BOUNDEDQUEUE) $(LOCK_SRC) \
+										 $(AI_SRC) $(COND_SRC) $(TID_SRC)
+BoundedQueue_Outs = out/BoundedQueue_1.out out/BoundedQueue_2.out \
+                      out/BoundedQueue_3.out
+
+$(BoundedQueue_Outs): out/BoundedQueue_%.out: $(MAIN_CLASS) $(BOUNDEDQUEUE_DEP)
+	rm -rf $(TMP)/BoundedQueue_$*.dir.tmp
+	rm -rf out/BoundedQueue_$*.dir
+	-$(AMPVER) $(QUEUE_LIMITS_$*) -tmpDir=$(TMP)/BoundedQueue_$*.dir.tmp \
+          -checkMemoryLeak=false $(BOUNDEDQUEUE) $(LOCK_SRC) \
+          >out/BoundedQueue_$*.out.tmp
+	mv $(TMP)/BoundedQueue_$*.out.tmp out/BoundedQueue_$*.out
+	mv $(TMP)/BoundedQueue_$*.dir.tmp out/BoundedQueue_$*.dir
+
+out/BoundedQueue_S%: $(BOUNDEDQUEUE_DEP) $(QUEUE_SCHED_$*)
+	-$(VERIFY) -checkMemoryLeak=false -checkTermination=true $(BOUNDEDQUEUE_SRC) $(QUEUE_SCHED_$*) \
+					>out/BoundedQueue_S$*
 
 # UnboundedQueue
 
