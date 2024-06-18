@@ -50,7 +50,9 @@ struct Queue {
   Node tail;
   AtomicInteger size;
   // size is supposedly the number of empty slots, but the code in the
-  // reference implementation is inconsistent.
+  // reference implementation is inconsistent. In the book it is
+  // initialized to 0, so it acts as the number of elements. The
+  // reference code treats it as the number of slots.
   int capacity; // max number of elements
 };
 
@@ -96,7 +98,7 @@ T Queue_deq(Queue this) {
   result = this->head->next->value;
   Node old_head = this->head;
   this->head = old_head->next;
-  if (AtomicInteger_getAndIncrement(this->size) == 0) { // this line is incorrect and corrected by errata
+  if (AtomicInteger_getAndIncrement(this->size) == 0) { // this line is correct and wrongly corrected by errata, but in the book (2nd ed) the fix is correct because size is the number of elements
     mustWakeEnqueuers = true;
   }
   // finally...
