@@ -1,0 +1,166 @@
+/* CIVL model of BoundedQueue class from "The Art of Multiprocessor
+ * Programming" 2nd ed, by Herlihy, Luchangco, Shavit, and Spear,
+ * Sec. 10.3 "An bounded partial queue", and companion code
+ * ch10/Queue/src/queue/BoundedQueue.java.
+ *
+ * This is a simple bounded queue implementation using two
+ * conditions.
+ *
+ * Created : 2024-Jun-17
+ * Authors : Josh Davis and Stephen F. Siegel
+ * Verified Software Laboratory, Dept. Computer & Info. Sciences,
+ * University of Delaware.
+ */
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <limits.h>
+#include "types.h"
+#include "Queue.h"
+#include "Lock.h"
+#include "tid.h"
+#include "Condition.h"
+
+#ifndef INTIAL_CAPACITY
+#define INTIAL_CAPACITY 2
+#endif
+
+typedef struct Node {
+  T value;
+  struct Node * next;
+} * Node;
+
+static Node node_create(T value) {
+  Node new_node = malloc(sizeof(struct Node));
+  new_node->value = value;
+  new_node->next = NULL;
+  return new_node;
+}
+
+static void node_destroy(Node node) {
+  free(node);
+}
+
+struct Queue {
+  Lock enqLock;
+  Lock deqLock;
+  Condition notEmptyCondition;
+  Condition notFullCondition;
+  Node head;
+  Node tail;
+  AtomicInteger size;
+  // size is supposedly the number of empty slots, but the code in the
+  // reference implementation is inconsistent.
+  int capacity; // max number of elements
+};
+
+Queue Queue_create() {
+  Queue this = malloc(sizeof(struct Queue));
+  this->capacity = INTIAL_CAPACITY;
+  this->head = node_create(-1);
+  this->tail = this->head;
+  this->size = AtomicInteger_create(this->capacity);
+  this->enqLock = Lock_create();
+  this->notFullCondition = Condition_create(this->enqLock);
+  this->deqLock = Lock_create();
+  this->notEmptyCondition = Condition_create(this->deqLock);
+  return this;
+}
+
+// not in original code...
+void Queue_destroy(Queue queue) {
+  Node curr = queue->head;
+  while (curr) {
+    Node temp = curr;
+    curr = curr->next;
+    node_destroy(temp);
+  }
+  AtomicInteger_destroy(queue->size);
+  Lock_destroy(queue->enqLock);
+  Condition_destroy(queue->notFullCondition);
+  Lock_destroy(queue->deqLock);
+  Condition_destroy(queue->notEmptyCondition);
+  free(queue);
+}
+
+T Queue_deq(Queue this) {
+  T result;
+  bool mustWakeEnqueuers = true; // this line is incorrrect and corrected by errata
+  Lock_acquire(this->deqLock);
+  // try...
+  while (AtomicInteger_get(this->size) == this->capacity) {
+    // try...
+    Condition_await(this->notEmptyCondition);
+    // catch InterruptedException
+  }
+  result = this->head->next->value;
+  Node old_head = this->head;
+  this->head = old_head->next;
+  if (AtomicInteger_getAndIncrement(this->size) == 0) { // this line is incorrect and corrected by errata
+    mustWakeEnqueuers = true;
+  }
+  // finally...
+  Lock_release(this->deqLock);
+  if (mustWakeEnqueuers) {
+    Lock_acquire(this->enqLock);
+    // try...
+    Condition_signalAll(this->notFullCondition);
+    // finally...
+    Lock_release(this->enqLock);
+  }
+  Node_destroy(old_head);
+  return result;
+}
+
+void Queue_enq(Queue this, T x) {
+  // if x is NULL throw NullPointerException...
+  bool mustWakeDequeuers = false;
+  Lock_acquire(this->enqLock);
+  // try...
+  while (AtomicInteger_get(this->size) == 0) {
+    // try...
+    Condition_await(this->notFullCondition);
+    // catch InterruptedException
+  }
+  Node e = node_create(x);
+  this->tail->next = e;
+  this->tail = e;
+  if (AtomicInteger_getAndDecrement(this->size) == this->capacity) {
+    mustWakeDequeuers = true;
+  }
+  // finally...
+  Lock_release(this->enqLock);
+  if (mustWakeDequeuers) {
+    Lock_acquire(this->deqLock);
+    // try...
+    Condition_signalAll(this->notEmptyCondition);
+    // finally...
+    Lock_release(this->deqLock);
+  }
+}
+
+// not in original code...
+void Queue_print(Queue this) {
+  Node curr = this->head->next;
+  printf("{ ");
+  while (curr) {
+    printf("%d ", curr->value);
+    curr = curr->next;
+  }
+  printf("}");
+}
+
+#ifdef _UNBOUNDED_QUEUE_MAIN
+int main() {
+  Queue q = Queue_create();
+  $parfor (int i: 0..2) {
+    Queue_enq(q, i);
+    int x = Queue_deq(q);
+    printf("Thread %d dequeued %d\n", i, x);
+    $assert(x >= 0);
+    $assert(x < 3);
+  }
+  printf("Done.\n");
+  Queue_destroy(q);
+}
+#endif
