@@ -167,6 +167,7 @@ int main() {
   schedule = make_schedule();
   schedule_print(schedule);
   int nthread = schedule.nthread;
+  tid_init(nthread);
   int nstep = schedule.nstep;
   int num_perms = perm_calc_num(nthread, schedule.nsteps);
   int perm_id = 0;
@@ -174,13 +175,14 @@ int main() {
   void * oracle;
   bool found_match = false;
 
+  tid_register(0);
   for (int i=0; i<schedule.npreAdd; i++)
     collection_add(collection, schedule.preAdds[i].args[0],
                    schedule.preAdds[i].args[1]);
+  tid_unregister();
   printf("Collection initial state. ");
   collection_print(collection);
   printf("\n");
-  tid_init(nthread);
   $parfor (int tid : 0 .. nthread-1) {
     thread(tid, collection);
   }

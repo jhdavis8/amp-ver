@@ -17,12 +17,13 @@
 #include <limits.h>
 #include "types.h"
 #include "Queue.h"
+#include "AtomicInteger.h"
 #include "Lock.h"
 #include "tid.h"
 #include "Condition.h"
 
-#ifndef INTIAL_CAPACITY
-#define INTIAL_CAPACITY 2
+#ifndef INITIAL_CAPACITY
+#define INITIAL_CAPACITY 2
 #endif
 
 typedef struct Node {
@@ -30,14 +31,14 @@ typedef struct Node {
   struct Node * next;
 } * Node;
 
-static Node node_create(T value) {
+static Node Node_create(T value) {
   Node new_node = malloc(sizeof(struct Node));
   new_node->value = value;
   new_node->next = NULL;
   return new_node;
 }
 
-static void node_destroy(Node node) {
+static void Node_destroy(Node node) {
   free(node);
 }
 
@@ -58,8 +59,8 @@ struct Queue {
 
 Queue Queue_create() {
   Queue this = malloc(sizeof(struct Queue));
-  this->capacity = INTIAL_CAPACITY;
-  this->head = node_create(-1);
+  this->capacity = INITIAL_CAPACITY;
+  this->head = Node_create(-1);
   this->tail = this->head;
   this->size = AtomicInteger_create(this->capacity);
   this->enqLock = Lock_create();
@@ -75,7 +76,7 @@ void Queue_destroy(Queue queue) {
   while (curr) {
     Node temp = curr;
     curr = curr->next;
-    node_destroy(temp);
+    Node_destroy(temp);
   }
   AtomicInteger_destroy(queue->size);
   Lock_destroy(queue->enqLock);
@@ -87,7 +88,8 @@ void Queue_destroy(Queue queue) {
 
 T Queue_deq(Queue this) {
   T result;
-  bool mustWakeEnqueuers = true; // this line is incorrrect and corrected by errata
+  bool mustWakeEnqueuers = false; // this line is incorrrect and corrected by
+                                  // errata
   Lock_acquire(this->deqLock);
   // try...
   while (AtomicInteger_get(this->size) == this->capacity) {
@@ -95,10 +97,13 @@ T Queue_deq(Queue this) {
     Condition_await(this->notEmptyCondition);
     // catch InterruptedException
   }
-  result = this->head->next->value;
   Node old_head = this->head;
-  this->head = old_head->next;
-  if (AtomicInteger_getAndIncrement(this->size) == 0) { // this line is correct and wrongly corrected by errata, but in the book (2nd ed) the fix is correct because size is the number of elements
+  result = this->head->next->value;
+  this->head = this->head->next;
+  Node_destroy(old_head);
+  if (AtomicInteger_getAndIncrement(this->size) == 0) {
+    // the above line is correct and wrongly corrected by errata, but in the
+    // book (2nd ed) the fix is correct because size is the number of elements
     mustWakeEnqueuers = true;
   }
   // finally...
@@ -110,7 +115,6 @@ T Queue_deq(Queue this) {
     // finally...
     Lock_release(this->enqLock);
   }
-  Node_destroy(old_head);
   return result;
 }
 
@@ -124,7 +128,7 @@ void Queue_enq(Queue this, T x) {
     Condition_await(this->notFullCondition);
     // catch InterruptedException
   }
-  Node e = node_create(x);
+  Node e = Node_create(x);
   this->tail->next = e;
   this->tail = e;
   if (AtomicInteger_getAndDecrement(this->size) == this->capacity) {
@@ -152,17 +156,21 @@ void Queue_print(Queue this) {
   printf("}");
 }
 
-#ifdef _UNBOUNDED_QUEUE_MAIN
+#ifdef _BOUNDED_QUEUE_MAIN
 int main() {
+  tid_init(3);
   Queue q = Queue_create();
   $parfor (int i: 0..2) {
+    tid_register(i);
     Queue_enq(q, i);
     int x = Queue_deq(q);
     printf("Thread %d dequeued %d\n", i, x);
     $assert(x >= 0);
     $assert(x < 3);
+    tid_unregister();
   }
   printf("Done.\n");
   Queue_destroy(q);
+  tid_destroy();
 }
 #endif

@@ -50,4 +50,5 @@ int main(void) {
   Condition_destroy(cond);
   Lock_destroy(lock);
   $assert(c == BOUND/2);
+  tid_destroy();
 }
