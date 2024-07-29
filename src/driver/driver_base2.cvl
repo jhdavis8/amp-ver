@@ -1,0 +1,254 @@
+#pragma CIVL ACSL
+#include <stdio.h>
+#include <stdbool.h>
+#include <stdlib.h>
+#include "types.h"
+#include "perm.h"
+#include "schedule.h"
+#include "driver.h"
+#include "tid.h"
+
+// Global Vars...
+schedule_t schedule;
+#ifndef NLINEAR
+static int time = 0;
+static bool status = 0; // 0=last event was a start. 1=last event was a stop
+#endif
+
+/*@ depends_on \nothing; */
+static $atomic_f int get_nsteps(int tid) {
+  return schedule.nsteps[tid];
+}
+
+/*@ depends_on \nothing; */
+static $atomic_f step_t get_step(int tid, int s) {
+  return schedule.steps[tid][s];
+}
+
+// Sets result and stop time.
+// Exit earlier linearizable => exit later linearizable
+/*@ depends_on \nothing; */
+static $atomic_f void set_result(int tid, int s, int result) {
+#ifndef NLINEAR
+  if (status == 0) status = 1;
+  schedule.steps[tid][s].stop_time = time;
+#endif
+  schedule.steps[tid][s].result = result;
+}
+
+#ifndef NLINEAR
+/*@ depends_on \access(&time); */
+static $atomic_f void set_start_time(int tid, int s) {
+  if (status == 1) {
+    status = 0;
+    time++;
+  }
+  schedule.steps[tid][s].start_time = time;
+}
+#endif
+
+static void printMatchFail(void * collection) {
+  printf("[FAIL]\t No matching sequentialized execution found!\n");
+  printf("Collection final state... ");
+  collection_print(collection);
+  printf("\n");
+}
+
+static void printOpInfo(int tid, int op, int val, int score, int result) {
+  printf("  Thread %d: ", tid);
+  printf((op==ADD?"ADD":(op==REMOVE?"REMOVE":"CONTAINS")));
+  if (val >= 0) {
+    printf("(%d", val);
+    if (score >= 0) printf(",%d)", score);
+    else printf(")");
+  }
+  if (result != -2) printf(" -> %d", result);
+  printf("\n");
+}
+
+static void printEquivSeqInfo(int * perms, void * oracle) {
+  int nthread = schedule.nthread;
+  int nstep = schedule.nstep;
+  int step_counters[nthread];
+
+  for (int tid = 0; tid < nthread; tid++)
+    step_counters[tid] = 0;
+  printf("[PASS]\t Linearized execution:\n");
+  for (int step_id = 0; step_id < nstep; step_id++) {
+    int tid = perms[step_id];
+    int step_local = step_counters[tid];
+    step_t step = schedule.steps[tid][step_local];
+
+    printOpInfo(tid, step.op, step.args[0], step.args[1], step.result);
+    step_counters[tid]++;
+  }
+  printf("Oracle final state....... ");
+  oracle_print(oracle);
+  printf("\n\n");
+}
+
+/* Determines whether the sequentialization of the schedule specified
+ * by perm matches the results of the concurrent execution.  The
+ * results of the concurrent execution are recorded in the schedule
+ * (before this function is called).
+ *
+ * perm: array of length ntep of int, where nstep=schedule.nstep
+ * is the total number of steps in the schedule (not counting preAdds).
+ * perm[i] is the ID of the thread that executes step i in the linear
+ * sequence of steps.  Hence perm, together with global variable
+ * schedule, specifies a single sequentialization of the concurrent execution.
+ *
+ * oracle: the simple trusted sequential implementation of the data structure.
+ * The sequentialized execution will be executed on this oracle.  Note that
+ * oracle may be nonempty when this function is called.
+ */
+static bool permseq(int * perm, void * oracle) {
+  int nthread = schedule.nthread;
+  int nstep = schedule.nstep;
+  int step_counters[nthread];
+  int contains_oracle_index = 0;
+
+  for (int tid = 0; tid < nthread; tid++)
+    step_counters[tid] = 0;
+  for (int step_seq = 0; step_seq < nstep; step_seq++) {
+    int tid = perm[step_seq];
+    int step_id = step_counters[tid];
+    step_t step = schedule.steps[tid][step_id];
+    int op = step.op, a0 = step.args[0], a1 = step.args[1];
+    bool oracle_match = false;
+    int result;
+    if (op == ADD) {
+      result = (int)oracle_add(oracle, a0, a1);
+    } else if (op == REMOVE) {
+      // for a priority queue, you want to specify the value to
+      // remove, which is not the argument a0, but the result.
+      result = (int)oracle_remove(oracle, a0, step.result);
+    } else if (op == CONTAINS) {
+      result = (int)oracle_contains(oracle, a0);
+    } else {
+      $assert(false);
+    }
+    oracle_match = result == step.result;
+    step_counters[tid]++;
+    if (!oracle_match) return false; 
+  }
+  return true;
+}
+
+/* The code executed by one thread in the concurrent execution.  tid
+ * is the thread's ID number; c is a pointer to the concurrent data
+ * structure upon which it will act.  The thread will execute the
+ * sequence of steps specified in the schedule for the given ID. */
+static void thread(int tid, void * c) {
+  tid_register(tid);
+  int num_steps_local = get_nsteps(tid);
+  for (int s = 0; s < num_steps_local; s++) {
+    step_t step = get_step(tid, s);
+    int op = step.op, a0 = step.args[0], a1 = step.args[1];
+#ifndef NLINEAR
+    set_start_time(tid, s);
+#endif
+    if (op == ADD) {
+      step.result = (int)collection_add(c, a0, a1);
+    } else if (op == REMOVE) {
+      step.result = (int)collection_remove(c, a0);
+      // TODO: clarify what should happen when remove fails
+    } else if (op == CONTAINS) {
+      step.result = (int)collection_contains(c, a0);
+    } else {
+      $assert(false);
+    }
+    
+    // TODO!
+    if (dlcatch_isDeadlocked())
+      break;
+    
+    set_result(tid, s, step.result);
+  }
+  tid_unregister();
+}
+
+int main() {
+  schedule = make_schedule();
+  schedule_print(schedule);
+  int nthread = schedule.nthread;
+  tid_init(nthread);
+  int nstep = schedule.nstep;
+  int num_perms = perm_calc_num(nthread, schedule.nsteps);
+  int perm_id = 0;
+  void * collection = collection_create();
+  void * oracle;
+  bool found_match = false;
+
+  tid_register(0);
+  for (int i=0; i<schedule.npreAdd; i++)
+    collection_add(collection, schedule.preAdds[i].args[0],
+                   schedule.preAdds[i].args[1]);
+  tid_unregister();
+  printf("Collection initial state. ");
+  collection_print(collection);
+  printf("\n");
+  $parfor (int tid : 0 .. nthread-1) {
+    thread(tid, collection);
+  }
+  // DID THE EXECUTION DEADLOCK???
+  if (dlcatch_isDeadlocked()) {
+    // I have a stuck history
+    // you can tell how far each thread got by looking through
+    // its steps until you reach a step with result -2.
+
+    // need to check if this history is linearizable:
+    // for each thread i which ends in a stuck state:
+    // let H[i] be the history obtained by removing
+    // all -2 steps except thread i keeps its first
+    // -2 step.   Consider all (linearizable) perms
+    // of that schedule, execute on oracle, and
+    // if oracle ends in stuck state, OK.
+    // if for any i, oracle does not end in stuck
+    // state: VIOLATION.  (also checking results
+    // correspond to oracle).
+
+  }
+  
+  tid_destroy();
+  schedule_print(schedule);
+  printf("Collection final state... ");
+  collection_print(collection);
+  printf("\n");
+#ifdef NLINEAR
+  int** perms = perm_compute(nthread, schedule.nsteps);
+#else
+  int** perms = perm_compute_linear(nstep, schedule);
+#endif
+  for (perm_id = 0; perm_id < num_perms; perm_id++) {
+    // check if this perm has been filtered out as non-linearizable
+    if (nstep > 1 && perms[perm_id][0] < 0) {
+      oracle = NULL;
+      continue;
+    }
+    oracle = oracle_create();
+    for (int i=0; i<schedule.npreAdd; i++)
+      oracle_add(oracle, schedule.preAdds[i].args[0],
+                 schedule.preAdds[i].args[1]);
+    found_match = permseq(perms[perm_id], oracle);
+    if (found_match) {
+      printEquivSeqInfo(perms[perm_id], oracle);
+      break;
+    }
+    oracle_destroy(oracle);
+  }
+  if (oracle == NULL) {
+    printf("[OMIT] All valid schedules start with exceptions\n");
+  } else if (nstep > 0 && !found_match) {
+    printMatchFail(collection);
+    schedule_print(schedule);
+    perm_print_all(num_perms, nstep, perms);
+    printf("\n");
+    $assert(false);
+  }
+  collection_destroy(collection);
+  if (oracle != NULL) oracle_destroy(oracle);
+  for (int i = 0; i < num_perms; i++) free(perms[i]);
+  free(perms);
+  schedule_destroy(schedule);
+}

@@ -7,7 +7,7 @@
 #include "Condition.h"
 #include "Lock.h"
 #include "tid.h"
-#include "dlcheck.h"
+#include "dlcatch.h"
 #include <stdbool.h>
 #include <stdlib.h>
 
@@ -41,7 +41,7 @@ void Condition_destroy(Condition cond) {
 static $atomic_f void wait1(Condition cond, int tid) {
   $assert(Lock_isHeldByCurrentThread(cond->lock));
   cond->inWaitingRoom[tid] = true;
-  bool stuck = dlcheck_awaiting(cond, tid);
+  bool stuck = dlcatch_awaiting(cond, tid);
   if (stuck) { // deadlock occurred. everyone was released.
     Lock_release(cond->lock);
     return;
@@ -89,6 +89,7 @@ $atomic_f void Condition_signalAll(Condition cond) {
   for (int i=0; i<n; i++) {
     if (cond->inWaitingRoom[i]) {
       cond->inWaitingRoom[i] = false;
+      dlcatch_release(i);
       cond->nwait--;
     }
   }

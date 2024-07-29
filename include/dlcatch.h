@@ -29,3 +29,5 @@ void dlcatch_terminate(int tid);
 /* Returns the deadlock bit.  If true, all threads became deadlocked. */
 bool dlcatch_isDeadlocked();
 
+/* Tells whether thread tid has terminated. */
+bool dlcatch_isTerminated(int tid);

@@ -55,3 +55,8 @@ void dlcatch_terminate(int tid) {
 bool dlcatch_isDeadlocked() {
   return deadlock;
 }
+
+bool dlcatch_isTerminated(int tid) {
+  return terminated[tid];
+}
+
