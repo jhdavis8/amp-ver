@@ -35,11 +35,17 @@ void * oracle_create();
 /* Destroys oracle */
 void oracle_destroy(void * o);
 
+/* Is the add operation with given arguments enabled? */
+bool oracle_add_enabled(void * o, int a0, int a1);
+
 /* Adds element to oracle */
 bool oracle_add(void * o, int a0, int a1);
 
 /* Checks whether a belongs to oracle */
 bool oracle_contains(void * o, int a);
+
+/* Is the remove operation with given arguments enabled? */
+bool oracle_remove_enabled(void * o, int a, int expect);
 
 /* Removes element from oracle. a is the argument to the remove
  * command; it is ignored for structures that do not take an argument

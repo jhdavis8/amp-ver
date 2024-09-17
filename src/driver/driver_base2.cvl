@@ -118,11 +118,29 @@ static bool permseq(int * perm, void * oracle) {
     bool oracle_match = false;
     int result;
     if (op == ADD) {
-      result = (int)oracle_add(oracle, a0, a1);
+      if (step.result == -2) {
+        if (oracle_add_enabled(oracle, a0, a1))
+          return false;
+        result = -2;
+      } else {
+        if (oracle_add_enabled(oracle, a0, a1)) {
+          result = (int)oracle_add(oracle, a0, a1);
+        } else
+          return false;
+      }
     } else if (op == REMOVE) {
       // for a priority queue, you want to specify the value to
       // remove, which is not the argument a0, but the result.
-      result = (int)oracle_remove(oracle, a0, step.result);
+      if (step.result == -2) {
+        if (oracle_remove_enabled(oracle, a0, step.result))
+          return false;
+        result = -2;
+      } else {
+        if (oracle_remove_enabled(oracle, a0, step.result))
+          result = (int)oracle_remove(oracle, a0, step.result);
+        else
+          return false;
+      }
     } else if (op == CONTAINS) {
       result = (int)oracle_contains(oracle, a0);
     } else {
@@ -207,6 +225,54 @@ int main() {
     // if for any i, oracle does not end in stuck
     // state: VIOLATION.  (also checking results
     // correspond to oracle).
+    for (int tid=0; tid<nthread; tid++) {
+      int ns = schedule.nsteps[tid];
+      if (ns > 0) {
+        step_t last_step = get_step(tid, ns-1);
+        if (last_step.result < 0) {
+          // this thread did not terminate, therefore it is stuck.
+          // make a copy of this schedule and modify as follows:
+          // for any thread i which has terminated: no change
+          // for any thread i!=tid which is stuck: remove its last (stuck)
+          //    step and all subsequent steps.
+          // for thread tid (also stuck): remove all steps after stuck step.
+          // is there an interleaving of this new schedule with oracle results
+          //   consistent with the schedule's results AND thread tid ends
+          //   in stuck state in oracle.
+          // need a way for oracle to say it is stuck, or some operation
+          // is not enabled.
+          int counts[nthread];
+          for (int i=0; i<nthread; i++) {
+            int nstep = schedule.nsteps[i];
+            counts[i] = -1;
+            if (i == tid) {
+              for (int j=0; j<nstep; j++)  {
+                if (schedule.steps[i][j] < 0) {
+                  counts[i] = j+1;
+                  break;
+                }
+              }
+              assert(counts[i] >= 1 && counts[i] <= nstep);
+            } else if (schedule.steps[i][nstep-1] < 0) {
+              for (int j=0; j<nstep; j++)  {
+                if (schedule.steps[i][j] < 0) {
+                  counts[i] = j;
+                  break; 
+                }
+              }
+              assert(counts[i] >= 0 && counts[i] < nstep);
+            } else {
+              counts[i] = nstep;
+            }
+          }
+          // have counts, compute perms..
+#ifdef NLINEAR
+          int** perms = perm_compute(nthread, counts);
+#else
+          int** perms = perm_compute_linear(nstep, schedule, counts);
+#endif
+        }
+    }
 
   }
   
@@ -218,7 +284,7 @@ int main() {
 #ifdef NLINEAR
   int** perms = perm_compute(nthread, schedule.nsteps);
 #else
-  int** perms = perm_compute_linear(nstep, schedule);
+  int** perms = perm_compute_linear(nstep, schedule, schedule.nsteps);
 #endif
   for (perm_id = 0; perm_id < num_perms; perm_id++) {
     // check if this perm has been filtered out as non-linearizable
