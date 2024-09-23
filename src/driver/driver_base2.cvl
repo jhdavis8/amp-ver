@@ -148,7 +148,7 @@ static bool permseq(int * perm, void * oracle) {
     }
     oracle_match = result == step.result;
     step_counters[tid]++;
-    if (!oracle_match) return false; 
+    if (!oracle_match) return false;
   }
   return true;
 }

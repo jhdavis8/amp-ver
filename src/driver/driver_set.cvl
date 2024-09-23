@@ -8,7 +8,7 @@
 
 // sequence of values sorted
 typedef struct SimpleSet {
-  int data[];  
+  int data[];
 } * SimpleSet;
 
 void * collection_create() {
@@ -45,6 +45,11 @@ void oracle_destroy(void * o) {
   free(o);
 }
 
+// set is non-blocking, so add is always enabled
+bool oracle_add_enabled(void * o, int a0, int a1) {
+  return true;
+}
+
 // inserts a0 in the right spot. a1 is ignored.
 bool oracle_add(void * o, int a0, int a1) {
   SimpleSet oracle = (SimpleSet)o;
@@ -61,6 +66,11 @@ bool oracle_contains(void * o, int a) {
   while (i<n && oracle->data[i] < a) i++;
   if (i<n && oracle->data[i] == a) return true;
   return false;
+}
+
+// set is non-blocking so remove is always enabled
+bool oracle_remove_enabled(void * o, int a, int expect) {
+  return true;
 }
 
 // removes a if present. expect is ignored.
