@@ -92,6 +92,10 @@ static void printEquivSeqInfo(int * perms, void * oracle) {
  * results of the concurrent execution are recorded in the schedule
  * (before this function is called).
  *
+ * nstep: number of steps in parallel execution.  For a normal (unstuck)
+ * schedule, this is schedule.nstep.   For a stuck schedule, it includes
+ * the final stuck step.
+ *
  * perm: array of length ntep of int, where nstep=schedule.nstep
  * is the total number of steps in the schedule (not counting preAdds).
  * perm[i] is the ID of the thread that executes step i in the linear
@@ -102,11 +106,10 @@ static void printEquivSeqInfo(int * perms, void * oracle) {
  * The sequentialized execution will be executed on this oracle.  Note that
  * oracle may be nonempty when this function is called.
  */
-static bool permseq(int * perm, void * oracle) {
+static bool permseq(int nstep, int * perm, void * oracle) {
   int nthread = schedule.nthread;
-  int nstep = schedule.nstep;
+  //int nstep = schedule.nstep;
   int step_counters[nthread];
-  int contains_oracle_index = 0;
 
   for (int tid = 0; tid < nthread; tid++)
     step_counters[tid] = 0;
@@ -119,6 +122,7 @@ static bool permseq(int * perm, void * oracle) {
     int result;
     if (op == ADD) {
       if (step.result == -2) {
+        assert(step_seq == nstep-1);
         if (oracle_add_enabled(oracle, a0, a1))
           return false;
         result = -2;
@@ -132,6 +136,7 @@ static bool permseq(int * perm, void * oracle) {
       // for a priority queue, you want to specify the value to
       // remove, which is not the argument a0, but the result.
       if (step.result == -2) {
+        assert(step_seq == nstep-1);
         if (oracle_remove_enabled(oracle, a0, step.result))
           return false;
         result = -2;
@@ -146,8 +151,8 @@ static bool permseq(int * perm, void * oracle) {
     } else {
       $assert(false);
     }
-    oracle_match = result == step.result;
     step_counters[tid]++;
+    oracle_match = result == step.result;
     if (!oracle_match) return false; 
   }
   return true;
@@ -191,7 +196,7 @@ int main() {
   schedule_print(schedule);
   int nthread = schedule.nthread;
   tid_init(nthread);
-  int nstep = schedule.nstep;
+  int nstep = schedule.nstep; // total # steps in schedule
   int num_perms = perm_calc_num(nthread, schedule.nsteps);
   int perm_id = 0;
   void * collection = collection_create();
@@ -211,20 +216,17 @@ int main() {
   }
   // DID THE EXECUTION DEADLOCK???
   if (dlcatch_isDeadlocked()) {
-    // I have a stuck history
-    // you can tell how far each thread got by looking through
-    // its steps until you reach a step with result -2.
-
-    // need to check if this history is linearizable:
-    // for each thread i which ends in a stuck state:
-    // let H[i] be the history obtained by removing
-    // all -2 steps except thread i keeps its first
-    // -2 step.   Consider all (linearizable) perms
-    // of that schedule, execute on oracle, and
-    // if oracle ends in stuck state, OK.
-    // if for any i, oracle does not end in stuck
-    // state: VIOLATION.  (also checking results
-    // correspond to oracle).
+    // I have a stuck history you can tell how far each thread got by
+    // looking through its steps until you reach a step with result
+    // -2.
+    // Need to check if this history is linearizable: for each thread
+    // i which ends in a stuck state: let H[i] be the history obtained
+    // by removing all -2 steps except thread i keeps its first -2
+    // step.  Consider all (linearizable) perms of that schedule,
+    // execute on oracle, and if oracle ends in stuck state, OK.  if
+    // for any i, oracle does not end in stuck state: VIOLATION.
+    // (also checking results correspond to oracle).
+    
     for (int tid=0; tid<nthread; tid++) {
       int ns = schedule.nsteps[tid];
       if (ns > 0) {
@@ -265,16 +267,18 @@ int main() {
               counts[i] = nstep;
             }
           }
-          // have counts, compute perms..
+          // counts[i] is the number of steps executed by thread i
+          // and for thread tid it includes the last stuck step
 #ifdef NLINEAR
           int** perms = perm_compute(nthread, counts);
 #else
           int** perms = perm_compute_linear(nstep, schedule, counts);
 #endif
         }
+      }
     }
 
-  }
+    // TODO: need else clause around here
   
   tid_destroy();
   schedule_print(schedule);
