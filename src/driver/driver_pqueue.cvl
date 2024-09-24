@@ -51,6 +51,11 @@ void oracle_destroy(void * o) {
   free(o);
 }
 
+// pqueue is non-blocking so add is always enabled
+bool oracle_add_enabled(void * o, int a0, int a1) {
+  return true;
+}
+
 // insert into correct position based on score a1
 bool oracle_add(void * o, int a0, int a1) {
   SimplePQ spq = (SimplePQ)o;
@@ -68,6 +73,11 @@ bool oracle_contains(void * o, int a) {
   for (int i=0; i<n; i++)
     if (spq->data[i].value == a) return true;
   return false;
+}
+
+// pqueue is non-blocking so remove is always enabled
+bool oracle_remove_enabled(void * o, int a, int expect) {
+  return true;
 }
 
 // remove min, looking specifically for a node of minimal score and

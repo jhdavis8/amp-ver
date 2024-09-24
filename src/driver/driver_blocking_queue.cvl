@@ -1,3 +1,18 @@
+/* This driver implements a trusted oracle for bounded queues. It is a simple
+ * sequential implementation and thus does not actually block. The
+ * oracle_add_enabled and oracle_remove_enabled functions indicate whether the
+ * add and remove operations would block or proceed in a blocking queue being
+ * operated on by a single thread. Therefore, in the base driver, the user code
+ * for this oracle must check whether add and remove are enabled before calling
+ * the actual add or remove functions, respectively.
+ *
+ * Created  : 2024-Sept-23
+ * Modified : 2024-Sept-23
+ * Authors  : Josh Davis
+ * Verified Software Laboratory, Dept. Computer & Info. Sciences,
+ * University of Delaware.
+ */
+
 #include <stdbool.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -6,8 +21,13 @@
 #include "Queue.h"
 #include "driver.h"
 
+#ifndef INITIAL_CAPACITY
+#define INITIAL_CAPACITY 2
+#endif
+
 typedef struct SimpleQueue {
   int data[];
+  int capacity;
 } * SimpleQueue;
 
 void * collection_create() {
@@ -38,6 +58,7 @@ void collection_print(void * c) {
 void * oracle_create() {
   SimpleQueue sq = malloc(sizeof(struct SimpleQueue));
   $seq_init(&sq->data, 0, NULL);
+  int capacity = INITIAL_CAPACITY;
   return sq;
 }
 
@@ -45,13 +66,17 @@ void oracle_destroy(void * o) {
   free(o);
 }
 
-// add is always enabled for non-blocking queues
+// add is enabled iff the number of elements in the queue is less than the
+// capacity
 bool oracle_add_enabled(void * o, int a0, int a1) {
-  return true;
+  SimpleQueue sq = (SimpleQueue)o;
+  if ($seq_length(&sq->data) < sq->capacity) return true;
+  return false;
 }
 
 // append a0 to end.  a1 ignored.
 bool oracle_add(void * o, int a0, int a1) {
+  $assert(oracle_add_enabled(o, a0, a1));
   SimpleQueue sq = (SimpleQueue)o;
   int n = $seq_length(&sq->data);
   $seq_insert(&sq->data, n, &a0, 1);
@@ -62,16 +87,17 @@ bool oracle_contains(void * o, int a) {
   $assert(false);
 }
 
-// remove is always enabled for non-blocking queues
+// remove is enabled iff the queue is non-empty
 bool oracle_remove_enabled(void * o, int a, int expect) {
+  SimpleQueue sq = (SimpleQueue)o;
+  if ($seq_length(&sq->data) == 0) return false;
   return true;
 }
 
-// remove from pos 0.  a and expect are ignored
+// remove from pos 0. a and expect are ignored
 int oracle_remove(void * o, int a, int expect) {
+  $assert(oracle_remove_enabled(o, a, expect));
   SimpleQueue sq = (SimpleQueue)o;
-  int n = $seq_length(&sq->data);
-  if (n==0) return -1;
   int result;
   $seq_remove(&sq->data, 0, &result, 1);
   return result;
