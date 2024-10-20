@@ -1,8 +1,12 @@
+#ifndef _DLCATCH_H
+#define _DLCATCH_H
+/* Deadlocker catcher.  This module is used to model concurrent
+   (multithreaded) programs that execute operations that may block on
+   Condition variables.  It allows such a model to detect when a
+   deadlock occurs (because all threads are either terminated or
+   waiting, and at least one thread is not terminated) and exit
+   gracefully, reporting the deadlock. */
 #include "tid.h"
-//#include "seq.cvh"
-
-//static Condition stuckConds[];
-//static bool deadlock;
 
 /* Initialize the deadlock catcher.  This should be called before
    the threads are created */
@@ -15,7 +19,7 @@ void dlcatch_destroy();
    "await" call on the Condition cond.  This function returns true iff
    this call results in deadlock, i.e., all nonterminated threads are
    stuck waiting on some condition.  In the case of deadlock, the
-   global deadlock bit is set and all nontermianted threads are
+   global deadlock bit is set and all nonterminated threads are
    released from their awaits. */
 bool dlcatch_awaiting(Condition cond, int tid);
 
@@ -31,3 +35,5 @@ bool dlcatch_isDeadlocked();
 
 /* Tells whether thread tid has terminated. */
 bool dlcatch_isTerminated(int tid);
+
+#endif
