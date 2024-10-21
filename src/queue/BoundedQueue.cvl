@@ -21,6 +21,7 @@
 #include "Lock.h"
 #include "tid.h"
 #include "Condition.h"
+#include "dlcatch.h"
 
 #ifndef INITIAL_CAPACITY
 #define INITIAL_CAPACITY 2
@@ -96,6 +97,7 @@ T Queue_deq(Queue this) {
     // try...
     Condition_await(this->notEmptyCondition);
     // catch InterruptedException
+    if (dlcatch_isDeadlocked()) return -1;
   }
   Node old_head = this->head;
   result = this->head->next->value;
@@ -127,6 +129,7 @@ void Queue_enq(Queue this, T x) {
     // try...
     Condition_await(this->notFullCondition);
     // catch InterruptedException
+    if (dlcatch_isDeadlocked()) return;
   }
   Node e = Node_create(x);
   this->tail->next = e;
