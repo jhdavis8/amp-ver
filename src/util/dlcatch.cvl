@@ -1,62 +1,63 @@
+#include "Condition.h"
 #include "dlcatch.h"
 #include "tid.h"
 #include "seq.cvh"
 
 static Condition stuckConds[];
-static bool terminated[];
+static _Bool terminated[];
 static int nstuck; // number of nonterminated stuck threads
 static int num_nonterm; // number of nonterminated threads
-static bool deadlock;
+static _Bool deadlock;
 
 void dlcatch_init(int nthread) {
   Condition c = NULL;
   $seq_init(&stuckConds, nthread, &c);
-  bool b = false;
+  _Bool b = $false;
   $seq_init(&terminated, nthread, &b);
   nstuck = 0;
   num_nonterm = nthread;
-  deadlock = false;
+  deadlock = $false;
 }
 
 void dlcatch_destroy() {
   $seq_init(&stuckConds, 0, NULL);
 }
 
-bool dlcatch_awaiting(Condition cond, int tid) {
-  int nthread = tid_get_nthread();
-  assert(stuckConds[tid] == NULL);
+_Bool dlcatch_awaiting(Condition cond, int tid) {
+  int nthread = tid_nthread();
+  $assert(stuckConds[tid] == NULL);
   stuckConds[tid] = cond;
   nstuck++;
   if (nstuck == num_nonterm) { // deadlock!
-    deadlock = true;
+    deadlock = $true;
     for (int i=0; i<nthread; i++) {
       if (!terminated[i])
         Condition_releaseAllStuck(stuckConds[i]);
     }
-    return true;
+    return $true;
   }
-  return false;  
+  return $false;  
 }
 
 void dlcatch_release(int tid) {
-  assert(stuckConds[tid] != NULL);
+  $assert(stuckConds[tid] != NULL);
   stuckConds[tid] = NULL;
   nstuck--;
 }
 
 void dlcatch_terminate(int tid) {
-  assert(!terminated[tid]);
-  assert(stuckConds[tid] == NULL);
-  terminated[tid] = true;
+  $assert(!terminated[tid]);
+  $assert(stuckConds[tid] == NULL);
+  terminated[tid] = $true;
   num_nonterm--;
 }
 
 /* Returns the deadlock bit.  If true, all threads became deadlocked. */
-bool dlcatch_isDeadlocked() {
+_Bool dlcatch_isDeadlocked() {
   return deadlock;
 }
 
-bool dlcatch_isTerminated(int tid) {
+_Bool dlcatch_isTerminated(int tid) {
   return terminated[tid];
 }
 

@@ -1,3 +1,5 @@
+#ifndef _CONDITION_H
+#define _CONDITION_H
 /* Condition.cvl: model of Java Condition interface (condition variable)
  * Created  : 26-Feb-2024
  * Modified : 26-Feb-2024
@@ -17,3 +19,7 @@ void Condition_await(Condition cond);
 void Condition_signal(Condition cond);
 
 void Condition_signalAll(Condition cond);
+
+void Condition_releaseAllStuck(Condition cond);
+
+#endif
