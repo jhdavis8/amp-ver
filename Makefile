@@ -401,7 +401,9 @@ queue_schedules: out/BoundedQueue_S1 out/BoundedQueue_S2 out/BoundedQueue_S3 \
 
 QUEUE1 = $(SCHEDULE_DIR)/sched_queue_1.cvl
 QUEUE_COMMON_DEP = $(DRIVER_INC) $(DRIVER_SRC) $(DRIVER_QUEUE) Makefile
+QUEUE_B_COMMON_DEP = $(DRIVER_INC) $(DRIVER_SRC) $(DRIVER_QUEUE_B) Makefile
 QUEUE_COMMON_SRC = $(DRIVER_SRC) $(DRIVER_QUEUE)
+QUEUE_B_COMMON_SRC = $(DRIVER_SRC) $(DRIVER_QUEUE_B)
 
 QUEUE_SCHED_1 = $(SCHEDULE_DIR)/sched_queue_1.cvl
 QUEUE_SCHED_2 = $(SCHEDULE_DIR)/sched_queue_2.cvl
@@ -410,10 +412,10 @@ QUEUE_SCHED_3 = $(SCHEDULE_DIR)/sched_queue_3.cvl
 # BoundedQueue
 
 BOUNDEDQUEUE = $(QUEUE_DIR)/BoundedQueue.cvl
-BOUNDEDQUEUE_DEP = $(QUEUE_COMMON_DEP) $(BOUNDEDQUEUE) \
+BOUNDEDQUEUE_DEP = $(QUEUE_B_COMMON_DEP) $(BOUNDEDQUEUE) \
    $(LOCK_INC) $(LOCK_SRC) $(AI_INC) $(AI_SRC) \
    $(COND_INC) $(COND_SRC) $(TID_INC) $(TID_SRC)
-BOUNDEDQUEUE_SRC = $(DRIVER_SRC) $(DRIVER_DIR)/driver_queue_b.cvl \
+BOUNDEDQUEUE_SRC = $(QUEUE_B_COMMON_SRC) \
    $(BOUNDEDQUEUE) $(LOCK_SRC) $(AI_SRC) $(COND_SRC) $(TID_SRC)
 BoundedQueue_Outs = out/BoundedQueue_1.out out/BoundedQueue_2.out \
    out/BoundedQueue_3.out

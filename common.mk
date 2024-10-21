@@ -49,9 +49,15 @@ DRIVER_INC = $(INC)/driver.h $(INC)/perm.h $(INC)/schedule.h $(INC)/types.h \
      $(INC)/tid.h
 DRIVER_SRC = $(DRIVER_DIR)/driver_base.cvl $(DRIVER_DIR)/perm.c \
      $(DRIVER_DIR)/schedule.cvl $(SRC)/util/tid.cvl
-DRIVER_SET = $(DRIVER_DIR)/driver_set.cvl
-DRIVER_QUEUE = $(DRIVER_DIR)/driver_queue.cvl
-DRIVER_PQUEUE = $(DRIVER_DIR)/driver_pqueue.cvl
+DRIVER_SET = $(DRIVER_DIR)/driver_set_nb.cvl
+DRIVER_QUEUE = $(DRIVER_DIR)/driver_queue_nb.cvl
+DRIVER_PQUEUE = $(DRIVER_DIR)/driver_pqueue_nb.cvl
+DRIVER_SET_NB = $(DRIVER_DIR)/driver_set_nb.cvl
+DRIVER_QUEUE_NB = $(DRIVER_DIR)/driver_queue_nb.cvl
+DRIVER_PQUEUE_NB = $(DRIVER_DIR)/driver_pqueue_nb.cvl
+DRIVER_SET_B = $(DRIVER_DIR)/driver_set_b.cvl
+DRIVER_QUEUE_B = $(DRIVER_DIR)/driver_queue_b.cvl
+DRIVER_PQUEUE_B = $(DRIVER_DIR)/driver_pqueue_b.cvl
 
 # Verification commands
 VERIFY = $(CIVL) verify -userIncludePath=$(INC)
