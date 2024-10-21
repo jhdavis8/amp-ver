@@ -132,6 +132,9 @@ public class AMPVer {
   /** Number of Java threads to use */
   private int ncore = 4;
 
+  /** Is this a blocking (not nonblocking) data structure? */
+  private boolean blocking = false;
+
   /** Iterator over schedules. */
   private Iterator<Schedule> schedIter = null;
 
@@ -157,7 +160,8 @@ public class AMPVer {
     File srcDir = new File(rootDir, "src");
     File driverDir = new File(srcDir, "driver");
     File driverBase = new File(driverDir, "driver_base.cvl");
-    File driver2 = new File(driverDir, "driver_"+kindStr()+".cvl");
+    File driver2 = new File(driverDir, "driver_" + kindStr() + "_" +
+                            (blocking ? "b" : "nb") + ".cvl");
     File permsSrc = new File(driverDir, "perm.c");
     File scheduleSrc = new File(driverDir, "schedule.cvl");
     File utilDir = new File(srcDir, "util");
@@ -337,6 +341,9 @@ public class AMPVer {
         break;
       case "ncore":
         ncore = nat(key, value);
+        break;
+      case "blocking":
+        blocking = bool(key, value);
         break;
       default:
         civlOptions.add(arg);

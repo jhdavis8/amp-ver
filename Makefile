@@ -413,15 +413,15 @@ BOUNDEDQUEUE = $(QUEUE_DIR)/BoundedQueue.cvl
 BOUNDEDQUEUE_DEP = $(QUEUE_COMMON_DEP) $(BOUNDEDQUEUE) \
    $(LOCK_INC) $(LOCK_SRC) $(AI_INC) $(AI_SRC) \
    $(COND_INC) $(COND_SRC) $(TID_INC) $(TID_SRC)
-BOUNDEDQUEUE_SRC = $(QUEUE_COMMON_SRC) $(BOUNDEDQUEUE) $(LOCK_SRC) \
-   $(AI_SRC) $(COND_SRC) $(TID_SRC)
+BOUNDEDQUEUE_SRC = $(DRIVER_SRC) $(DRIVER_DIR)/driver_queue_b.cvl \
+   $(BOUNDEDQUEUE) $(LOCK_SRC) $(AI_SRC) $(COND_SRC) $(TID_SRC)
 BoundedQueue_Outs = out/BoundedQueue_1.out out/BoundedQueue_2.out \
    out/BoundedQueue_3.out
 
 $(BoundedQueue_Outs): out/BoundedQueue_%.out: $(MAIN_CLASS) $(BOUNDEDQUEUE_DEP)
 	rm -rf $(TMP)/BoundedQueue_$*.dir.tmp
 	rm -rf out/BoundedQueue_$*.dir
-	-$(AMPVER) $(QUEUE_LIMITS_$*) -tmpDir=$(TMP)/BoundedQueue_$*.dir.tmp \
+	-$(AMPVER) $(QUEUE_LIMITS_$*) -blocking=true -tmpDir=$(TMP)/BoundedQueue_$*.dir.tmp \
   -checkMemoryLeak=false $(BOUNDEDQUEUE) $(LOCK_SRC) $(AI_SRC) $(COND2_SRC) \
   $(DLCATCH_SRC) >out/BoundedQueue_$*.out.tmp
 	mv $(TMP)/BoundedQueue_$*.out.tmp out/BoundedQueue_$*.out
