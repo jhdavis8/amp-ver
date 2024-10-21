@@ -58,7 +58,7 @@ void collection_print(void * c) {
 void * oracle_create() {
   SimpleQueue sq = malloc(sizeof(struct SimpleQueue));
   $seq_init(&sq->data, 0, NULL);
-  int capacity = INITIAL_CAPACITY;
+  sq->capacity = INITIAL_CAPACITY;
   return sq;
 }
 
@@ -70,8 +70,7 @@ void oracle_destroy(void * o) {
 // capacity
 bool oracle_add_enabled(void * o, int a0, int a1) {
   SimpleQueue sq = (SimpleQueue)o;
-  if ($seq_length(&sq->data) < sq->capacity) return true;
-  return false;
+  return $seq_length(&sq->data) < sq->capacity;
 }
 
 // append a0 to end.  a1 ignored.
@@ -90,8 +89,7 @@ bool oracle_contains(void * o, int a) {
 // remove is enabled iff the queue is non-empty
 bool oracle_remove_enabled(void * o, int a, int expect) {
   SimpleQueue sq = (SimpleQueue)o;
-  if ($seq_length(&sq->data) == 0) return false;
-  return true;
+  return $seq_length(&sq->data) > 0;
 }
 
 // remove from pos 0. a and expect are ignored

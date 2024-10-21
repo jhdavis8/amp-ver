@@ -1,0 +1,125 @@
+#include <stdbool.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <seq.cvh>
+#include "types.h"
+#include "PQueue.h"
+#include "driver.h"
+
+#ifndef INITIAL_CAPACITY
+#define INITIAL_CAPACITY 2
+#endif
+
+typedef struct Node {
+  int value;
+  int score;
+} Node;
+
+// sequence of nodes ordered by increasing (or non-decreasing) score
+typedef struct SimplePQ_s {
+  Node data[];
+  int capacity;
+} * SimplePQ;
+
+void * collection_create() {
+  return PQueue_create();
+}
+
+void collection_destroy(void * c) {
+  PQueue_destroy(c);
+}
+
+bool collection_add(void * c, int a0, int a1) {
+  PQueue_add(c, a0, a1);
+  return true;
+}
+
+bool collection_contains(void * c, int a) {
+  $assert(false);
+}
+
+int collection_remove(void * c, int a) {
+  return PQueue_removeMin(c);
+}
+
+void collection_print(void * c) {
+  PQueue_print(c);
+}
+
+void * oracle_create() {
+  SimplePQ spq = malloc(sizeof(struct SimplePQ_s));
+  $seq_init(&spq->data, 0, NULL);
+  spq->capacity = INITIAL_CAPACITY;
+  return spq;
+}
+
+void oracle_destroy(void * o) {
+  free(o);
+}
+
+// add is enabled iff the number of elements in the pqueue is less than the
+// capacity
+bool oracle_add_enabled(void * o, int a0, int a1) {
+  SimplePQ spq = (SimplePQ)o;
+  return $seq_length(&spq->data) < spq->capacity;
+}
+
+// insert into correct position based on score a1
+bool oracle_add(void * o, int a0, int a1) {
+  $assert(oracle_add_enabled(o, a0, a1));
+  SimplePQ spq = (SimplePQ)o;
+  Node node = {a0, a1};
+  int i=0, n = $seq_length(&spq->data);
+  while (i<n && spq->data[i].score < a1) i++;
+  $seq_insert(&spq->data, i, &node, 1);
+  return true;
+}
+
+// not needed but just in case...
+bool oracle_contains(void * o, int a) {
+  SimplePQ spq = (SimplePQ)o;
+  int n = $seq_length(&spq->data);
+  for (int i=0; i<n; i++)
+    if (spq->data[i].value == a) return true;
+  return false;
+}
+
+// remove is enabled iff the pqueue is not empty
+bool oracle_remove_enabled(void * o, int a, int expect) {
+  SimplePQ spq = (SimplePQ)o;
+  return $seq_length(&spq->data) > 0;
+}
+
+// remove min, looking specifically for a node of minimal score and
+// value expect if possible.  Argument a is ignored.
+int oracle_remove(void * o, int a, int expect) {
+  $assert(oracle_remove_enabled(o, a, expect));
+  SimplePQ spq = (SimplePQ)o;
+  int n = $seq_length(&spq->data);
+  if (n==0) return -1; // no choice if spq is empty
+  if (expect >= 0) {
+    int minScore = spq->data[0].score, i=0;
+    while (i<n && spq->data[i].score == minScore) {
+      if (spq->data[i].value == expect) {
+        $seq_remove(&spq->data, i, NULL, 1);
+        return expect;
+      }
+      i++;
+    }
+  }
+  // either expect == -1 (and n>0) or expect not found in spq's
+  // minimum score values.  Either way, return the first item.
+  // it will disagree with the expected result, as it should...
+  int result = spq->data[0].value;
+  $seq_remove(&spq->data, 0, NULL, 1);
+  return result;
+}
+
+void oracle_print(void * o) {
+  SimplePQ spq = (SimplePQ)o;
+  int n = $seq_length(&spq->data);
+  printf("{ ");
+  for (int i=0; i<n; i++)
+    printf("(%d,%d) ", spq->data[i].value, spq->data[i].score);
+  printf("}");
+}
