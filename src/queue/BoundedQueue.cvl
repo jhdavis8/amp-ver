@@ -97,7 +97,10 @@ T Queue_deq(Queue this) {
     // try...
     Condition_await(this->notEmptyCondition);
     // catch InterruptedException
-    if (dlcatch_isDeadlocked()) return -1;
+    if (dlcatch_isDeadlocked()) {
+      Lock_release(this->deqLock);
+      return -1;
+    }
   }
   Node old_head = this->head;
   result = this->head->next->value;
@@ -109,12 +112,14 @@ T Queue_deq(Queue this) {
     mustWakeEnqueuers = true;
   }
   // finally...
+  //$print("Thread releasing deqlock\n");
   Lock_release(this->deqLock);
   if (mustWakeEnqueuers) {
     Lock_acquire(this->enqLock);
     // try...
     Condition_signalAll(this->notFullCondition);
     // finally...
+    //$print("Thread releasing enqlock\n");
     Lock_release(this->enqLock);
   }
   return result;
@@ -129,7 +134,10 @@ void Queue_enq(Queue this, T x) {
     // try...
     Condition_await(this->notFullCondition);
     // catch InterruptedException
-    if (dlcatch_isDeadlocked()) return;
+    if (dlcatch_isDeadlocked()) {
+      Lock_release(this->enqLock);
+      return;
+    }
   }
   Node e = Node_create(x);
   this->tail->next = e;
@@ -138,12 +146,14 @@ void Queue_enq(Queue this, T x) {
     mustWakeDequeuers = true;
   }
   // finally...
+  //$print("Thread releasing enqlock\n");
   Lock_release(this->enqLock);
   if (mustWakeDequeuers) {
     Lock_acquire(this->deqLock);
     // try...
     Condition_signalAll(this->notEmptyCondition);
     // finally...
+    //$print("Thread releasing deqlock\n");
     Lock_release(this->deqLock);
   }
 }

@@ -200,6 +200,7 @@ static void thread(int tid, void * c) {
       break;
     set_result(tid, s, step.result);
   }
+  dlcatch_terminate(tid);
   tid_unregister();
 }
 
@@ -207,6 +208,7 @@ static _Bool match(void * collection, int nstep, int num_perms,
                    int ** perms, int stuckID) {
   void * oracle = NULL;
   int perm_id = 0;
+  printf("numPerms=%d\n", num_perms);
   for (; perm_id < num_perms; perm_id++) {
     // check if this perm has been filtered out as non-linearizable
     // note: if nstep=1, the linearizability condition holds vacuously

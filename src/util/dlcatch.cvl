@@ -3,8 +3,8 @@
 #include "tid.h"
 #include "seq.cvh"
 
-static Condition stuckConds[];
-static _Bool terminated[];
+static Condition stuckConds[]; // length nthread
+static _Bool terminated[]; // length nthread
 static int nstuck; // number of nonterminated stuck threads
 static int num_nonterm; // number of nonterminated threads
 static _Bool deadlock;
@@ -24,6 +24,7 @@ void dlcatch_destroy() {
 }
 
 _Bool dlcatch_awaiting(Condition cond, int tid) {
+  //$print("Thread ", tid, " awaiting.\n");
   int nthread = tid_nthread();
   $assert(stuckConds[tid] == NULL);
   stuckConds[tid] = cond;
@@ -47,9 +48,17 @@ void dlcatch_release(int tid) {
 
 void dlcatch_terminate(int tid) {
   $assert(!terminated[tid]);
-  $assert(stuckConds[tid] == NULL);
   terminated[tid] = $true;
   num_nonterm--;
+  //$print("Thread ", tid, " terminating.\n");
+  if (nstuck == num_nonterm && nstuck >= 1) { // deadlock!
+    deadlock = $true;
+    int nthread = tid_nthread();
+    for (int i=0; i<nthread; i++) {
+      if (!terminated[i])
+        Condition_releaseAllStuck(stuckConds[i]);
+    }
+  }
 }
 
 /* Returns the deadlock bit.  If true, all threads became deadlocked. */
