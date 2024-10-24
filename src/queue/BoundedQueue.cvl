@@ -20,8 +20,7 @@
 #include "AtomicInteger.h"
 #include "Lock.h"
 #include "tid.h"
-#include "Condition.h"
-#include "dlcatch.h"
+#include "Condition_dl.h"
 
 #ifndef INITIAL_CAPACITY
 #define INITIAL_CAPACITY 2
@@ -97,7 +96,7 @@ T Queue_deq(Queue this) {
     // try...
     Condition_await(this->notEmptyCondition);
     // catch InterruptedException
-    if (dlcatch_isDeadlocked()) {
+    if (Condition_isDeadlocked()) {
       Lock_release(this->deqLock);
       return -1;
     }
@@ -134,7 +133,7 @@ void Queue_enq(Queue this, T x) {
     // try...
     Condition_await(this->notFullCondition);
     // catch InterruptedException
-    if (dlcatch_isDeadlocked()) {
+    if (Condition_isDeadlocked()) {
       Lock_release(this->enqLock);
       return;
     }

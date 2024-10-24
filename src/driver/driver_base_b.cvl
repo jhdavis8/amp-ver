@@ -1,5 +1,5 @@
 #pragma CIVL ACSL
-#include "dlcatch.h"
+#include "Condition_dl.h"
 #include "driver.h"
 #include "perm.h"
 #include "schedule.h"
@@ -196,11 +196,11 @@ static void thread(int tid, void * c) {
     } else {
       $assert(false);
     }
-    if (dlcatch_isDeadlocked())
+    if (Condition_isDeadlocked())
       break;
     set_result(tid, s, step.result);
   }
-  dlcatch_terminate(tid);
+  Condition_terminate(tid);
   tid_unregister();
 }
 
@@ -285,12 +285,12 @@ int main() {
   printf("Collection initial state. ");
   collection_print(collection);
   printf("\n");
-  dlcatch_init(nthread);
+  Condition_init(nthread);
   $parfor (int tid : 0 .. nthread-1) {
     thread(tid, collection);
   }
-  _Bool deadlock = dlcatch_isDeadlocked();
-  dlcatch_destroy();
+  _Bool deadlock = Condition_isDeadlocked();
+  Condition_finalize();
   tid_destroy();
   schedule_print(schedule);
   printf("Collection final state... ");

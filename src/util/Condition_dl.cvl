@@ -43,7 +43,7 @@ void Condition_init(int nthread) {
   deadlock = $false;
 }
 
-void Condition_destroy() {
+void Condition_finalize() {
   $seq_init(&stuckConds, 0, NULL);
 }
 

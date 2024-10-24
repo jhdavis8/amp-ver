@@ -17,7 +17,7 @@ void Condition_init(int nthread);
 
 /* Destroys the deadlock catcher.  This should be called once, after
    threads terminate. */
-void Condition_destroy();
+void Condition_finalize();
 
 /* Declares that thread tid has terminated.  Each thread should call
    this function, using its own tid, just before it terminates, to
