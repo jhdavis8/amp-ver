@@ -159,9 +159,11 @@ public class AMPVer {
     File includeDir = new File(rootDir, "include");
     File srcDir = new File(rootDir, "src");
     File driverDir = new File(srcDir, "driver");
-    File driverBase = new File(driverDir, "driver_base.cvl");
-    File driver2 = new File(driverDir, "driver_" + kindStr() + "_" +
-                            (blocking ? "b" : "nb") + ".cvl");
+    File driverBase =
+      new File(driverDir, "driver_base_" + (blocking ? "b" : "nb") + ".cvl");
+    File driver2 =
+      new File(driverDir, "driver_" + kindStr() + "_" +
+               (blocking ? "b" : "nb") + ".cvl");
     File permsSrc = new File(driverDir, "perm.c");
     File scheduleSrc = new File(driverDir, "schedule.cvl");
     File utilDir = new File(srcDir, "util");

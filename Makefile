@@ -130,9 +130,9 @@ HASHSET_LIMITS_3  = -kind=set -hashKind=ident -valueBound=3 -nthread=1..3 \
 HASHSET_LIMITS_4  = -kind=set -hashKind=ident -valueBound=3 -nthread=3 \
      -nstep=4 -npreAdd=0 -threadSym -checkTermination -ncore=$(NCORE)
 
-HASH_COMMON_DEP = $(DRIVER_INC) $(DRIVER_SRC) $(DRIVER_SET) \
+HASH_COMMON_DEP = $(DRIVER_INC) $(DRIVER_NB_SRC) $(DRIVER_SET) \
      $(HASH_INC) $(HASH_SRC) $(LOCK_INC) $(LOCK_SRC) $(ARRAYLIST_INC) $(ARRAYLIST_SRC) Makefile
-HASH_COMMON_SRC = $(DRIVER_SRC) $(DRIVER_SET) $(HASH_SRC) $(LOCK_SRC) $(ARRAYLIST_SRC)
+HASH_COMMON_SRC = $(DRIVER_NB_SRC) $(DRIVER_SET) $(HASH_SRC) $(LOCK_SRC) $(ARRAYLIST_SRC)
 
 SET_SCHED_1 = $(SCHEDULE_DIR)/sched_set_1.cvl
 SET_SCHED_2 = $(SCHEDULE_DIR)/sched_set_2.cvl
@@ -236,8 +236,8 @@ LIST_LIMITS_4  = -kind=set -hashKind=ident -valueBound=3 -nthread=3 \
 #      -nstep=4 -npreAdd=0 -threadSym -checkTermination -ncore=2
 # # about 3 minutes each with 2 cores, or 34 hours
 
-LIST_COMMON_DEP = $(DRIVER_INC) $(DRIVER_SRC) $(DRIVER_SET) Makefile
-LIST_COMMON_SRC = $(DRIVER_SRC) $(DRIVER_SET)
+LIST_COMMON_DEP = $(DRIVER_INC) $(DRIVER_NB_SRC) $(DRIVER_SET) Makefile
+LIST_COMMON_SRC = $(DRIVER_NB_SRC) $(DRIVER_SET)
 
 LIST_SCHED_1 = $(SCHEDULE_DIR)/sched_set_1.cvl
 LIST_SCHED_2 = $(SCHEDULE_DIR)/sched_set_2.cvl
@@ -400,7 +400,7 @@ queue_schedules: out/BoundedQueue_S1 out/BoundedQueue_S2 out/BoundedQueue_S3 \
 	out/LockFreeQueue_S1 out/LockFreeQueue_S2 out/LockFreeQueue_S3
 
 QUEUE1 = $(SCHEDULE_DIR)/sched_queue_1.cvl
-QUEUE_COMMON_DEP = $(DRIVER_INC) $(DRIVER_SRC) $(DRIVER_QUEUE) Makefile
+QUEUE_COMMON_DEP = $(DRIVER_INC) $(DRIVER_NB_SRC) $(DRIVER_QUEUE) Makefile
 QUEUE_B_COMMON_DEP = $(DRIVER_INC) $(DRIVER_SRC) $(DRIVER_QUEUE_B) Makefile
 QUEUE_COMMON_SRC = $(DRIVER_SRC) $(DRIVER_QUEUE)
 QUEUE_B_COMMON_SRC = $(DRIVER_SRC) $(DRIVER_QUEUE_B)

@@ -1,0 +1,173 @@
+/* 
+   Filename : Condition_dl.cvl
+   Created  : 2024-02-26
+   Modified : 2024-10-23
+   Author   : Stephen F. Siegel and Joshua H. Davis
+
+   Model of Java Condition interface (condition variable) that also
+   detects deadlock.  When a deadlock occurs due to all nonterminated
+   threads being blocked in an await call, this implementation
+   releases all threads and sets a deadlock flag.  The client can
+   check the deadlock flag immediately after each call to await and
+   take appropriate action if a deadlock occurs.  Appropriate action
+   might mean releasing the lock(s) held and returning immediately.
+ */
+#pragma CIVL ACSL
+#include "Condition_dl.h"
+#include "Lock.h"
+#include "seq.cvh"
+#include "tid.h"
+#include <stdbool.h>
+#include <stdlib.h>
+
+struct Condition {
+  Lock lock;
+  int nthread;
+  bool * inWaitingRoom;
+  int nwait; // number of threads in the waiting room
+};
+
+static Condition stuckConds[]; // length nthread
+static _Bool terminated[]; // length nthread
+static int nstuck; // number of nonterminated stuck threads
+static int num_nonterm; // number of nonterminated threads
+static _Bool deadlock;
+
+void Condition_init(int nthread) {
+  Condition c = NULL;
+  $seq_init(&stuckConds, nthread, &c);
+  _Bool b = $false;
+  $seq_init(&terminated, nthread, &b);
+  nstuck = 0;
+  num_nonterm = nthread;
+  deadlock = $false;
+}
+
+void Condition_destroy() {
+  $seq_init(&stuckConds, 0, NULL);
+}
+
+/* Removes all threads from waiting room for cond. */
+static $atomic_f void releaseAllStuck(Condition cond) {
+  int n = tid_nthread();
+  for (int i=0; i<n; i++)
+    cond->inWaitingRoom[i] = false;
+  cond->nwait = 0;
+}
+
+/* Marks the given thread as no longer stuck in any waiting room. */
+static void release(int tid) {
+  $assert(stuckConds[tid] != NULL);
+  stuckConds[tid] = NULL;
+  nstuck--;
+}
+
+void Condition_terminate(int tid) {
+  $assert(!terminated[tid]);
+  terminated[tid] = $true;
+  num_nonterm--;
+  if (nstuck == num_nonterm && nstuck >= 1) { // deadlock!
+    deadlock = $true;
+    int nthread = tid_nthread();
+    for (int i=0; i<nthread; i++) {
+      if (!terminated[i])
+        releaseAllStuck(stuckConds[i]);
+    }
+  }
+}
+
+_Bool Condition_isDeadlocked() {
+  return deadlock;
+}
+
+Condition Condition_create(Lock lock) {
+  int nthread = tid_nthread();
+  Condition result = malloc(sizeof(struct Condition));
+  result->lock = lock;
+  result->nthread = nthread;
+  int x = 0;
+  result->inWaitingRoom = malloc(nthread*sizeof(bool));
+  for (int i=0; i<nthread; i++)
+    result->inWaitingRoom[i] = false;
+  result->nwait = 0;
+  return result;
+}
+
+void Condition_destroy(Condition cond) {
+  free(cond->inWaitingRoom);
+  free(cond);
+}
+
+static _Bool awaiting(Condition cond, int tid) {
+  int nthread = tid_nthread();
+  $assert(stuckConds[tid] == NULL);
+  stuckConds[tid] = cond;
+  nstuck++;
+  if (nstuck == num_nonterm) { // deadlock!
+    deadlock = $true;
+    for (int i=0; i<nthread; i++) {
+      if (!terminated[i])
+        releaseAllStuck(stuckConds[i]);
+    }
+    return $true;
+  }
+  return $false;  
+}
+
+/*@ depends_on \nothing; */
+static $atomic_f void wait1(Condition cond, int tid) {
+  $assert(Lock_isHeldByCurrentThread(cond->lock));
+  cond->inWaitingRoom[tid] = true;
+  if (awaiting(cond, tid)) {
+    // deadlock occurred. everyone was released
+    Lock_release(cond->lock);
+    return;
+  }
+  Lock_release(cond->lock);
+  cond->nwait++;
+}
+
+// Leave the waiting room once signaled
+/*@ depends_on \nothing; */
+static $atomic_f void wait2(Condition cond, int tid) {
+  $when(!cond->inWaitingRoom[tid]);
+}
+
+void Condition_await(Condition cond) {
+  int tid = tid_get();
+  wait1(cond, tid);
+  wait2(cond, tid);
+  Lock_acquire(cond->lock);
+}
+
+/*@ depends_on \access(cond); */
+$atomic_f void Condition_signal(Condition cond) {
+  int n = tid_nthread(), tid = tid_get();
+  $assert(Lock_isHeldByCurrentThread(cond->lock));
+  if (cond->nwait == 0) return;
+  int c = $choose_int(cond->nwait); // choose c in 0..nwait-1
+  for (int i=0; i<n; i++) {
+    if (cond->inWaitingRoom[i]) {
+      if (c == 0) {
+        cond->inWaitingRoom[i] = false;
+        release(i);
+        cond->nwait--;
+        return;
+      }
+      c--;
+    }
+  }
+}
+
+/*@ depends_on \access(cond); */
+$atomic_f void Condition_signalAll(Condition cond) {
+  int n = tid_nthread(), tid = tid_get();
+  $assert(Lock_isHeldByCurrentThread(cond->lock));
+  for (int i=0; i<n; i++) {
+    if (cond->inWaitingRoom[i]) {
+      cond->inWaitingRoom[i] = false;
+      release(i);
+      cond->nwait--;
+    }
+  }
+}

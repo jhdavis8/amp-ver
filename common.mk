@@ -22,7 +22,6 @@ QUEUE_DIR = $(SRC)/queue
 PQUEUE_DIR = $(SRC)/pqueue
 SCHEDULE_DIR = $(SRC)/schedule
 
-
 # Important files
 AR_INC = $(INC)/AtomicReference.cvh
 AR_SRC = $(SRC)/util/AtomicReference.cvl
@@ -34,7 +33,8 @@ AI_INC = $(INC)/AtomicInteger.h
 AI_SRC = $(SRC)/util/AtomicInteger.cvl
 COND_INC = $(INC)/Condition.h
 COND_SRC = $(SRC)/util/Condition.cvl
-COND2_SRC = $(SRC)/util/Condition2.cvl # handles "stuck" executions
+COND2_INC = $(INC)/Condition_dl.h
+COND2_SRC = $(SRC)/util/Condition_dl.cvl
 TID_INC = $(INC)/tid.h
 TID_SRC = $(SRC)/util/tid.cvl
 HASH_INC = $(INC)/hash.cvh
@@ -44,20 +44,18 @@ LOCK_SRC = $(SRC)/util/ReentrantLock.cvl
 FAIRLOCK_SRC = $(SRC)/util/FairReentrantLock.cvl
 ARRAYLIST_INC = $(INC)/ArrayList.h
 ARRAYLIST_SRC = $(SRC)/util/ArrayList.cvl
-DLCATCH_SRC = $(SRC)/util/dlcatch.cvl
 DRIVER_INC = $(INC)/driver.h $(INC)/perm.h $(INC)/schedule.h $(INC)/types.h \
-     $(INC)/tid.h
-DRIVER_SRC = $(DRIVER_DIR)/driver_base.cvl $(DRIVER_DIR)/perm.c \
-     $(DRIVER_DIR)/schedule.cvl $(SRC)/util/tid.cvl
-DRIVER_SET = $(DRIVER_DIR)/driver_set_nb.cvl
-DRIVER_QUEUE = $(DRIVER_DIR)/driver_queue_nb.cvl
-DRIVER_PQUEUE = $(DRIVER_DIR)/driver_pqueue_nb.cvl
-DRIVER_SET_NB = $(DRIVER_DIR)/driver_set_nb.cvl
-DRIVER_QUEUE_NB = $(DRIVER_DIR)/driver_queue_nb.cvl
-DRIVER_PQUEUE_NB = $(DRIVER_DIR)/driver_pqueue_nb.cvl
+  $(INC)/tid.h
+DRIVER_B_SRC = $(DRIVER_DIR)/driver_base_b.cvl $(DRIVER_DIR)/perm.c \
+  $(DRIVER_DIR)/schedule.cvl $(SRC)/util/tid.cvl
+DRIVER_NB_SRC = $(DRIVER_DIR)/driver_base_nb.cvl $(DRIVER_DIR)/perm.c \
+  $(DRIVER_DIR)/schedule.cvl $(SRC)/util/tid.cvl
 DRIVER_SET_B = $(DRIVER_DIR)/driver_set_b.cvl
+DRIVER_SET_NB = $(DRIVER_DIR)/driver_set_nb.cvl
 DRIVER_QUEUE_B = $(DRIVER_DIR)/driver_queue_b.cvl
+DRIVER_QUEUE_NB = $(DRIVER_DIR)/driver_queue_nb.cvl
 DRIVER_PQUEUE_B = $(DRIVER_DIR)/driver_pqueue_b.cvl
+DRIVER_PQUEUE_NB = $(DRIVER_DIR)/driver_pqueue_nb.cvl
 
 # Verification commands
 VERIFY = $(CIVL) verify -userIncludePath=$(INC)
