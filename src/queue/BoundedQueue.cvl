@@ -168,6 +168,8 @@ void Queue_print(Queue this) {
   printf("}");
 }
 
+// TODO: Fix this main function to init and finalize the condition, for main
+// thread, and call terminate for worker threads
 #ifdef _BOUNDED_QUEUE_MAIN
 int main() {
   tid_init(3);

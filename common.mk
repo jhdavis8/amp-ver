@@ -71,3 +71,18 @@ clean::
 	rm -rf CIVLREP AVREP_* *~ *.tmp a.out *.exec *.o
 
 .PHONY: myall clean
+
+all: $(MAIN_CLASS)
+
+SOURCES = $(JROOT)/src/ampver/module-info.java \
+    $(JSRC)/AMPVer.java \
+    $(JSRC)/Step.java \
+    $(JSRC)/Schedule.java \
+    $(JSRC)/SetScheduleIterator.java \
+    $(JSRC)/QueueScheduleIterator.java \
+    $(JSRC)/PQScheduleIterator.java \
+    $(JSRC)/AVUtil.java
+
+$(MAIN_CLASS): $(SOURCES)
+	$(JAVAC) -d $(JROOT)/bin/ampver \
+          -p $(CIVL_ROOT)/mods/dev.civl.mc/bin $(SOURCES)

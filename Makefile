@@ -1,17 +1,19 @@
 # ------------------------------------------------------------------------------------
-# AMPVer:  A CIVL Model-Checking Verification Framework for Concurrent Data Structures
+# AMPVer: A CIVL Model-Checking Verification Framework for Concurrent Data
+# Structures
 #
 # This is the Makefile for AMPVer.
 #
 # This file includes rules to run all the experiments in the paper.
 #
-# The core experiments are divided into four categories: (hash) sets, lists, queues,
-# and priority queues. Each category has multiple sets of limits, which are the
-# parameters for the experiments passed to the AMPVer tool. The limits are defined in
-# the variables HASHSET_LIMITS_n, LIST_LIMITS_n, QUEUE_LIMITS_n, and PQUEUE_LIMITS_n,
-# where n is the number of the limit set. For example, HASHSET_LIMITS_1 is the limit
-# set for the first and smallest core set experiment. To run all of the core
-# experiments for a particular category and size, make the corresponding target.
+# The core experiments are divided into four categories: (hash) sets, lists,
+# queues, and priority queues. Each category has multiple sets of limits, which
+# are the parameters for the experiments passed to the AMPVer tool. The limits
+# are defined in the variables HASHSET_LIMITS_n, LIST_LIMITS_n, QUEUE_LIMITS_n,
+# and PQUEUE_LIMITS_n, where n is the number of the limit set. For example,
+# HASHSET_LIMITS_1 is the limit set for the first and smallest core set
+# experiment. To run all of the core experiments for a particular category and
+# size, make the corresponding target.
 #
 # Below is a list of the targets for each category:
 #
@@ -20,28 +22,30 @@
 #  Queues: queue_1 queue_2 queue_3
 #  Priority Queues: pqueue_1 pqueue_2 pqueue_3 pqueue_4
 #
-# For an example, to verify all lists using the second set of limits, one would run:
+# For an example, to verify all lists using the second set of limits, one would
+# run:
 #
 #  `make list_2`
 #
-# The output of each experiment is stored in the out/ directory. The summary output
-# for each data structure is stored in a file named out/DS_n.out, where DS is the name
-# of the data structure and n is the limit set. The outputs for each schedule are
-# stored in separate files in under a directory named out/DS_n.dir, following the same
-# naming convention. For example, the output for the CoarseHashSet data structure
-# using the first set of limits is stored in out/CoarseHashSet_1.out, and the output
-# for the first schedule is stored in out/CoarseHashSet_1.dir/schedule_1.out, along
-# with the CIVL schedule configuration file as schedule_1.cvl. To run just one data
-# structure and limit set combination, one can run the corresponding target. For
-# example, to run just the CoarseHashSet data structure using the first set of limits,
-# one would run:
+# The output of each experiment is stored in the out/ directory. The summary
+# output for each data structure is stored in a file named out/DS_n.out, where
+# DS is the name of the data structure and n is the limit set. The outputs for
+# each schedule are stored in separate files in under a directory named
+# out/DS_n.dir, following the same naming convention. For example, the output
+# for the CoarseHashSet data structure using the first set of limits is stored
+# in out/CoarseHashSet_1.out, and the output for the first schedule is stored in
+# out/CoarseHashSet_1.dir/schedule_1.out, along with the CIVL schedule
+# configuration file as schedule_1.cvl. To run just one data structure and limit
+# set combination, one can run the corresponding target. For example, to run
+# just the CoarseHashSet data structure using the first set of limits, one would
+# run:
 #
 #  `make out/CoarseHashSet_1.out`
 #
-# Some data structures have additional variants that can also be verified. The variant
-# names are appended to the data structure name. The available variants are listed and
-# described below. These variants are included in the core experiment targets
-# described above.
+# Some data structures have additional variants that can also be verified. The
+# variant names are appended to the data structure name. The available variants
+# are listed and described below. These variants are included in the core
+# experiment targets described above.
 #
 # LockFreeList: LockFreeListOriginal
 #  - Original: uses the original version of the LockFreeList data structure as
@@ -52,160 +56,44 @@
 #  - Fair: uses a fair ReentrantLock instead of the original ReentrantLock. Also
 #    passes the -fair flag to AMPVer, which indicates thread scheduling must be
 #    fair.
-#  - NoCycles: removes the -checkTermination flag from AMPVer, which means AMPVer
-#    will not check for cycle violations.
+#  - NoCycles: removes the -checkTermination flag from AMPVer, which means
+#    AMPVer will not check for cycle violations.
 #
 # SkipQueue: SkipQueuePatched
-#  - Patched: uses a patched version of the SkipQueue data structure that fixes the
-#    cycle bug in FindAndMarkMin as described in the paper.
+#  - Patched: uses a patched version of the SkipQueue data structure that fixes
+#    the cycle bug in FindAndMarkMin as described in the paper.
 #
-# In addition to the core experiments above, the Makefile also includes targets for
-# running particular individual schedules of interest. These targets are described
-# below. Currently, the only schedules of interest are for priority queues.
+# In addition to the core experiments above, the Makefile also includes targets
+# for running particular individual schedules of interest. These targets are
+# described below. Currently, the only schedules of interest are for priority
+# queues.
 #
 # PQUEUE_SCHED_1: a schedule that reveals the non-linearizable behavior in
 #   SkipQueuePatched.
 # PQUEUE_SCHED_2: a schedule that reveals the cycle violation in SkipQueue.
-# PQUEUE_SCHED_3: same as PQUEUE_SCHED_2, but one fewer pre-add and one fewer thread.
-# PQUEUE_SCHED_4: a schedule of similar size to the above that reveals no defect in
-#   SkipQueue or SkipQueuePatched.
+# PQUEUE_SCHED_3: same as PQUEUE_SCHED_2, but one fewer pre-add and one fewer
+#   thread.
+# PQUEUE_SCHED_4: a schedule of similar size to the above that reveals no
+#   defect in SkipQueue or SkipQueuePatched.
 #
-# Individual schedules can be run using a target of the form out/DS_Sn, where DS is
-# the name of the data structure, including any variants, and n is the number of the
-# schedule. Note the use of the letter S before the schedule number to indicate that
-# it is a schedule rule. The output of the schedule is stored in out/DS_Sn. For
-# example, to run the first schedule for SkipQueuePatched, one would run:
+# Individual schedules can be run using a target of the form out/DS_Sn, where DS
+# is the name of the data structure, including any variants, and n is the number
+# of the schedule. Note the use of the letter S before the schedule number to
+# indicate that it is a schedule rule. The output of the schedule is stored in
+# out/DS_Sn. For example, to run the first schedule for SkipQueuePatched, one
+# would run:
 #
 #  `make out/SkipQueuePatched_S1`.
 #
-# All schedules for all priority queues can be run using the target pqueue_schedules:
+# All schedules for all priority queues can be run using the target
+# pqueue_schedules:
 #
 #  `make pqueue_schedules`
 #
 # ------------------------------------------------------------------------------------
 
-
 ROOT = .
 include $(ROOT)/common.mk
-
-all: $(MAIN_CLASS)
-
-SOURCES = $(JROOT)/src/ampver/module-info.java \
-    $(JSRC)/AMPVer.java \
-    $(JSRC)/Step.java \
-    $(JSRC)/Schedule.java \
-    $(JSRC)/SetScheduleIterator.java \
-    $(JSRC)/QueueScheduleIterator.java \
-    $(JSRC)/PQScheduleIterator.java \
-    $(JSRC)/AVUtil.java
-
-$(MAIN_CLASS): $(SOURCES)
-	$(JAVAC) -d $(JROOT)/bin/ampver \
-          -p $(CIVL_ROOT)/mods/dev.civl.mc/bin $(SOURCES)
-
-
-##################################  Sets  ##################################
-
-HASHSET_LIMITS_1  = -kind=set -hashKind=ident -valueBound=2 -nthread=1..2 \
-     -nstep=1..2 -npreAdd=0 -threadSym -checkTermination -ncore=$(NCORE)
-
-HASHSET_LIMITS_1ND = -kind=set -hashKind=nd -hashRangeBound=2 -hashDomainBound=2 \
-     -valueBound=2 -nthread=1..2 -nstep=1..2 -npreAdd=0 -threadSym -checkTermination \
-     -ncore=$(NCORE)
-
-HASHSET_LIMITS_1.5ND = -kind=set -hashKind=nd -hashRangeBound=2 -hashDomainBound=3 \
-     -valueBound=3 -nthread=1..3 -nstep=1..3 -npreAdd=0 -threadSym \
-     -checkTermination -ncore=$(NCORE)
-
-HASHSET_LIMITS_2  = -kind=set -hashKind=ident -valueBound=3 -nthread=1..3 \
-     -nstep=1..3 -npreAdd=0 -threadSym -checkTermination -ncore=$(NCORE)
-
-HASHSET_LIMITS_2ND = -kind=set -hashKind=nd -hashRangeBound=4 -hashDomainBound=3 \
-     -valueBound=3 -nthread=1..3 -nstep=1..3 -npreAdd=0 -threadSym -checkTermination \
-     -ncore=$(NCORE)
-
-HASHSET_LIMITS_3  = -kind=set -hashKind=ident -valueBound=3 -nthread=1..3 \
-     -nstep=1..3 -npreAdd=1..3 -threadSym -checkTermination -ncore=$(NCORE)
-
-HASHSET_LIMITS_4  = -kind=set -hashKind=ident -valueBound=3 -nthread=3 \
-     -nstep=4 -npreAdd=0 -threadSym -checkTermination -ncore=$(NCORE)
-
-HASH_COMMON_DEP = $(DRIVER_INC) $(DRIVER_NB_SRC) $(DRIVER_SET_NB) \
-     $(HASH_INC) $(HASH_SRC) $(LOCK_INC) $(LOCK_SRC) $(ARRAYLIST_INC) $(ARRAYLIST_SRC) Makefile
-HASH_COMMON_SRC = $(DRIVER_NB_SRC) $(DRIVER_SET_NB) $(HASH_SRC) $(LOCK_SRC) $(ARRAYLIST_SRC)
-
-SET_SCHED_1 = $(SCHEDULE_DIR)/sched_set_1.cvl
-SET_SCHED_2 = $(SCHEDULE_DIR)/sched_set_2.cvl
-SET_SCHED_3 = $(SCHEDULE_DIR)/sched_set_3.cvl
-
-hashset_1 hashset_2 hashset_3 hashset_4 hashset_1ND hashset_1.5ND hashset_2ND: hashset_%: out/CoarseHashSet_%.out \
-  out/StripedHashSet_%.out out/StripedCuckooHashSet_%.out
-
-hashset_schedules: out/CoarseHashSet_S1 out/CoarseHashSet_S2 out/CoarseHashSet_S3 \
-	out/StripedHashSet_S1 out/StripedHashSet_S2 out/StripedHashSet_S3 \
-	out/StripedCuckooHashSet_S1 out/StripedCuckooHashSet_S2 out/StripedCuckooHashSet_S3
-
-# CoarseHashSet
-
-COARSEHASHSET = $(SET_DIR)/CoarseHashSet.cvl
-COARSEHASHSET_DEP = $(HASH_COMMON_DEP) $(COARSEHASHSET)
-COARSEHASHSET_SRC =  $(HASH_COMMON_SRC) $(COARSEHASHSET)
-CoarseHashSet_Outs = $(addsuffix .out,$(addprefix out/CoarseHashSet_,1 1ND 1.5ND 2 2ND 3 4))
-
-$(CoarseHashSet_Outs): out/CoarseHashSet_%.out: $(MAIN_CLASS) $(COARSEHASHSET_DEP)
-	rm -rf $(TMP)/CoarseHashSet_$*.dir.tmp
-	rm -rf out/CoarseHashSet_$*.dir
-	-$(AMPVER) $(HASHSET_LIMITS_$*) -tmpDir=$(TMP)/CoarseHashSet_$*.dir.tmp \
-          $(COARSEHASHSET) $(HASH_SRC) $(LOCK_SRC) $(ARRAYLIST_SRC) \
-          >$(TMP)/CoarseHashSet_$*.out.tmp
-	mv $(TMP)/CoarseHashSet_$*.out.tmp out/CoarseHashSet_$*.out
-	mv $(TMP)/CoarseHashSet_$*.dir.tmp out/CoarseHashSet_$*.dir
-
-out/CoarseHashSet_S%: $(COARSEHASHSET_DEP) $(SET_SCHED_$*)
-	-$(VERIFY) -checkMemoryLeak=false -checkTermination=true $(COARSEHASHSET_SRC) $(SET_SCHED_$*) \
-					>out/CoarseHashSet_S$*
-
-# StripedHashSet
-
-STRIPEDHASHSET = $(SET_DIR)/StripedHashSet.cvl
-STRIPEDHASHSET_DEP = $(HASH_COMMON_DEP) $(STRIPEDHASHSET)
-STRIPEDHASHSET_SRC =  $(HASH_COMMON_SRC) $(STRIPEDHASHSET)
-StripedHashSet_Outs = $(addsuffix .out,$(addprefix out/StripedHashSet_,1 1ND 1.5ND 2 2ND 3 4))
-
-$(StripedHashSet_Outs): out/StripedHashSet_%.out: $(MAIN_CLASS) $(STRIPEDHASHSET_DEP)
-	rm -rf $(TMP)/StripedHashSet_$*.dir.tmp
-	rm -rf out/StripedHashSet_$*.dir
-	-$(AMPVER) $(HASHSET_LIMITS_$*) -tmpDir=$(TMP)/StripedHashSet_$*.dir.tmp \
-          $(STRIPEDHASHSET) $(HASH_SRC) $(LOCK_SRC) $(ARRAYLIST_SRC) \
-          >$(TMP)/StripedHashSet_$*.out.tmp
-	mv $(TMP)/StripedHashSet_$*.out.tmp out/StripedHashSet_$*.out
-	mv $(TMP)/StripedHashSet_$*.dir.tmp out/StripedHashSet_$*.dir
-
-out/StripedHashSet_S%: $(STRIPEDHASHSET_DEP) $(SET_SCHED_$*)
-	-$(VERIFY) -checkMemoryLeak=false -checkTermination=true $(STRIPEDHASHSET_SRC) $(SET_SCHED_$*) \
-					>out/StripedHashSet_S$*
-
-# StripedCuckooHashSet
-
-STRIPEDCUCKOOHASHSET = $(SET_DIR)/StripedCuckooHashSet.cvl
-STRIPEDCUCKOOHASHSET_DEP = $(HASH_COMMON_DEP) $(STRIPEDCUCKOOHASHSET)
-STRIPEDCUCKOOHASHSET_SRC =  $(HASH_COMMON_SRC) $(STRIPEDCUCKOOHASHSET)
-StripedCuckooHashSet_Outs = $(addsuffix .out,$(addprefix out/StripedCuckooHashSet_,1 1ND 1.5ND 2 2ND 3 4))
-
-$(StripedCuckooHashSet_Outs): out/StripedCuckooHashSet_%.out: $(MAIN_CLASS) $(STRIPEDCUCKOOHASHSET_DEP)
-	rm -rf $(TMP)/StripedCuckooHashSet_$*.dir.tmp
-	rm -rf out/StripedCuckooHashSet_$*.dir
-	-$(AMPVER) $(HASHSET_LIMITS_$*) -tmpDir=$(TMP)/StripedCuckooHashSet_$*.dir.tmp \
-          $(STRIPEDCUCKOOHASHSET) $(HASH_SRC) $(LOCK_SRC) $(ARRAYLIST_SRC) \
-          >$(TMP)/StripedCuckooHashSet_$*.out.tmp
-	mv $(TMP)/StripedCuckooHashSet_$*.out.tmp out/StripedCuckooHashSet_$*.out
-	mv $(TMP)/StripedCuckooHashSet_$*.dir.tmp out/StripedCuckooHashSet_$*.dir
-
-out/StripedCuckooHashSet_S%: $(STRIPEDCUCKOOHASHSET_DEP) $(SET_SCHED_$*)
-	-$(VERIFY) -checkMemoryLeak=false -checkTermination=true $(STRIPEDCUCKOOHASHSET_SRC) $(SET_SCHED_$*) \
-					>out/StripedCuckooHashSet_S$*
-
-# other sets...
 
 ##################################  Lists  #################################
 

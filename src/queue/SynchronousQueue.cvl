@@ -1,0 +1,93 @@
+/* CIVL model of SynchronousQueue class from "The Art of Multiprocessor
+ * Programming" 2nd ed, by Herlihy, Luchangco, Shavit, and Spear,
+ * Sec. 10.6.1 "A naive synchronous queue", and companion code
+ * ch10/Queue/src/queue/SynchronousQueue.java.
+ *
+ * This is a simple model of the SynchronousQueue class, which is a
+ * simple blocking synchronized queue with a single item field.
+ *
+ * Created : 2024-Nov-04
+ * Authors : Josh Davis and Stephen F. Siegel
+ * Verified Software Laboratory, Dept. Computer & Info. Sciences,
+ * University of Delaware.
+ */
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <limits.h>
+#include "types.h"
+#include "Queue.h"
+#include "AtomicInteger.h"
+#include "Lock.h"
+#include "tid.h"
+#include "Condition_dl.h"
+
+struct Queue {
+  T item;
+  bool enqueueing;
+  Lock lock;
+  Condition condition;
+};
+
+Queue Queue_create() {
+  Queue q = (Queue)malloc(sizeof(struct Queue));
+  q->item = -2;
+  q->enqueueing = false;
+  q->lock = Lock_create();
+  q->condition = Condition_create(q->lock);
+  return q;
+}
+
+// not in original code...
+void Queue_destroy(Queue q) {
+  Lock_destroy(q->lock);
+  Condition_destroy(q->condition);
+  free(q);
+}
+
+T Queue_deq(Queue q) {
+  Lock_acquire(q->lock);
+  // try
+  while (q->item == -1) {
+    Condition_await(q->condition);
+    if (Condition_isDeadlocked()) {
+      Lock_release(q->lock);
+      return -1;
+    }
+  }
+  T t = q->item;
+  q->item = -1;
+  Condition_signalAll(q->condition);
+  // finally
+  Lock_release(q->lock);
+  return t;
+}
+
+void Queue_enq(Queue q, T value) {
+  Lock_acquire(q->lock);
+  // try
+  while (enqueueing) {
+    Condition_await(q->condition);
+    if (Condition_isDeadlocked()) {
+      Lock_release(q->lock);
+      return;
+    }
+    q->enqueueing = true;
+    q->item = value;
+    Condition_signalAll(q->condition);
+    while (q->item != -1) {
+      Condition_await(q->condition);
+      if (Condition_isDeadlocked()) {
+        Lock_release(q->lock);
+        return;
+      }
+    }
+    q->enqueueing = false;
+    Condition_signalAll(q->condition);
+    // finally
+    Lock_release(q->lock);
+    return;
+  }
+}
+
+// TODO: Create a main function for testing
