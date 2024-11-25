@@ -40,17 +40,17 @@ run:
 make list_2
 ```
 
-The output of each experiment is stored in the out/ directory. The summary
-output for each data structure is stored in a file named out/DS_n.out, where DS
-is the name of the data structure and n is the limit set. The outputs for each
-schedule are stored in separate files in under a directory named out/DS_n.dir,
-following the same naming convention. For example, the output for the
-CoarseHashSet data structure using the first set of limits is stored in
-out/CoarseHashSet_1.out, and the output for the first schedule is stored in
-out/CoarseHashSet_1.dir/schedule_1.out, along with the CIVL schedule
-configuration file as schedule_1.cvl. To run just one data structure and limit
+The output of each experiment is stored in the `out/` directory. The summary
+output for each data structure is stored in a file named `out/DS_n.out`, where
+`DS` is the name of the data structure and `n` is the limit set. The outputs for
+each schedule are stored in separate files in under a directory named
+`out/DS_n.dir`, following the same naming convention. For example, the output
+for the `CoarseHashSet` data structure using the first set of limits is stored
+in `out/CoarseHashSet_1.out`, and the output for the first schedule is stored in
+`out/CoarseHashSet_1.dir/schedule_1.out`, along with the CIVL schedule
+configuration file as `schedule_1.cvl`. To run just one data structure and limit
 set combination, one can run the corresponding target. For example, to run just
-the CoarseHashSet data structure using the first set of limits, one would run:
+the `CoarseHashSet` data structure using the first set of limits, one would run:
 
 ```
 make out/CoarseHashSet_1.out
@@ -61,22 +61,21 @@ variant names are appended to the data structure name. The available variants
 are listed and described below. These variants are included in the core
 experiment targets described above.
 
-LockFreeList: LockFreeListOriginal
+`LockFreeList`: `LockFreeListOriginal`
  - Original: uses the original version of the LockFreeList data structure as
    presented in the 1st edition of the book, which contains a bug in the remove
    method corrected in later editions and the errata.
 
-FineGrainedHeap: FineGrainedHeapFair, FineGrainedHeapNoCycles
- - Fair: uses a fair ReentrantLock instead of the original ReentrantLock. Also
-   passes the -fair flag to AMPVer, which indicates thread scheduling must be
-   fair.
- - NoCycles: removes the -checkTermination flag from AMPVer, which means AMPVer
-   will not check for cycle violations.
+`FineGrainedHeap`: `FineGrainedHeapFair`, `FineGrainedHeapNoCycles`
+ - `Fair`: uses a fair `ReentrantLock` instead of the original `ReentrantLock`.
+   Also passes the `-fair` flag to AMPVer, which indicates thread scheduling must
+   be fair.
+ - `NoCycles`: removes the `-checkTermination` flag from AMPVer, which means
+   AMPVer will not check for cycle violations.
 
-SkipQueue: SkipQueuePatched
-
- - Patched: uses a patched version of the SkipQueue data structure that fixes
-   the cycle bug in FindAndMarkMin as described in the paper.
+`SkipQueue`: `SkipQueuePatched`
+ - `Patched`: uses a patched version of the `SkipQueue` data structure that
+   fixes the cycle bug in `FindAndMarkMin` as described in the paper.
 
 In addition to the core experiments above, the Makefile also includes targets
 for running particular individual schedules of interest. These targets are
@@ -84,18 +83,18 @@ described below. Currently, the only schedules of interest are for priority
 queues.
 
 * `PQUEUE_SCHED_1`: a schedule that reveals the non-linearizable behavior in
-  SkipQueuePatched.
-* `PQUEUE_SCHED_2`: a schedule that reveals the cycle violation in SkipQueue.
-* `PQUEUE_SCHED_3`: same as PQUEUE_SCHED_2, but one fewer pre-add and one fewer
-  thread.
+  `SkipQueuePatched`.
+* `PQUEUE_SCHED_2`: a schedule that reveals the cycle violation in `SkipQueue`.
+* `PQUEUE_SCHED_3`: same as `PQUEUE_SCHED_2`, but one fewer pre-add and one
+  fewer thread.
 * `PQUEUE_SCHED_4`: a schedule of similar size to the above that reveals no
-  defect in SkipQueue or SkipQueuePatched.
+  defect in `SkipQueue` or `SkipQueuePatched`.
 
 Individual schedules can be run using a target of the form `out/DS_Sn`, where
 `DS` is the name of the data structure, including any variants, and `n` is the
-number of the schedule. Note the use of the letter S before the schedule number
+number of the schedule. Note the use of the letter `S` before the schedule number
 to indicate that it is a schedule rule. The output of the schedule is stored in
-`out/DS_Sn`. For example, to run the first schedule for SkipQueuePatched, one
+`out/DS_Sn`. For example, to run the first schedule for `SkipQueuePatched`, one
 would run:
 
 ```
@@ -103,7 +102,7 @@ make out/SkipQueuePatched_S1
 ```
 
 All schedules for all priority queues can be run using the target
-pqueue_schedules:
+`pqueue_schedules`:
 
 ```
 make pqueue_schedules
