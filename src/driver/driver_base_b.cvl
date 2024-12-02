@@ -200,10 +200,13 @@ static void thread(int tid, void * c) {
     } else {
       $assert(false);
     }
-    if (deadlocked()) break;
+    if (deadlocked()) {
+      $print("Deadlock: thread ", tid, " exiting at step ", s, "\n");
+      break;
+    }
     set_result(tid, s, step.result);
   }
-  terminate(tid);
+  if (!deadlocked()) terminate(tid);
   tid_unregister();
 }
 

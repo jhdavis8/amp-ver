@@ -88,6 +88,7 @@ void Queue_enq(Queue this, T e) {
           AtomicReference_compare_and_set(this->tail, t, offer);
           nactive--;
           while (AtomicInteger_get(offer->item) == e) {
+            $print("nactive = ", nactive, "\n");
             if (nactive == 0) return; // deadlock
           }
           nactive++;

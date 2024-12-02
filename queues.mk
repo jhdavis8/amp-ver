@@ -95,10 +95,24 @@ $(LockFreeQueue_Outs): out/LockFreeQueue_%.out: $(MAIN_CLASS) $(LOCKFREEQUEUE_DE
 	mv $(TMP)/LockFreeQueue_$*.dir.tmp out/LockFreeQueue_$*.dir
 
 out/LockFreeQueue_S%: $(LOCKFREEQUEUE_DEP) $(QUEUE_SCHED_$*)
-	-$(VERIFY) -checkMemoryLeak=false -checkTermination=true $(LOCKFREEQUEUE_SRC) $(QUEUE_SCHED_$*) \
-					>out/LockFreeQueue_S$*
+	-$(VERIFY) -checkMemoryLeak=false -checkTermination=true \
+   $(LOCKFREEQUEUE_SRC) $(QUEUE_SCHED_$*) >out/LockFreeQueue_S$*
 
 # SynchronousDualQueue
 
 SYNCDUALQUEUE = $(QUEUE_DIR)/SynchronousDualQueue.cvl
-SYNCDUALQUEUE_DEP = $(QUEUE_COMMON_DEP) 
+SYNCDUALQUEUE_DEP = $(QUEUE_B_COMMON_DEP) $(SYNCDUALQUEUE) $(AI_INC) $(AI_SRC) \
+   $(AR_INC) $(AR_SRC)
+SynchronousDualQueue_Outs = out/SynchronousDualQueue_1.out \
+   out/SynchronousDualQueue_2.out out/SynchronousDualQueue_3.out
+
+$(SynchronousDualQueue_Outs): out/SynchronousDualQueue_%.out: \
+   $(MAIN_CLASS) $(SYNCDUALQUEUE_DEP)
+	rm -rf $(TMP)/SynchronousDualQueue_$*.dir.tmp
+	rm -rf out/SynchronousDualQueue_$*.dir
+	-$(AMPVER) $(QUEUE_LIMITS_$*) -blocking=true \
+          -tmpDir=$(TMP)/SynchronousDualQueue_$*.dir.tmp \
+          -checkMemoryLeak=false $(SYNCDUALQUEUE) $(AI_SRC) $(AR_SRC) \
+          >$(TMP)/SynchronousDualQueue_$*.out.tmp
+	mv $(TMP)/SynchronousDualQueue_$*.out.tmp out/SynchronousDualQueue_$*.out
+	mv $(TMP)/SynchronousDualQueue_$*.dir.tmp out/SynchronousDualQueue_$*.dir
