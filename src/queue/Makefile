@@ -11,8 +11,8 @@ LockFreeQueue: LockFreeQueue.cvl $(AR_INC) $(AR_SRC)
           LockFreeQueue.cvl $(AR_SRC)
 
 BoundedQueue: BoundedQueue.cvl $(LOCK_INC) $(LOCK_SRC) \
-		$(COND_INC) $(COND_SRC) $(TID_INC) $(TID_SRC) $(AI_INC) $(AI_SRC)
-	$(VERIFY) -enablePrintf=false -D_BOUNDED_QUEUE_MAIN BoundedQueue.cvl $(LOCK_SRC) $(COND_SRC) $(TID_SRC) $(AI_SRC)
+		$(COND2_INC) $(COND2_SRC) $(TID_INC) $(TID_SRC) $(AI_INC) $(AI_SRC)
+	$(VERIFY) -checkMemoryLeak=false -enablePrintf=false -D_BOUNDED_QUEUE_MAIN BoundedQueue.cvl $(LOCK_SRC) $(COND2_SRC) $(TID_SRC) $(AI_SRC)
 
 SynchronousDualQueue: SynchronousDualQueue.cvl $(AI_INC) $(AI_SRC) \
    $(AR_INC) $(AR_SRC)

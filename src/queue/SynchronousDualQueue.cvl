@@ -5,6 +5,24 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
+static int nactive, nnonterm; // number of active, non-terminated threads
+
+void initialize(int nthread) {
+  nnonterm = nactive = nthread;
+}
+
+void finalize() {
+}
+
+void terminate(int tid) {
+  nnonterm--;
+  nactive--;
+}
+
+bool deadlocked() {
+  return nactive == 0 && nnonterm > 0;
+}
+
 typedef enum NodeType {ITEM, RESERVATION} NodeType;
 
 typedef struct Node {
@@ -68,7 +86,11 @@ void Queue_enq(Queue this, T e) {
           AtomicReference_compare_and_set(this->tail, t, n);
         } else if (AtomicReference_compare_and_set(t->next, n, offer)) {
           AtomicReference_compare_and_set(this->tail, t, offer);
-          while (AtomicInteger_get(offer->item) == e);
+          nactive--;
+          while (AtomicInteger_get(offer->item) == e) {
+            if (nactive == 0) return; // deadlock
+          }
+          nactive++;
           h = AtomicReference_get(this->head);
           if (offer == AtomicReference_get(h->next))
             AtomicReference_compare_and_set(this->head, h, offer);
@@ -102,7 +124,11 @@ T Queue_deq(Queue this) {
           AtomicReference_compare_and_set(this->tail, t, n);
         } else if (AtomicReference_compare_and_set(t->next, n, offer)) {
           AtomicReference_compare_and_set(this->tail, t, offer);
-          while (AtomicInteger_get(offer->item) == -1);
+          nactive--;
+          while (AtomicInteger_get(offer->item) == -1) {
+            if (nactive == 0) return -1; // deadlock
+          }
+          nactive++;
           h = AtomicReference_get(this->head);
           if (offer == AtomicReference_get(h->next))
             AtomicReference_compare_and_set(this->head, h, offer);
@@ -119,16 +145,17 @@ T Queue_deq(Queue this) {
       T item = AtomicInteger_get(n->item);
       bool success = AtomicInteger_compareAndSet(n->item, item, -1);
       AtomicReference_compare_and_set(this->head, h, n);
-      if (success)
+      if (success) {
         return item;
+      }
     }
   }
 }
 
 void Queue_print(Queue this) {
-  Node curr = AtomicReference_get(this->head);
+  Node prev = AtomicReference_get(this->head),
+    curr = AtomicReference_get(prev->next);
   $print("{ ");
-  Node prev = NULL;
   while (curr != NULL) {
     int val = AtomicInteger_get(curr->item);
     $print(val);
@@ -143,30 +170,61 @@ void Queue_print(Queue this) {
 }
 
 #ifdef _SYNCHRONOUS_DUAL_QUEUE
-int main() {
-  int N=2;
+
+void test1() {
+  int N=2, nthread=2*N;
+  initialize(nthread);
   Queue q = Queue_create();
-  $parfor (int i: 0..(2*N-1)) {
+  $parfor (int i: 0..nthread-1) {
     if (i%2 == 0) {
       Queue_enq(q, i);
+      /*
       $atomic {
         $print("Thread ", i, " enqueued ", i, "\n");
         Queue_print(q);
         $print("\n");
       }
+      */
     }
     else {
       int result = Queue_deq(q);
+      /*
       $atomic {
         $print("Thread ", i, " dequeued ", result, "\n");
         Queue_print(q);
         $print("\n");
       }
+      */
     }
   }
   $print("Done: ");
   Queue_print(q);
   $print("\n");
+  $assert(!deadlocked());
   Queue_destroy(q);
+  finalize();
+}
+
+void test2() {
+  int nthread=2;
+  initialize(nthread);
+  Queue q = Queue_create();
+  $parfor (int i: 0..nthread-1) {
+    Queue_enq(q, i);
+  }
+  $print("Done: ");
+  Queue_print(q);
+  $print("\n");
+  if (deadlocked()) $print("DEADLOCK!\n");
+  else $assert(false);
+  Queue_destroy(q);
+  finalize();
+}
+
+int main() {
+  $print("Test 1 ... \n");
+  test1();
+  $print("Test 2 ... \n");
+  test2();
 }
 #endif

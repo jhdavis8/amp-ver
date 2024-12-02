@@ -1,5 +1,4 @@
 #pragma CIVL ACSL
-#include "Condition_dl.h"
 #include "driver.h"
 #include "perm.h"
 #include "schedule.h"
@@ -8,6 +7,12 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+// defined in the data structure implementation:
+void initialize(int nthread);
+void finalize(void);
+void terminate(int tid);
+bool deadlocked(void);
 
 // Global Vars...
 schedule_t schedule; // the schedule
@@ -190,21 +195,19 @@ static void thread(int tid, void * c) {
       step.result = (int)collection_add(c, a0, a1);
     } else if (op == REMOVE) {
       step.result = (int)collection_remove(c, a0);
-      // TODO: clarify what should happen when remove fails
     } else if (op == CONTAINS) {
       step.result = (int)collection_contains(c, a0);
     } else {
       $assert(false);
     }
-    if (Condition_isDeadlocked())
-      break;
+    if (deadlocked()) break;
     set_result(tid, s, step.result);
   }
-  Condition_terminate(tid);
+  terminate(tid);
   tid_unregister();
 }
 
-static _Bool match(void * collection, int nstep, int num_perms,
+static bool match(void * collection, int nstep, int num_perms,
                    int ** perms, int stuckID) {
   void * oracle = NULL;
   int perm_id = 0;
@@ -285,12 +288,12 @@ int main() {
   printf("Collection initial state. ");
   collection_print(collection);
   printf("\n");
-  Condition_init(nthread);
+  initialize(nthread);
   $parfor (int tid : 0 .. nthread-1) {
     thread(tid, collection);
   }
-  _Bool deadlock = Condition_isDeadlocked();
-  Condition_finalize();
+  bool deadlock = deadlocked();
+  finalize();
   tid_destroy();
   schedule_print(schedule);
   printf("Collection final state... ");

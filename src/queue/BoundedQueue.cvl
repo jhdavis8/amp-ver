@@ -11,20 +11,35 @@
  * Verified Software Laboratory, Dept. Computer & Info. Sciences,
  * University of Delaware.
  */
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <limits.h>
-#include "types.h"
-#include "Queue.h"
 #include "AtomicInteger.h"
-#include "Lock.h"
-#include "tid.h"
 #include "Condition_dl.h"
+#include "Lock.h"
+#include "Queue.h"
+#include "tid.h"
+#include "types.h"
+#include <limits.h>
+#include <stdbool.h>
+#include <stdlib.h>
 
 #ifndef INITIAL_CAPACITY
 #define INITIAL_CAPACITY 2
 #endif
+
+void initialize(int nthread) {
+  Condition_init(nthread);
+}
+
+void finalize() {
+  Condition_finalize();
+}
+
+void terminate(int tid) {
+  Condition_terminate(tid);
+}
+
+bool deadlocked() {
+  return Condition_isDeadlocked();
+}
 
 typedef struct Node {
   T value;
@@ -62,7 +77,7 @@ Queue Queue_create() {
   this->capacity = INITIAL_CAPACITY;
   this->head = Node_create(-1);
   this->tail = this->head;
-  this->size = AtomicInteger_create(this->capacity);
+  this->size = AtomicInteger_create(0);
   this->enqLock = Lock_create();
   this->notFullCondition = Condition_create(this->enqLock);
   this->deqLock = Lock_create();
@@ -88,14 +103,11 @@ void Queue_destroy(Queue queue) {
 
 T Queue_deq(Queue this) {
   T result;
-  bool mustWakeEnqueuers = false; // this line is incorrrect and corrected by
-                                  // errata
+  bool mustWakeEnqueuers = false;
   Lock_acquire(this->deqLock);
   // try...
-  while (AtomicInteger_get(this->size) == this->capacity) {
-    // try...
+  while (this->head->next == NULL) {
     Condition_await(this->notEmptyCondition);
-    // catch InterruptedException
     if (Condition_isDeadlocked()) {
       Lock_release(this->deqLock);
       return -1;
@@ -105,13 +117,10 @@ T Queue_deq(Queue this) {
   result = this->head->next->value;
   this->head = this->head->next;
   Node_destroy(old_head);
-  if (AtomicInteger_getAndIncrement(this->size) == 0) {
-    // the above line is correct and wrongly corrected by errata, but in the
-    // book (2nd ed) the fix is correct because size is the number of elements
+  if (AtomicInteger_getAndDecrement(this->size) == this->capacity) {
     mustWakeEnqueuers = true;
   }
   // finally...
-  //$print("Thread releasing deqlock\n");
   Lock_release(this->deqLock);
   if (mustWakeEnqueuers) {
     Lock_acquire(this->enqLock);
@@ -125,25 +134,21 @@ T Queue_deq(Queue this) {
 }
 
 void Queue_enq(Queue this, T x) {
-  // if x is NULL throw NullPointerException...
   bool mustWakeDequeuers = false;
+  Node e = Node_create(x);
   Lock_acquire(this->enqLock);
   // try...
-  while (AtomicInteger_get(this->size) == 0) {
-    // try...
+  while (AtomicInteger_get(this->size) == this->capacity) {
     Condition_await(this->notFullCondition);
-    // catch InterruptedException
     if (Condition_isDeadlocked()) {
       Lock_release(this->enqLock);
       return;
     }
   }
-  Node e = Node_create(x);
   this->tail->next = e;
   this->tail = e;
-  if (AtomicInteger_getAndDecrement(this->size) == this->capacity) {
+  if (AtomicInteger_getAndIncrement(this->size) == 0)
     mustWakeDequeuers = true;
-  }
   // finally...
   //$print("Thread releasing enqlock\n");
   Lock_release(this->enqLock);
@@ -160,31 +165,46 @@ void Queue_enq(Queue this, T x) {
 // not in original code...
 void Queue_print(Queue this) {
   Node curr = this->head->next;
-  printf("{ ");
+  $print("{ ");
   while (curr) {
-    printf("%d ", curr->value);
+    $print(curr->value, " ");
     curr = curr->next;
   }
-  printf("}");
+  $print("}");
 }
 
-// TODO: Fix this main function to init and finalize the condition, for main
-// thread, and call terminate for worker threads
 #ifdef _BOUNDED_QUEUE_MAIN
 int main() {
-  tid_init(3);
+  int nthread = 2; // 3 is OK with time
+  tid_init(nthread);
+  initialize(nthread);
   Queue q = Queue_create();
-  $parfor (int i: 0..2) {
+  $print("Starting...\n");
+  $parfor (int i: 0..nthread-1) {
     tid_register(i);
+    //$print("Thread ", i, " will enqueue ", i, " ...\n");
     Queue_enq(q, i);
+    if (deadlocked()) goto END;
+    //$print("Thread ", i, " successfully enqueued ", i,
+    //           " and will now dequeue.\n");
     int x = Queue_deq(q);
-    printf("Thread %d dequeued %d\n", i, x);
+    if (deadlocked()) goto END;
+    //$print("Thread ", i, " dequeued ", x, ".\n");
     $assert(x >= 0);
     $assert(x < 3);
+    terminate(i);
     tid_unregister();
+  END: ;
   }
-  printf("Done.\n");
+  if (deadlocked()) {
+    $print("DEADLOCK!\n");
+    $assert(false);
+  }
+  $print("Done: ");
+  Queue_print(q);
+  $print("\n");
   Queue_destroy(q);
+  finalize();
   tid_destroy();
 }
 #endif

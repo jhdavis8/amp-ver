@@ -97,3 +97,8 @@ $(LockFreeQueue_Outs): out/LockFreeQueue_%.out: $(MAIN_CLASS) $(LOCKFREEQUEUE_DE
 out/LockFreeQueue_S%: $(LOCKFREEQUEUE_DEP) $(QUEUE_SCHED_$*)
 	-$(VERIFY) -checkMemoryLeak=false -checkTermination=true $(LOCKFREEQUEUE_SRC) $(QUEUE_SCHED_$*) \
 					>out/LockFreeQueue_S$*
+
+# SynchronousDualQueue
+
+SYNCDUALQUEUE = $(QUEUE_DIR)/SynchronousDualQueue.cvl
+SYNCDUALQUEUE_DEP = $(QUEUE_COMMON_DEP) 
