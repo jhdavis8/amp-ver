@@ -61,7 +61,7 @@ static void node_destroy(Node node) {
 
 static void node_destroy_rec(Node node) {
   if (node == NULL) return;
-  node_destroy_rec(AtomicMarkableReference_get_reference(node->next));
+  node_destroy_rec(AtomicMarkableReference_getReference(node->next));
   node_destroy(node);
 }
 
@@ -73,7 +73,7 @@ Set Set_create() {
   Set this = malloc(sizeof(struct Set));
   this->head = sentinel_node_create(INT_MIN);
   Node tail = sentinel_node_create(INT_MAX);
-  while (!AtomicMarkableReference_compare_and_set
+  while (!AtomicMarkableReference_compareAndSet
          (this->head->next, NULL, (void*) tail, false, false));
   return this;
 }
@@ -90,19 +90,19 @@ static Window find(Node head, int key) {
   bool snip;
  retry: while (true) {
     pred = head;
-    curr = AtomicMarkableReference_get_reference(pred->next);
+    curr = AtomicMarkableReference_getReference(pred->next);
     while (true) {
       succ = AtomicMarkableReference_get(curr->next, marked);
       while (*marked) {
-	snip = AtomicMarkableReference_compare_and_set
+        snip = AtomicMarkableReference_compareAndSet
           (pred->next, curr, succ, false, false);
-	if (!snip) goto retry;
-	// companion code: curr = pred->next->reference;
+        if (!snip) goto retry;
+        // companion code: curr = pred->next->reference;
         curr = succ;
-	succ = AtomicMarkableReference_get(curr->next, marked);
+        succ = AtomicMarkableReference_get(curr->next, marked);
       }
       if (curr->key >= key)
-	return make_window(pred, curr);
+        return make_window(pred, curr);
       pred = curr;
       curr = succ;
     }
@@ -121,9 +121,9 @@ bool Set_add(Set this, T item) {
       Node node = node_create(item);
       free(node->next); // TODO: really?  node destroy?
       node->next = AtomicMarkableReference_create(curr, false);
-      if (AtomicMarkableReference_compare_and_set
+      if (AtomicMarkableReference_compareAndSet
           (pred->next, curr, node, false, false)) {
-	return true;
+        return true;
       }
     }
   }
@@ -138,16 +138,16 @@ bool Set_remove(Set this, T item) {
     if (curr->key != key) {
       return false;
     } else {
-      Node succ = AtomicMarkableReference_get_reference(curr->next);
+      Node succ = AtomicMarkableReference_getReference(curr->next);
 #ifdef ORIGINAL // companion code, known bug
-      snip = AtomicMarkableReference_attempt_mark(curr->next, succ, true);
+      snip = AtomicMarkableReference_attemptMark(curr->next, succ, true);
 #else
-      snip = AtomicMarkableReference_compare_and_set
+      snip = AtomicMarkableReference_compareAndSet
         (curr->next, succ, succ, false, true);
 #endif
       if (!snip)
-	continue;
-      AtomicMarkableReference_compare_and_set
+        continue;
+      AtomicMarkableReference_compareAndSet
         (pred->next, curr, succ, false, false);
       return true;
     }
@@ -168,16 +168,16 @@ bool Set_contains(Set this, T item) {
   int key = hash_code(item);
   Node curr = this->head;
   while (curr->key < key) {
-    curr = AtomicMarkableReference_get_reference(curr->next);
+    curr = AtomicMarkableReference_getReference(curr->next);
   }
-  return (curr->key == key && !AtomicMarkableReference_is_marked(curr->next));
+  return (curr->key == key && !AtomicMarkableReference_isMarked(curr->next));
 }
 
 void Set_print(Set list) {
-  Node curr = AtomicMarkableReference_get_reference(list->head->next);
+  Node curr = AtomicMarkableReference_getReference(list->head->next);
   printf("{ ");
   while (true) {
-    Node next = AtomicMarkableReference_get_reference(curr->next);
+    Node next = AtomicMarkableReference_getReference(curr->next);
     if (next == NULL) break;
     printf("%d ", curr->item);
     curr = next;
@@ -210,4 +210,3 @@ int main() {
   Set_destroy(list);
 }
 #endif
-

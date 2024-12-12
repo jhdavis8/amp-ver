@@ -16,12 +16,12 @@ void
 AtomicMarkableReference_destroy(AtomicMarkableReference ref);
 
 bool
-AtomicMarkableReference_compare_and_set(AtomicMarkableReference ref,
+AtomicMarkableReference_compareAndSet(AtomicMarkableReference ref,
                     void* exp_ref, void* new_ref,
                     bool exp_mark, bool new_mark);
 
 bool
-AtomicMarkableReference_attempt_mark(AtomicMarkableReference ref,
+AtomicMarkableReference_attemptMark(AtomicMarkableReference ref,
                  void* exp_ref, bool new_mark);
 
 void
@@ -31,9 +31,9 @@ void*
 AtomicMarkableReference_get(AtomicMarkableReference amr, bool* mark_out);
 
 void*
-AtomicMarkableReference_get_reference(AtomicMarkableReference amr);
+AtomicMarkableReference_getReference(AtomicMarkableReference amr);
 
 bool
-AtomicMarkableReference_is_marked(AtomicMarkableReference amr);
+AtomicMarkableReference_isMarked(AtomicMarkableReference amr);
 
 #endif

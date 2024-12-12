@@ -101,9 +101,9 @@ PrioritySkipList PrioritySkipList_create() {
 }
 
 void PrioritySkipList_destroy(PrioritySkipList p) {
-  Node curr = AtomicMarkableReference_get_reference(p->head->next[0]);
+  Node curr = AtomicMarkableReference_getReference(p->head->next[0]);
   while (curr != p->tail) {
-    Node next = AtomicMarkableReference_get_reference(curr->next[0]);
+    Node next = AtomicMarkableReference_getReference(curr->next[0]);
     Node_destroy(curr);
     curr = next;
   }
@@ -114,10 +114,10 @@ void PrioritySkipList_destroy(PrioritySkipList p) {
 
 $atomic_f void PrioritySkipList_print(PrioritySkipList p) {
   printf("{ ");
-  Node curr = AtomicMarkableReference_get_reference(p->head->next[0]);
+  Node curr = AtomicMarkableReference_getReference(p->head->next[0]);
   while (curr != p->tail) {
     printf("(%d,%d) ", curr->item, curr->priority);
-    curr = AtomicMarkableReference_get_reference(curr->next[0]);
+    curr = AtomicMarkableReference_getReference(curr->next[0]);
   }
   printf("}\n");
 }
@@ -148,8 +148,8 @@ static bool PrioritySkipList_add(PrioritySkipList p, Node node) {
       Node pred = preds[bottomLevel];
       Node succ = succs[bottomLevel];
       AtomicMarkableReference_set(node->next[bottomLevel], succ, false);
-      if (!AtomicMarkableReference_compare_and_set(pred->next[bottomLevel],
-                                                   succ, node, false, false)) {// lin point
+      if (!AtomicMarkableReference_compareAndSet(pred->next[bottomLevel],
+                                                 succ, node, false, false)) {// lin point
         continue; // retry from start
       }
       // splice in remaining levels going up
@@ -157,8 +157,8 @@ static bool PrioritySkipList_add(PrioritySkipList p, Node node) {
         while (true) {
           pred = preds[level];
           succ = succs[level];
-          if (AtomicMarkableReference_compare_and_set(pred->next[level],
-                                                      succ, node, false, false))
+          if (AtomicMarkableReference_compareAndSet(pred->next[level],
+                                                    succ, node, false, false))
             break;
           find(p, node, preds, succs); // find new preds and succs
         }
@@ -196,7 +196,7 @@ static bool PrioritySkipList_remove(PrioritySkipList p, Node node) {
         bool marked = false;
         succ = AtomicMarkableReference_get(node->next[level], &marked);
         while (!marked) { // until I succeed in marking
-          AtomicMarkableReference_attempt_mark(node->next[level], succ, true);
+          AtomicMarkableReference_attemptMark(node->next[level], succ, true);
           succ = AtomicMarkableReference_get(node->next[level], &marked);
         }
       }
@@ -204,8 +204,8 @@ static bool PrioritySkipList_remove(PrioritySkipList p, Node node) {
       bool marked = false;
       succ = AtomicMarkableReference_get(node->next[bottomLevel], &marked);
       while (true) { // until someone succeeded in marking
-        bool iMarkedIt = AtomicMarkableReference_compare_and_set(node->next[bottomLevel],
-                                                                 succ, succ, false, true);
+        bool iMarkedIt = AtomicMarkableReference_compareAndSet(node->next[bottomLevel],
+                                                               succ, succ, false, true);
         succ = AtomicMarkableReference_get(succs[bottomLevel]->next[bottomLevel], &marked);
         if (iMarkedIt) {
           // run find to remove links of the logically removed node
@@ -221,16 +221,16 @@ static bool PrioritySkipList_remove(PrioritySkipList p, Node node) {
 static Node findAndMarkMin(PrioritySkipList p) {
   Node curr = NULL;
   Node succ = NULL;
-  curr = AtomicMarkableReference_get_reference(p->head->next[0]);
+  curr = AtomicMarkableReference_getReference(p->head->next[0]);
   while (curr != p->tail) {
     if (!AtomicBoolean_get(curr->marked)) {
       if (AtomicBoolean_compareAndSet(curr->marked, false, true)) {
         return curr;
       } else {
-        curr = AtomicMarkableReference_get_reference(curr->next[0]);
+        curr = AtomicMarkableReference_getReference(curr->next[0]);
       }
     } else {
-      curr = AtomicMarkableReference_get_reference(curr->next[0]);
+      curr = AtomicMarkableReference_getReference(curr->next[0]);
     }
   }
   return NULL; // no unmarked nodes
@@ -258,14 +258,14 @@ retry:
   while (true) {
     pred = p->head;
     for (int level = MAX_LEVEL; level >= bottomLevel; level--) {
-      curr = AtomicMarkableReference_get_reference(pred->next[level]);
+      curr = AtomicMarkableReference_getReference(pred->next[level]);
       while (true) {
         succ = AtomicMarkableReference_get(curr->next[level], &marked);
         while (marked) {           // replace curr if marked
-          snip = AtomicMarkableReference_compare_and_set(pred->next[level],
-                                                         curr, succ, false, false);
+          snip = AtomicMarkableReference_compareAndSet(pred->next[level],
+                                                       curr, succ, false, false);
           if (!snip) goto retry;
-          curr = AtomicMarkableReference_get_reference(pred->next[level]);
+          curr = AtomicMarkableReference_getReference(pred->next[level]);
           succ = AtomicMarkableReference_get(curr->next[level], &marked);
         }
         if (curr->priority < node->priority) { // move forward same level
@@ -316,10 +316,10 @@ T PQueue_removeMin(PQueue q) {
 
 void PQueue_print(PQueue q) {
   printf("{ ");
-  Node curr = AtomicMarkableReference_get_reference(q->skiplist->head->next[0]);
+  Node curr = AtomicMarkableReference_getReference(q->skiplist->head->next[0]);
   while (curr != q->skiplist->tail) {
     printf("(%d,%d) ", curr->item, curr->priority);
-    curr = AtomicMarkableReference_get_reference(curr->next[0]);
+    curr = AtomicMarkableReference_getReference(curr->next[0]);
   }
   printf("}");
 }
