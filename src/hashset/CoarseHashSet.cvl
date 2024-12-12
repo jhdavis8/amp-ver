@@ -1,3 +1,15 @@
+/* CIVL model of CoarseHashSet class from "The Art of Multiprocessor
+ * Programming" 2nd ed, by Herlihy, Luchangco, Shavit, and Spear,
+ * Sec. 13.2.1 "A coarse-grained hash set", and companion code
+ * ch13/src/hash/CoarseHashSet.java.
+ *
+ * A concurrent hash set synchronized using a single reentrant lock.
+ *
+ * Created : 2018-Apr-15
+ * Authors : Josh Davis and Stephen F. Siegel
+ * Verified Software Laboratory, Dept. Computer & Info. Sciences,
+ * University of Delaware.
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -129,7 +141,7 @@ void Set_print(Set set) {
     for (int j = 0; j < m; j++)
       printf("%d ", ArrayList_get(row, j));
   }
-  printf("}");        
+  printf("}");
 }
 
 #ifdef _COARSE_HASH_SET_MAIN
