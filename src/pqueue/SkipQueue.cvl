@@ -149,7 +149,7 @@ static bool PrioritySkipList_add(PrioritySkipList p, Node node) {
       Node succ = succs[bottomLevel];
       AtomicMarkableReference_set(node->next[bottomLevel], succ, false);
       if (!AtomicMarkableReference_compareAndSet(pred->next[bottomLevel],
-                                                   succ, node, false, false)) {// lin point
+                                                 succ, node, false, false)) {// lin point
         continue; // retry from start
       }
       // splice in remaining levels going up
@@ -158,7 +158,7 @@ static bool PrioritySkipList_add(PrioritySkipList p, Node node) {
           pred = preds[level];
           succ = succs[level];
           if (AtomicMarkableReference_compareAndSet(pred->next[level],
-                                                      succ, node, false, false))
+                                                    succ, node, false, false))
             break;
           find(p, node, preds, succs); // find new preds and succs
         }
@@ -205,7 +205,7 @@ static bool PrioritySkipList_remove(PrioritySkipList p, Node node) {
       succ = AtomicMarkableReference_get(node->next[bottomLevel], &marked);
       while (true) { // until someone succeeded in marking
         bool iMarkedIt = AtomicMarkableReference_compareAndSet(node->next[bottomLevel],
-                                                                 succ, succ, false, true);
+                                                               succ, succ, false, true);
         succ = AtomicMarkableReference_get(succs[bottomLevel]->next[bottomLevel], &marked);
         if (iMarkedIt) {
           // run find to remove links of the logically removed node
@@ -265,7 +265,7 @@ retry:
         succ = AtomicMarkableReference_get(curr->next[level], &marked);
         while (marked) {           // replace curr if marked
           snip = AtomicMarkableReference_compareAndSet(pred->next[level],
-                                                         curr, succ, false, false);
+                                                       curr, succ, false, false);
           if (!snip) goto retry;
           curr = AtomicMarkableReference_getReference(pred->next[level]);
           succ = AtomicMarkableReference_get(curr->next[level], &marked);
