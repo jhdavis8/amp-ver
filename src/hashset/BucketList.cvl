@@ -1,6 +1,6 @@
 /* CIVL model of BucketList class from "The Art of Multiprocessor
  * Programming" 2nd ed, by Herlihy, Luchangco, Shavit, and Spear,
- * Sec. 13 "", and companion code
+ * Sec. 13.3.2 "The BucketList class", and companion code
  * ch13/src/hash/BucketList.java.
  *
  * Description here
@@ -17,6 +17,11 @@
 #include "hash.cvh"
 #include "AtomicMarkableReference.cvh"
 #include "types.h"
+
+const int WORD_SIZE = 24;
+const int LO_MASK = 0x00000001;
+const int HI_MASK = 0x00800000;
+const int MASK = 0x00FFFFFF;
 
 struct Node {
   int key;
@@ -100,6 +105,11 @@ BucketList BucketList_BucketList(BucketList this, Node e) {
   return this;
 }
 
+// forward declarations for bit manipulation functions
+int BucketList_reverse(int key);
+int BucketList_makeRegularKey(T x);
+int BucketList_makeSentinelKey(int key);
+
 bool BucketList_add(BucketList this, T x) {
   int key = BucketList_makeRegularKey(x);
   bool splice;
@@ -176,3 +186,27 @@ BucketList BucketList_getSentinel(int index) {
         continue;
     }
   }
+}
+
+int BucketList_reverse(int key) {
+  int loMask = LO_MASK;
+  int hiMask = HI_MASK;
+  int result = 0;
+  for (int i = 0; i < WORD_SIZE; i++) {
+    if ((key & loMask) != 0) { // bit set
+      result |= hiMask;
+    }
+    loMask <<= 1;
+    hiMask >>= 1;  // fill with 0 from left
+  }
+  return result;
+}
+
+int BucketList_makeRegularKey(T x) {
+  int code = hash_code(x) & MASK; // take 3 lowest bytes
+  return BucketList_reverse(code | HI_MASK);
+}
+
+int BucketList_makeSentinelKey(int key) {
+  return BucketList_reverse(key & MASK);
+}
