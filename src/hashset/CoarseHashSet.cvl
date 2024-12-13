@@ -1,10 +1,16 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
+/* Filename : CoarseHashSet.cvl
+   Authors  :
+   Created  :
+   Modified : 2024-12-13
+
+   
+ */
+#include "ArrayList.h"
+#include "Lock.h"
 #include "Set.h"
 #include "hash.cvh"
-#include "Lock.h"
-#include "ArrayList.h"
+#include <stdbool.h>
+#include <stdlib.h>
 
 #define INIT_CAP 1
 
@@ -22,6 +28,19 @@ static void release(Set set, T x);
 static bool policy(Set set);
 
 static void resize(Set set);
+
+void Set_initialize(int nthread) {
+}
+
+void Set_finalize(void) {
+}
+
+void Set_terminate(int tid) {
+}
+
+bool Set_stuck(void) {
+  return false;
+}
 
 Set Set_create() {
   Set set = malloc(sizeof(struct Set));
@@ -122,14 +141,14 @@ static bool policy(Set set) {
 
 void Set_print(Set set) {
   int n = set->length;
-  printf("{ ");
+  $print("{ ");
   for (int i = 0; i < n; i++) {
     ArrayList row = set->table[i];
     int m = ArrayList_size(row);
     for (int j = 0; j < m; j++)
-      printf("%d ", ArrayList_get(row, j));
+      $print(ArrayList_get(row, j), " ");
   }
-  printf("}");        
+  $print("}");        
 }
 
 #ifdef _COARSE_HASH_SET_MAIN
@@ -141,8 +160,8 @@ int main() {
     Set_add(set, i);
   }
   for (int i=0; i<4; i++)
-    printf("hash(%d)=%d ", i, hash_code(i));
-  printf("\n");
+    $print("hash(", i, ")=", hash_code(i), " ");
+  $print("\n");
   Set_print(set);
   $for (int i : 0 .. 3) {
     $assert(Set_contains(set, i));

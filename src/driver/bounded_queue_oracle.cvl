@@ -1,0 +1,105 @@
+/* Filename : bounded_queue_oracle.cvl
+   Author   : Josh Davis and Stephen F. Siegel
+   Created  : 2024-12-12
+   Modified : 2024-12-13
+
+   Implementation of oracle.h using a bounded FIFO queue semantics.
+   The enqueue operation will block until the queue becomes not full.
+   The dequeue operation will block until the queue becomes nonempty.
+
+   The capacity of the queue can be specified by setting the
+   preprocessor object macro CAPACITY.  The default capacity is 2.
+*/
+#include "oracle.h"
+#include <seq.cvh>
+#include <stdbool.h>
+#include <stdlib.h>
+
+#ifndef CAPACITY
+#define CAPACITY 2
+#endif
+
+typedef struct SimpleQueue {
+  T data[];
+  /* state=0: normal.  state=1: got stuck, either tried to deq when
+     empty or enq when full.  state=2: trapped: made another call
+     after getting stuck, can't match anything */
+  int state;
+} * SimpleQueue;
+
+void * oracle_create() {
+  SimpleQueue sq = malloc(sizeof(struct SimpleQueue));
+  $seq_init(&sq->data, 0, NULL);
+  sq->state = 0;
+  return sq;
+}
+
+void oracle_destroy(void * o) {
+  free(o);
+}
+
+/* Enqueues a0.  a1 ignored.  If the queue is full, this will return
+   false and set the stuck bit. */
+bool oracle_add(void * o, T a0, int a1) {
+  SimpleQueue sq = (SimpleQueue)o;
+  if (sq->state == 0) {
+    int n = $seq_length(&sq->data);
+    if (n==CAPACITY) {
+      sq->state = 1;
+      return false;
+    }      
+    $seq_insert(&sq->data, n, &a0, 1);
+    return true;
+  } else if (sq->state == 1) {
+    sq->state = 2;
+  }
+  return false;
+}
+
+bool oracle_contains(void * o, T a) {
+  $assert(false);
+}
+
+/* Dequeues.  If oracle is empty, returns -1 and sets stuck bit.  a
+   and expect are both ignored. */
+int oracle_remove(void * o, T a, int expect) {
+  SimpleQueue sq = (SimpleQueue)o;
+  if (sq->state == 0) {
+    int n = $seq_length(&sq->data);
+    if (n==0) {
+      sq->state = 1;
+      return -1;
+    }
+    T result;
+    $seq_remove(&sq->data, 0, &result, 1);
+    return (int)result;
+  } else if (sq->state == 1) {
+    sq->state = 2;
+  }
+  return -1;
+}
+
+void oracle_print(void * o) {
+  SimpleQueue sq = (SimpleQueue)o;
+  int n = $seq_length(&sq->data);
+  $print("{ ");
+  for (int i=0; i<n; i++)
+    $print(sq->data[i], " ");
+  $print("}");
+}
+
+bool oracle_trapped(void * o, bool stuck) {
+  SimpleQueue sq = (SimpleQueue)o;
+  if (stuck)
+    return sq->state == 2;
+  else
+    return sq->state >= 1;
+}
+
+bool oracle_accepting(bool stuck) {
+  SimpleQueue sq = (SimpleQueue)o;
+  if (stuck)
+    return sq->state == 1;
+  else
+    return sq->state == 0;
+}

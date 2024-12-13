@@ -1,0 +1,98 @@
+/* Filename : nonblocking_pqueue_oracle.cvl
+   Author   : Josh Davis and Stephen F. Siegel
+   Created  : 2024-12-12
+   Modified : 2024-12-13
+
+   Implementation of oracle.h for a nonblocking priority queue.  This
+   priority queue can hold multiple entries with the same value-score
+   pair.  It can also hold entries with the same value but different
+   scores.  None of the methods block.
+*/
+#include "PQueue.h"
+#include "oracle.h"
+#include "types.h"
+#include <seq.cvh>
+#include <stdbool.h>
+#include <stdlib.h>
+
+typedef struct Node {
+  T value;
+  int score;
+} Node;
+
+// sequence of nodes ordered by increasing (or non-decreasing) score
+typedef struct SimplePQ {
+  Node data[];
+} * SimplePQ;
+
+void * oracle_create() {
+  SimplePQ spq = malloc(sizeof(struct SimplePQ));
+  $seq_init(&spq->data, 0, NULL);
+  return spq;
+}
+
+void oracle_destroy(void * o) {
+  free(o);
+}
+
+// insert into correct position based on score a1
+bool oracle_add(void * o, T a0, int a1) {
+  SimplePQ spq = (SimplePQ)o;
+  Node node = {a0, a1};
+  int i=0, n = $seq_length(&spq->data);
+  while (i<n && spq->data[i].score < a1) i++;
+  $seq_insert(&spq->data, i, &node, 1);
+  return true;
+}
+
+// not needed but just in case...
+bool oracle_contains(void * o, T a) {
+  SimplePQ spq = (SimplePQ)o;
+  int n = $seq_length(&spq->data);
+  for (int i=0; i<n; i++)
+    if (spq->data[i].value == a) return true;
+  return false;
+}
+
+// remove min, looking specifically for a node of minimal score and
+// value expect if possible.  Argument a is ignored.
+int oracle_remove(void * o, T a, T expect) {
+  SimplePQ spq = (SimplePQ)o;
+  int n = $seq_length(&spq->data);
+  if (n==0) return -1; // no choice if spq is empty
+  if (expect >= 0) {
+    int minScore = spq->data[0].score, i=0;
+    while (i<n && spq->data[i].score == minScore) {
+      if (spq->data[i].value == expect) {
+        $seq_remove(&spq->data, i, NULL, 1);
+        return (int)expect;
+      }
+      i++;
+    }
+  }
+  // either expect == -1 (and n>0) or expect not found in spq's
+  // minimum score values.  Either way, return the first item.
+  // it will disagree with the expected result, as it should...
+  int result = (int)spq->data[0].value;
+  $seq_remove(&spq->data, 0, NULL, 1);
+  return result;
+}
+
+void oracle_print(void * o) {
+  SimplePQ spq = (SimplePQ)o;
+  int n = $seq_length(&spq->data);
+  $print("{ ");
+  for (int i=0; i<n; i++)
+    $print("(", spq->data[i].value, ",", spq->data[i].score, ")");
+  $print("}");
+}
+
+// if you are expecting a stuck execution, it will never happen.
+// so you are trapped iff stuck.
+bool oracle_trapped(void * o, bool stuck) {
+  return stuck;
+}
+
+bool oracle_accepting(void * o, bool stuck) {
+  return !stuck;
+}

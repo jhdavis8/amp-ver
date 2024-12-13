@@ -5,22 +5,21 @@
  *
  * This is a concurrent closed-address hashset using lock striping
  *
- * Created : 2017-Nov-30
- * Modified: 2023-Jan-05
+ * Created : 2017-11-30
+ * Modified: 2024-12-13
  * Authors : Josh Davis and Stephen F. Siegel
  * Verified Software Laboratory, Dept. Computer & Info. Sciences,
  * University of Delaware.
  */
 #pragma CIVL ACSL
-#include <stdio.h>
+#include "ArrayList.h"
+#include "Lock.h"
+#include "Set.h"
+#include "hash.cvh"
+#include "types.h"
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdbool.h>
-#include "Set.h"
-#include "Lock.h"
-#include "hash.cvh"
-#include "ArrayList.h"
-#include "types.h"
 
 #define INITIAL_CAPACITY 1
 
@@ -31,6 +30,19 @@ struct Set {
   int locks_length;
   Lock* locks;
 };
+
+void Set_initialize(int nthread) {
+}
+
+void Set_finalize(void) {
+}
+
+void Set_terminate(int tid) {
+}
+
+bool Set_stuck(void) {
+  return false;
+}
 
 Set Set_create() {
   Set s = malloc(sizeof(struct Set));
@@ -164,11 +176,11 @@ static bool policy(Set s) {
 
 void Set_print(Set s) {
   for (int i = 0; i < s->table_length; i++) {
-    printf("Bucket %d: ", i);
+    $print("Bucket ", i, ": ");
     ArrayList_print(s->table[i]);
-    printf("\n");
+    $print("\n");
   }
-  printf("\n");
+  $print("\n");
 }
 
 #ifdef _STRIPED_HASH_SET_MAIN

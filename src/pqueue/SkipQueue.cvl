@@ -7,23 +7,21 @@
  * PrioritySkipList.
  *
  * Authors : Josh Davis and Stephen F. Siegel
- * Created : 2021-Mar-02
- * Modified: 2024-Jan-12
+ * Created : 2021-03-02
+ * Modified: 2024-12-13
  *
  * Verified Software Lab, Dept. Computer & Info. Sci.,
  * University of Delaware
  */
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <string.h>
+#include "AtomicBoolean.cvh"
+#include "AtomicMarkableReference.cvh"
+#include "PQueue.h"
+#include "types.h"
 #include <limits.h>
 #include <math.h>
-#include "PQueue.h"
-#include "AtomicMarkableReference.cvh"
-#include "AtomicBoolean.cvh"
-#include "types.h"
+#include <stdbool.h>
+#include <stdlib.h>
+#include <string.h>
 
 #define ROOT 1
 #define NO_ONE $proc_null
@@ -113,13 +111,13 @@ void PrioritySkipList_destroy(PrioritySkipList p) {
 }
 
 $atomic_f void PrioritySkipList_print(PrioritySkipList p) {
-  printf("{ ");
+  $print("{ ");
   Node curr = AtomicMarkableReference_getReference(p->head->next[0]);
   while (curr != p->tail) {
-    printf("(%d,%d) ", curr->item, curr->priority);
+    $print("(", curr->item, ",", curr->priority, ") ");
     curr = AtomicMarkableReference_getReference(curr->next[0]);
   }
-  printf("}\n");
+  $print("}\n");
 }
 
 static bool find(PrioritySkipList p, Node node, Node* preds, Node* succs);
@@ -290,6 +288,19 @@ struct PQueue {
   PrioritySkipList skiplist;
 };
 
+void PQueue_initialize(int nthread) {
+}
+
+void PQueue_finalize(void) {
+}
+
+void PQueue_terminate(int tid) {
+}
+
+bool PQueue_stuck(void) {
+  return false;
+}
+
 PQueue PQueue_create() {
   PQueue result = malloc(sizeof(struct PQueue));
   result->skiplist = PrioritySkipList_create();
@@ -317,13 +328,14 @@ T PQueue_removeMin(PQueue q) {
 }
 
 void PQueue_print(PQueue q) {
-  printf("{ ");
-  Node curr = AtomicMarkableReference_getReference(q->skiplist->head->next[0]);
+  $print("{ ");
+  Node curr =
+    AtomicMarkableReference_getReference(q->skiplist->head->next[0]);
   while (curr != q->skiplist->tail) {
-    printf("(%d,%d) ", curr->item, curr->priority);
+    $print("(", curr->item, ",", curr->priority, ") ");
     curr = AtomicMarkableReference_getReference(curr->next[0]);
   }
-  printf("}");
+  $print("}");
 }
 
 #ifdef _SKIP_QUEUE_MAIN
@@ -337,7 +349,7 @@ int main() {
   }
 
   PQueue_print(q);
-  printf("\n");
+  $print("\n");
 
   int result[N];
 

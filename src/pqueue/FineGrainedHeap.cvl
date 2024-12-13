@@ -7,21 +7,19 @@
  * lock synchronization over a heap represented as an array of HeapNodes.
  *
  * Authors : Josh Davis and Stephen F. Siegel
- * Created : 2021-Mar-02
- * Modified: 2024-Jan-12
+ * Created : 2021-03-02
+ * Modified: 2024-12-13
  *
  * Verified Software Lab, Dept. Computer & Info. Sci.,
  * University of Delaware
  */
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <string.h>
-#include <limits.h>
-#include "types.h"
-#include "PQueue.h"
 #include "Lock.h"
+#include "PQueue.h"
+#include "types.h"
+#include <limits.h>
+#include <stdbool.h>
+#include <stdlib.h>
+#include <string.h>
 
 #define ROOT 1
 #define NO_ONE $proc_null
@@ -86,6 +84,19 @@ struct PQueue {
   HeapNode* heap;
   int heap_length;
 };
+
+void PQueue_initialize(int nthread) {
+}
+
+void PQueue_finalize(void) {
+}
+
+void PQueue_terminate(int tid) {
+}
+
+bool PQueue_stuck(void) {
+  return false;
+}
 
 PQueue PQueue_create() {
   PQueue q = malloc(sizeof(struct PQueue));
@@ -219,11 +230,11 @@ static void swap(PQueue q, int i, int j) {
 }
 
 void PQueue_print(PQueue q) {
-  printf("{ ");
+  $print("{ ");
   for (int i = 1; i < q->next; i++) {
-    printf("(%d,%d) ", q->heap[i]->item, q->heap[i]->score);
+    $print("(", q->heap[i]->item, ",", q->heap[i]->score, ") ");
   }
-  printf("}");
+  $print("}");
 }
 
 #ifdef _FINE_GRAINED_HEAP_MAIN

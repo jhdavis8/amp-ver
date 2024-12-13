@@ -1,3 +1,9 @@
+/* Filename : SynchronousDualQueue.cvl
+   Author   : Stephen F. Siegel
+   Created  :
+   Modified : 2024-12-13
+
+ */
 #include "AtomicInteger.h"
 #include "AtomicReference.cvh"
 #include "Queue.h"
@@ -7,19 +13,19 @@
 
 static int nactive, nnonterm; // number of active, non-terminated threads
 
-void initialize(int nthread) {
+void Queue_initialize(int nthread) {
   nnonterm = nactive = nthread;
 }
 
-void finalize() {
+void Queue_finalize() {
 }
 
-void terminate(int tid) {
+void Queue_terminate(int tid) {
   nnonterm--;
   nactive--;
 }
 
-bool deadlocked() {
+bool Queue_stuck() {
   return nactive == 0 && nnonterm > 0;
 }
 

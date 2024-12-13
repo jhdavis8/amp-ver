@@ -14,19 +14,18 @@
  * complicated and are described in Section 10.6 of the text.  We do
  * not implement those here. Hence this CIVL model does leak memory.
  *
- * Created  : 2021-Jan-19
- * Modified : 2023-Jan-05
+ * Created  : 2021-01-19
+ * Modified : 2024-12-13
  * Authors  : Josh Davis and Stephen F. Siegel
  * Verified Software Laboratory, Dept. Computer & Info. Sciences,
  * University of Delaware.
  */
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <limits.h>
-#include "types.h"
-#include "Queue.h"
 #include "AtomicReference.cvh"
+#include "Queue.h"
+#include "types.h"
+#include <limits.h>
+#include <stdbool.h>
+#include <stdlib.h>
 
 typedef struct Node {
   T value;
@@ -50,6 +49,19 @@ struct Queue {
   AtomicReference head;
   AtomicReference tail;
 };
+
+void Queue_initialize(int nthread) {
+}
+
+void Queue_finalize(void) {
+}
+
+void Queue_terminate(int tid) {
+}
+
+bool Queue_stuck(void) {
+  return false;
+}
 
 Queue Queue_create() {
   Queue this = malloc(sizeof(struct Queue));
@@ -118,12 +130,12 @@ T Queue_deq(Queue this) {
 void Queue_print(Queue queue) {
   Node curr = AtomicReference_get(queue->head);
   curr = AtomicReference_get(curr->next);
-  printf("{");
+  $print("{");
   while (curr) {
-    printf(" %d ", curr->value);
+    $print(curr->value, " ");
     curr = AtomicReference_get(curr->next);
   }
-  printf("}\n");
+  $print("}\n");
   return;
 }
 

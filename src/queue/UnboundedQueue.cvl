@@ -5,20 +5,19 @@
  *
  * This is a simple unbounded queue implementation using two locks.
  *
- * Created : 2021-Aug-01
- * Modified: 2023-Jan-04
+ * Created : 2021-08-01
+ * Modified: 2024-12-13
  * Authors : Josh Davis and Stephen F. Siegel
  * Verified Software Laboratory, Dept. Computer & Info. Sciences,
  * University of Delaware.
  */
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <limits.h>
-#include "types.h"
-#include "Queue.h"
 #include "Lock.h"
+#include "Queue.h"
 #include "tid.h"
+#include "types.h"
+#include <limits.h>
+#include <stdbool.h>
+#include <stdlib.h>
 
 typedef struct Node {
   T value;
@@ -42,6 +41,19 @@ struct Queue {
   Node head;
   Node tail;
 };
+
+void Queue_initialize(int nthread) {
+}
+
+void Queue_finalize(void) {
+}
+
+void Queue_terminate(int tid) {
+}
+
+bool Queue_stuck(void) {
+  return false;
+}
 
 Queue Queue_create() {
   Queue this = malloc(sizeof(struct Queue));
@@ -69,7 +81,7 @@ void Queue_enq(Queue this, T x) {
   Node e = node_create(x);
   Lock_acquire(this->enqLock);
   // try...
-  printf("Thread %d is enqueing %d\n", tid_get(), x);
+  $print("Thread ", tid_get(), " is enqueing ", x, "\n");
   this->tail->next = e;
   this->tail = e;
   // finally...
@@ -95,12 +107,12 @@ T Queue_deq(Queue this) {
 // not in original code...
 void Queue_print(Queue this) {
   Node curr = this->head->next;
-  printf("{ ");
+  $print("{ ");
   while (curr) {
-    printf("%d ", curr->value);
+    $print(curr->value, " ");
     curr = curr->next;
   }
-  printf("}");
+  $print("}");
 }
 
 #ifdef _UNBOUNDED_QUEUE_MAIN
@@ -109,11 +121,11 @@ int main() {
   $parfor (int i: 0..2) {
     Queue_enq(q, i);
     int x = Queue_deq(q);
-    printf("Thread %d dequeued %d\n", i, x);
+    $print("Thread ", i, " dequeued ", x, "\n");
     $assert(x >= 0);
     $assert(x < 3);
   }
-  printf("Done.\n");
+  $print("Done.\n");
   Queue_destroy(q);  
 }
 #endif

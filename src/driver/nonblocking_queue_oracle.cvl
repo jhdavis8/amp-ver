@@ -1,0 +1,69 @@
+/* Filename : nonblocking_queue_oracle.cvl
+   Author   : Stephen F. Siegel
+   Created  : 2024-12-12
+   Modified : 2024-12-13
+
+   Implementation of oracle.h using nonblocking FIFO queue semantics.
+   None of the functions can block, so it never deadlocks.
+*/
+#include "oracle.h"
+#include <seq.cvh>
+#include <stdbool.h>
+#include <stdlib.h>
+
+typedef struct SimpleQueue {
+  T data[];
+} * SimpleQueue;
+
+void * oracle_create() {
+  SimpleQueue sq = malloc(sizeof(struct SimpleQueue));
+  $seq_init(&sq->data, 0, NULL);
+  return sq;
+}
+
+void oracle_destroy(void * o) {
+  free(o);
+}
+
+// append a0 to end.  a1 ignored.
+bool oracle_add(void * o, T a0, int a1) {
+  SimpleQueue sq = (SimpleQueue)o;
+  int n = $seq_length(&sq->data);
+  $seq_insert(&sq->data, n, &a0, 1);
+  return true;
+}
+
+bool oracle_contains(void * o, T a) {
+  $assert(false);
+}
+
+// remove from pos 0.  a and expect are ignored
+// returns -1 if queue is empty
+int oracle_remove(void * o, T a, int expect) {
+  SimpleQueue sq = (SimpleQueue)o;
+  int n = $seq_length(&sq->data);
+  if (n==0) return -1;
+  T result;
+  $seq_remove(&sq->data, 0, &result, 1);
+  return (int)result;
+}
+
+void oracle_print(void * o) {
+  SimpleQueue sq = (SimpleQueue)o;
+  int n = $seq_length(&sq->data);
+  $print("{ ");
+  for (int i=0; i<n; i++)
+    $print(sq->data[i], " ");
+  $print("}");
+}
+
+bool oracle_trapped(void * o, bool stuck) {
+  return stuck;
+}
+
+/* If you are expecting a stuck execution, answer is "no", since this
+   oracle never gets stuck.  If you are expecting a normal (non-stuck)
+   execution, answer is always "yes". */
+bool oracle_accepting(void * o, bool stuck) {
+  return !stuck;
+}

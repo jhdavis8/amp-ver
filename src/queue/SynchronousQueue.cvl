@@ -6,21 +6,21 @@
  * This is a simple model of the SynchronousQueue class, which is a
  * simple blocking synchronized queue with a single item field.
  *
- * Created : 2024-Nov-04
+ * Created : 2024-11-04
+ * Modified: 2024-12-13
  * Authors : Josh Davis and Stephen F. Siegel
  * Verified Software Laboratory, Dept. Computer & Info. Sciences,
  * University of Delaware.
  */
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <limits.h>
-#include "types.h"
-#include "Queue.h"
 #include "AtomicInteger.h"
-#include "Lock.h"
-#include "tid.h"
 #include "Condition_dl.h"
+#include "Lock.h"
+#include "Queue.h"
+#include "tid.h"
+#include "types.h"
+#include <limits.h>
+#include <stdbool.h>
+#include <stdlib.h>
 
 struct Queue {
   T item;
@@ -28,6 +28,22 @@ struct Queue {
   Lock lock;
   Condition condition;
 };
+
+void Queue_initialize(int nthread) {
+  // TODO
+}
+
+void Queue_finalize() {
+  // TODO
+}
+
+void Queue_terminate(int tid) {
+  // TODO
+}
+
+bool Queue_stuck() {
+  // TODO
+}
 
 Queue Queue_create() {
   Queue q = (Queue)malloc(sizeof(struct Queue));

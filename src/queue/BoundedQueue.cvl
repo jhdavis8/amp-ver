@@ -6,8 +6,9 @@
  * This is a simple bounded queue implementation using two
  * conditions.
  *
- * Created : 2024-Jun-17
- * Authors : Josh Davis and Stephen F. Siegel
+ * Created  : 2024-06-17
+ * Modified : 2024-12-13
+ * Authors  : Josh Davis and Stephen F. Siegel
  * Verified Software Laboratory, Dept. Computer & Info. Sciences,
  * University of Delaware.
  */
@@ -25,19 +26,19 @@
 #define INITIAL_CAPACITY 2
 #endif
 
-void initialize(int nthread) {
+void Set_initialize(int nthread) {
   Condition_init(nthread);
 }
 
-void finalize() {
+void Set_finalize() {
   Condition_finalize();
 }
 
-void terminate(int tid) {
+void Set_terminate(int tid) {
   Condition_terminate(tid);
 }
 
-bool deadlocked() {
+bool Set_stuck() {
   return Condition_isDeadlocked();
 }
 
