@@ -1,6 +1,5 @@
 ROOT = .
-
-#################################  Queues  #################################
+include $(ROOT)/common.mk
 
 # 25 schedules
 QUEUE_LIMITS_1  = -kind=queue -genericVals -threadSym -nthread=1..2 \
@@ -22,10 +21,9 @@ queue_schedules: out/BoundedQueue_S1 out/BoundedQueue_S2 out/BoundedQueue_S3 \
 	out/LockFreeQueue_S1 out/LockFreeQueue_S2 out/LockFreeQueue_S3
 
 QUEUE1 = $(SCHEDULE_DIR)/sched_queue_1.cvl
-QUEUE_COMMON_DEP = $(DRIVER_INC) $(DRIVER_NB_SRC) $(DRIVER_QUEUE_NB) Makefile
-QUEUE_B_COMMON_DEP = $(DRIVER_INC) $(DRIVER_B_SRC) $(DRIVER_QUEUE_B) Makefile
-QUEUE_COMMON_SRC = $(DRIVER_NB_SRC) $(DRIVER_QUEUE_NB)
-QUEUE_B_COMMON_SRC = $(DRIVER_B_SRC) $(DRIVER_QUEUE_B)
+QUEUE_COMMON_DEP = $(DRIVER_INC) $(DRIVER_SRC) $(QUEUE_H) $(QUEUE_COL) \
+  queues.mk
+QUEUE_COMMON_SRC = $(DRIVER_SRC) $(QUEUE_COL)
 
 QUEUE_SCHED_1 = $(SCHEDULE_DIR)/sched_queue_1.cvl
 QUEUE_SCHED_2 = $(SCHEDULE_DIR)/sched_queue_2.cvl
@@ -34,19 +32,19 @@ QUEUE_SCHED_3 = $(SCHEDULE_DIR)/sched_queue_3.cvl
 # BoundedQueue
 
 BOUNDEDQUEUE = $(QUEUE_DIR)/BoundedQueue.cvl
-BOUNDEDQUEUE_DEP = $(QUEUE_B_COMMON_DEP) $(BOUNDEDQUEUE) \
-   $(LOCK_INC) $(LOCK_SRC) $(AI_INC) $(AI_SRC) \
-   $(COND2_INC) $(COND2_SRC) $(TID_INC) $(TID_SRC)
-BOUNDEDQUEUE_SRC = $(QUEUE_B_COMMON_SRC) \
-   $(BOUNDEDQUEUE) $(LOCK_SRC) $(AI_SRC) $(COND2_SRC) $(TID_SRC)
+BOUNDEDQUEUE_SRC = $(QUEUE_COMMON_SRC) $(BOUNDEDQUEUE) \
+  $(LOCK_SRC) $(AI_SRC) $(COND2_SRC)
+BOUNDEDQUEUE_DEP = $(QUEUE_COMMON_DEP) $(BOUNDEDQUEUE) \
+  $(LOCK_INC) $(LOCK_SRC) $(AI_INC) $(AI_SRC) $(COND2_INC) $(COND2_SRC)
 BoundedQueue_Outs = out/BoundedQueue_1.out out/BoundedQueue_2.out \
-   out/BoundedQueue_3.out
+  out/BoundedQueue_3.out
 
 $(BoundedQueue_Outs): out/BoundedQueue_%.out: $(MAIN_CLASS) $(BOUNDEDQUEUE_DEP)
 	rm -rf $(TMP)/BoundedQueue_$*.dir.tmp
 	rm -rf out/BoundedQueue_$*.dir
-	-$(AMPVER) $(QUEUE_LIMITS_$*) -blocking=true -tmpDir=$(TMP)/BoundedQueue_$*.dir.tmp \
-  -checkMemoryLeak=false $(BOUNDEDQUEUE) $(LOCK_SRC) $(AI_SRC) $(COND2_SRC) \
+	-$(AMPVER) $(QUEUE_LIMITS_$*) -spec=bounded -capacity=2\
+  -tmpDir=$(TMP)/BoundedQueue_$*.dir.tmp\
+  -checkMemoryLeak=false $(BOUNDEDQUEUE) $(LOCK_SRC) $(AI_SRC) $(COND2_SRC)\
   >out/BoundedQueue_$*.out.tmp
 	mv $(TMP)/BoundedQueue_$*.out.tmp out/BoundedQueue_$*.out
 	mv $(TMP)/BoundedQueue_$*.dir.tmp out/BoundedQueue_$*.dir

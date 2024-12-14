@@ -40,7 +40,7 @@ void collection_destroy(void * c) {
    deadlocks.  Argument a1 is ignored. */
 bool collection_add(void * c, T a0, int a1) {
   Queue_enq(c, a0);
-  return !Queue_isStuck();
+  return true;
 }
 
 /* This operation is not supported by queues. */

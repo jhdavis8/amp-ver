@@ -9,6 +9,7 @@
   Interface for a collection oracle.  The oracle specifies the
   intended behavior of a data structure.
  */
+#include "types.h"
 #include <stdbool.h>
 
 /* Creates an oracle, returning an opaque handle do it. */

@@ -89,17 +89,17 @@ void oracle_print(void * o) {
 }
 
 bool oracle_trapped(void * o, bool stuck) {
-  SimpleQueue sq = (SimpleQueue)o;
+  int state = ((SimpleQueue)o)->state;
   if (stuck)
-    return sq->state == 2;
+    return state == 2;
   else
-    return sq->state >= 1;
+    return state >= 1;
 }
 
-bool oracle_accepting(bool stuck) {
-  SimpleQueue sq = (SimpleQueue)o;
+bool oracle_accepting(void * o, bool stuck) {
+  int state = ((SimpleQueue)o)->state;
   if (stuck)
-    return sq->state == 1;
+    return state == 1;
   else
-    return sq->state == 0;
+    return state == 0;
 }

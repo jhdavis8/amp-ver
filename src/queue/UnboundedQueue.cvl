@@ -81,7 +81,7 @@ void Queue_enq(Queue this, T x) {
   Node e = node_create(x);
   Lock_acquire(this->enqLock);
   // try...
-  $print("Thread ", tid_get(), " is enqueing ", x, "\n");
+  // $print("Thread ", tid_get(), " is enqueing ", x, "\n");
   this->tail->next = e;
   this->tail = e;
   // finally...
@@ -121,11 +121,11 @@ int main() {
   $parfor (int i: 0..2) {
     Queue_enq(q, i);
     int x = Queue_deq(q);
-    $print("Thread ", i, " dequeued ", x, "\n");
+    //$print("Thread ", i, " dequeued ", x, "\n");
     $assert(x >= 0);
     $assert(x < 3);
   }
-  $print("Done.\n");
+  //$print("Done.\n");
   Queue_destroy(q);  
 }
 #endif

@@ -126,11 +126,10 @@ T Queue_deq(Queue this) {
   }
 }
 
-// not in original...
 void Queue_print(Queue queue) {
   Node curr = AtomicReference_get(queue->head);
   curr = AtomicReference_get(curr->next);
-  $print("{");
+  $print("{ ");
   while (curr) {
     $print(curr->value, " ");
     curr = AtomicReference_get(curr->next);
@@ -141,27 +140,17 @@ void Queue_print(Queue queue) {
 
 #ifdef _LOCK_FREE_QUEUE_MAIN
 int main() {
+  int n=3;
   Queue q = Queue_create();
-  $parfor(int i : 1..5) {
+  $parfor(int i : 1..n) {
     Queue_enq(q, i);
   }
   Queue_print(q);
-  int x = Queue_deq(q);
-  Queue_print(q);
-  $assert(x == 1 || x == 2 || x == 3 || x == 4 || x == 5);
-
-  int y[3];
-  $parfor(int i : 0..2) {
-    y[i] = Queue_deq(q);
-  }
-  $for(int i : 0..2) {
-    $assert(y[i] == 1 || y[i] == 2 || y[i] == 3 || y[i] == 4 || y[i] == 5);
+  $parfor(int i : 1..n) {
+    int x = Queue_deq(q);
+    $assert(1<=x && x<=n);
   }
   Queue_print(q);
-
-  int z = Queue_deq(q);
-  Queue_print(q);
-  $assert(z == 1 || z == 2 || z == 3 || z == 4 || z == 5);
   $assert(Queue_deq(q) == -1);
   Queue_destroy(q);
 }

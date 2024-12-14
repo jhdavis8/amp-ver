@@ -73,26 +73,26 @@ static $atomic_f void set_start_time(int tid, int s) {
 #endif
 
 static void printMatchFail(void * collection, int stuckID) {
-  printf("[FAIL]\t No matching sequentialized execution");
+  $print("[FAIL]\t No matching sequentialized execution");
   if (stuckID >= 0)
-    printf(" ending with thread %d blocked", stuckID);
-  printf("found!\n");
-  printf("Collection final state... ");
+    $print(" ending with thread ", stuckID, " blocked");
+  $print("found!\n");
+  $print("Collection final state... ");
   collection_print(collection);
-  printf("\n");
+  $print("\n");
 }
 
 static void printOpInfo(int tid, int op, int val, int score, int result) {
-  printf("  Thread %d: ", tid);
-  printf((op==ADD?"ADD":(op==REMOVE?"REMOVE":"CONTAINS")));
+  $print("  Thread ", tid, ": ");
+  $print((op==ADD?"ADD":(op==REMOVE?"REMOVE":"CONTAINS")));
   if (val >= 0) {
-    printf("(%d", val);
-    if (score >= 0) printf(",%d)", score);
-    else printf(")");
+    $print("(", val);
+    if (score >= 0) $print(",", score, ")");
+    else $print(")");
   }
-  printf(" -> ");
-  if (result != UNDEF) printf("%d", result); else printf("STUCK");
-  printf("\n");
+  $print(" -> ");
+  if (result != UNDEF) $print(result); else $print("STUCK");
+  $print("\n");
 }
 
 static void printEquivSeqInfo(int nstep, int * perms, void * oracle,
@@ -101,7 +101,7 @@ static void printEquivSeqInfo(int nstep, int * perms, void * oracle,
   int step_counters[nthread];
   for (int tid = 0; tid < nthread; tid++)
     step_counters[tid] = 0;
-  printf("[PASS]\t Linearized execution:\n");
+  $print("[PASS]\t Linearized execution:\n");
   for (int step_id = 0; step_id < nstep; step_id++) {
     int tid = perms[step_id];
     int step_local = step_counters[tid];
@@ -114,9 +114,9 @@ static void printEquivSeqInfo(int nstep, int * perms, void * oracle,
     step_t step = schedule.steps[stuckID][step_local];
     printOpInfo(stuckID, step.op, step.args[0], step.args[1], step.result);
   }
-  printf("Oracle final state....... ");
+  $print("Oracle final state....... ");
   oracle_print(oracle);
-  printf("\n\n");
+  $print("\n\n");
 }
 
 /* Determines whether the sequentialization of the schedule specified
@@ -226,7 +226,7 @@ static bool match(void * collection, int nstep, int num_perms,
                    int ** perms, int stuckID) {
   void * oracle = NULL;
   int perm_id = 0;
-  printf("numPerms=%d\n", num_perms);
+  $print("numPerms=", num_perms, "\n");
   for (; perm_id < num_perms; perm_id++) {
     // check if this perm has been filtered out as non-linearizable
     // note: if nstep=1, the linearizability condition holds vacuously
@@ -248,7 +248,7 @@ static bool match(void * collection, int nstep, int num_perms,
     printMatchFail(collection, stuckID);
     schedule_print(schedule);
     perm_print_all(num_perms, nstep, perms);
-    printf("\n");
+    $print("\n");
     return $false;
   }
 }
@@ -301,9 +301,9 @@ int main() {
     collection_add(collection, schedule.preAdds[i].args[0],
                    schedule.preAdds[i].args[1]);
   tid_unregister();
-  printf("Collection initial state. ");
+  $print("Collection initial state. ");
   collection_print(collection);
-  printf("\n");
+  $print("\n");
   collection_initialize(nthread); // can this go earlier?
   $parfor (int tid : 0 .. nthread-1) {
     thread(tid, collection);
@@ -312,9 +312,9 @@ int main() {
   collection_finalize(); // can this go later?
   tid_destroy();
   schedule_print(schedule);
-  printf("Collection final state... ");
+  $print("Collection final state... ");
   collection_print(collection);
-  printf("\n");
+  $print("\n");
   if (deadlock)
     find_match_stuck(collection);
   else 

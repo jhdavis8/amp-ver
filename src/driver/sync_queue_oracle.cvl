@@ -93,7 +93,8 @@ void oracle_print(void * o) {
   $print("}");
 }
 
-bool oracle_trapped(bool stuck) {
+bool oracle_trapped(void * o, bool stuck) {
+  int state = ((SimpleQueue)o)->state;
   if (stuck)
     return state == 3;
   else
@@ -101,7 +102,7 @@ bool oracle_trapped(bool stuck) {
 }
 
 /* State is accepting iff stuck == stuckStatus. */
-bool oracle_accepting(bool stuck) {
-  int state = ((SimpleQueue)sq)->state;
+bool oracle_accepting(void * o, bool stuck) {
+  int state = ((SimpleQueue)o)->state;
   return stuck ? state==1 || state==2 : state==0;
 }
