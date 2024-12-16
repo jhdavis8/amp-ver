@@ -76,7 +76,7 @@ static void printMatchFail(void * collection, int stuckID) {
   $print("[FAIL]\t No matching sequentialized execution");
   if (stuckID >= 0)
     $print(" ending with thread ", stuckID, " blocked");
-  $print("found!\n");
+  $print(" found!\n");
   $print("Collection final state... ");
   collection_print(collection);
   $print("\n");

@@ -24,6 +24,3 @@ JAVA = java
 
 # how many threads to use in Java program
 NCORE = 4
-
-# Directory to use temporarily while files are being built
-TMP = out

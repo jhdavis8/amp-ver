@@ -86,11 +86,13 @@ int oracle_remove(void * o, T a, int expect) {
 
 void oracle_print(void * o) {
   SimpleQueue sq = (SimpleQueue)o;
-  int n = $seq_length(&sq->data);
+  int state = sq->state, data = sq->data;
   $print("{ ");
-  for (int i=0; i<n; i++)
-    $print(sq->data[i], " ");
+  if (data >= 0) $print(data, " ");
   $print("}");
+  if (state == 1) $print(" [waiting for deq]");
+  else if (state == 2) $print(" [stuck in deq]");
+  else if (state == 3) $print(" [trapped in illegal state]");
 }
 
 bool oracle_trapped(void * o, bool stuck) {

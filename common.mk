@@ -71,16 +71,6 @@ JSRC=$(JROOT)/src/ampver/av
 MOD_PATH = $(JROOT)/bin:$(CIVL_ROOT)/mods/dev.civl.mc/bin:$(CIVL_ROOT)/mods/dev.civl.abc/bin:$(CIVL_ROOT)/mods/dev.civl.sarl/bin:$(CIVL_ROOT)/mods/dev.civl.gmc/bin:$(VSL_DEPS)/mods/antlr3:$(VSL_DEPS)/mods/antlr4
 MAIN_CLASS = $(JROOT)/bin/ampver/av/AMPVer.class
 AMPVER = $(JAVA) -p $(MOD_PATH) -m ampver/av.AMPVer -root=$(ROOT)
-
-myall: all
-
-clean::
-	rm -rf CIVLREP AVREP_* *~ *.tmp a.out *.exec *.o
-
-.PHONY: myall clean
-
-all: $(MAIN_CLASS)
-
 SOURCES = $(JROOT)/src/ampver/module-info.java \
   $(JSRC)/AMPVer.java \
   $(JSRC)/Step.java \
