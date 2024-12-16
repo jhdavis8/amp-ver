@@ -265,6 +265,7 @@ void test2() {
   Queue_initialize(nthread);
   Queue q = Queue_create();
   $parfor (int i: 0..nthread-1) {
+    
     Queue_enq(q, i);
   }
   $print("Done: ");
@@ -276,10 +277,32 @@ void test2() {
   Queue_finalize();
 }
 
+void test3() {
+  int nthread=3;
+  tid_init(nthread);
+  Queue_initialize(nthread);
+  Queue q = Queue_create();
+  $parfor (int i: 0..nthread-1) {
+    tid_register(i);
+    if (i==0)
+      Queue_enq(q, i);
+    else {
+      int x = Queue_deq(q);
+      $assert(Queue_stuck() || x >= 0);
+    }
+    tid_unregister();
+  }
+  Queue_destroy(q);
+  Queue_finalize();
+}
+
 int main() {
+  /*
   $print("Test 1 ... \n");
   test1();
   $print("Test 2 ... \n");
   test2();
+  */
+  test3();
 }
 #endif
