@@ -8,20 +8,19 @@
  * Java garbage collector).
  *
  * Authors : Josh Davis and Stpehen F. Siegel
- * Created : 2021-Jun-30
- * Modified: 2024-Jun-09
+ * Created : 2021-06-30
+ * Modified: 2024-12-13
  *
  * Verified Software Lab, Dept. Computer & Info. Sci.,
  * University of Delaware
  */
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <limits.h>
-#include "Set.h"
 #include "AtomicMarkableReference.cvh"
+#include "Set.h"
 #include "hash.cvh"
 #include "types.h"
+#include <limits.h>
+#include <stdbool.h>
+#include <stdlib.h>
 
 typedef struct Node {
   T item;
@@ -67,6 +66,19 @@ static void node_destroy_rec(Node node) {
 
 static Window make_window(Node p, Node c) {
   return (Window){p, c};
+}
+
+void Set_initialize(int nthread) {
+}
+
+void Set_finalize(void) {
+}
+
+void Set_terminate(int tid) {
+}
+
+bool Set_stuck(void) {
+  return false;
 }
 
 Set Set_create() {
@@ -175,14 +187,14 @@ bool Set_contains(Set this, T item) {
 
 void Set_print(Set list) {
   Node curr = AtomicMarkableReference_getReference(list->head->next);
-  printf("{ ");
+  $print("{ ");
   while (true) {
     Node next = AtomicMarkableReference_getReference(curr->next);
     if (next == NULL) break;
-    printf("%d ", curr->item);
+    $print(curr->item, " ");
     curr = next;
   }
-  printf("}");
+  $print("}");
 }
 
 #ifdef _LOCK_FREE_LIST_MAIN
@@ -192,7 +204,7 @@ int main() {
   $parfor(int i: 0 .. N-1)
     Set_add(list, i);
   Set_print(list);
-  printf("\n");
+  $print("\n");
   Set_destroy(list);
   list = Set_create();
   $parfor (int i: 0 .. N-1) {
@@ -206,7 +218,7 @@ int main() {
     $assert(!result);
   }
   Set_print(list);
-  printf("\n");
+  $print("\n");
   Set_destroy(list);
 }
 #endif

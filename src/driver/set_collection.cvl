@@ -1,0 +1,54 @@
+/* Filename : set_collection.cvl
+   Author   : Stephen F. Siegel
+   Created  : 2024-12-12
+   Modified : 2024-12-12
+
+   Implementation of collection.h for a set. This module should be
+   linked with an implementation of Set.h.  For the most part this
+   module just wraps calls to the Set.h interface.
+*/
+#include "Set.h"
+#include "collection.h"
+#include "types.h"
+#include <stdbool.h>
+
+void collection_initialize(int nthread) {
+  Set_initialize(nthread);
+}
+
+void collection_finalize(void) {
+  Set_finalize();
+}
+
+void collection_terminate(int tid) {
+  Set_terminate(tid);
+}
+
+bool collection_stuck(void) {
+  return Set_stuck();
+}
+
+void * collection_create() {
+  return Set_create();
+}
+
+void collection_destroy(void * c) {
+  Set_destroy(c);
+}
+
+/* Argument a1 is ignored. */
+bool collection_add(void * c, T a0, int a1) {
+  return Set_add(c, a0);
+}
+
+bool collection_contains(void * c, T a) {
+  return Set_contains(c, a);
+}
+
+int collection_remove(void * c, T a) {
+  return (int)Set_remove(c, a);
+}
+
+void collection_print(void * c) {
+  Set_print(c);
+}

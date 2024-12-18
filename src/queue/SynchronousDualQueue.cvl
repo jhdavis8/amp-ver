@@ -1,26 +1,42 @@
+/* Filename : SynchronousDualQueue.cvl
+   Author   : Stephen F. Siegel
+   Created  :
+   Modified : 2024-12-15
+
+ */
 #include "AtomicInteger.h"
 #include "AtomicReference.cvh"
 #include "Queue.h"
+#include "tid.h"
 #include "types.h"
 #include <stdbool.h>
 #include <stdlib.h>
 
-static int nactive, nnonterm; // number of active, non-terminated threads
+static int nnonterm; // number of non-terminated threads
+static int nin; // number of threads in a waiting region
+static bool deadlock = false;
+// flag i set to true if all threads are waiting and the
+// condition on which thread i is waiting is false
+static bool * flag;
 
-void initialize(int nthread) {
-  nnonterm = nactive = nthread;
+void Queue_initialize(int nthread) {
+  nnonterm = nthread;
+  nin = 0;
+  flag = malloc(nthread*sizeof(bool));
+  for (int i=0; i<nthread; i++) flag[i] = false;
 }
 
-void finalize() {
+void Queue_finalize() {
+  free(flag);
 }
 
-void terminate(int tid) {
+void Queue_terminate(int tid) {
   nnonterm--;
-  nactive--;
+  //$print("Thread ", tid, " terminating.  nnonterm=", nnonterm, "\n");
 }
 
-bool deadlocked() {
-  return nactive == 0 && nnonterm > 0;
+bool Queue_stuck() {
+  return deadlock;
 }
 
 typedef enum NodeType {ITEM, RESERVATION} NodeType;
@@ -75,6 +91,8 @@ void Queue_destroy(Queue queue) {
 }
 
 void Queue_enq(Queue this, T e) {
+  $assert(!deadlock);
+  int tid = tid_get(), nthread = tid_nthread();
   Node offer = Node_create(e, ITEM);
   while (true) {
     Node t = AtomicReference_get(this->tail),
@@ -86,12 +104,27 @@ void Queue_enq(Queue this, T e) {
           AtomicReference_compare_and_set(this->tail, t, n);
         } else if (AtomicReference_compare_and_set(t->next, n, offer)) {
           AtomicReference_compare_and_set(this->tail, t, offer);
-          nactive--;
-          while (AtomicInteger_get(offer->item) == e) {
-            $print("nactive = ", nactive, "\n");
-            if (nactive == 0) return; // deadlock
+          // begin busy-wait
+          nin++;
+          while (AtomicInteger_get(offer->item) == e && !deadlock) {
+            $atomic {
+              if (nin == nnonterm && AtomicInteger_get(offer->item) == e) {
+                flag[tid] = true;
+                int sum = 0;
+                for (int i=0; i<nthread; i++) sum += flag[i];
+                if (sum == nin) deadlock = true;
+              }
+            }
           }
-          nactive++;
+          if (deadlock) {
+            $assert(AtomicInteger_get(offer->item) == e);
+            return;
+          }
+          $atomic {
+            nin--;
+            for (int i=0; i<nthread; i++) flag[i] = false;
+          }
+          // end busy-wait
           h = AtomicReference_get(this->head);
           if (offer == AtomicReference_get(h->next))
             AtomicReference_compare_and_set(this->head, h, offer);
@@ -114,6 +147,8 @@ void Queue_enq(Queue this, T e) {
 }
 
 T Queue_deq(Queue this) {
+  $assert(!deadlock);
+  int tid = tid_get(), nthread = tid_nthread();
   Node offer = Node_create(-1, RESERVATION);
   while (true) {
     Node t = AtomicReference_get(this->tail),
@@ -125,14 +160,32 @@ T Queue_deq(Queue this) {
           AtomicReference_compare_and_set(this->tail, t, n);
         } else if (AtomicReference_compare_and_set(t->next, n, offer)) {
           AtomicReference_compare_and_set(this->tail, t, offer);
-          nactive--;
+          // begin busy-wait
+          nin++;
           while (AtomicInteger_get(offer->item) == -1) {
-            if (nactive == 0) return -1; // deadlock
+            $atomic {
+              if (nin == nnonterm && AtomicInteger_get(offer->item) == -1) {
+                flag[tid] = true;
+                int sum = 0;
+                for (int i=0; i<nthread; i++) sum += flag[i];
+                if (sum == nin) deadlock = true;
+              }
+            }
           }
-          nactive++;
+          if (deadlock) {
+            $assert(AtomicInteger_get(offer->item) == -1);
+            $print("Returning[0]: -1\n");
+            return -1;
+          }
+          $atomic {
+            nin--;
+            for (int i=0; i<nthread; i++) flag[i] = false;
+          }
+          // end busy-wait
           h = AtomicReference_get(this->head);
           if (offer == AtomicReference_get(h->next))
             AtomicReference_compare_and_set(this->head, h, offer);
+          $print("Returning[1] ", AtomicInteger_get(offer->item), "\n");
           return AtomicInteger_get(offer->item);
         }
       }
@@ -147,6 +200,7 @@ T Queue_deq(Queue this) {
       bool success = AtomicInteger_compareAndSet(n->item, item, -1);
       AtomicReference_compare_and_set(this->head, h, n);
       if (success) {
+        $print("Returning[2] ", item, "\n");
         return item;
       }
     }
@@ -174,7 +228,7 @@ void Queue_print(Queue this) {
 
 void test1() {
   int N=2, nthread=2*N;
-  initialize(nthread);
+  Queue_initialize(nthread);
   Queue q = Queue_create();
   $parfor (int i: 0..nthread-1) {
     if (i%2 == 0) {
@@ -201,31 +255,54 @@ void test1() {
   $print("Done: ");
   Queue_print(q);
   $print("\n");
-  $assert(!deadlocked());
+  $assert(!Queue_stuck());
   Queue_destroy(q);
-  finalize();
+  Queue_finalize();
 }
 
 void test2() {
   int nthread=2;
-  initialize(nthread);
+  Queue_initialize(nthread);
   Queue q = Queue_create();
   $parfor (int i: 0..nthread-1) {
+    
     Queue_enq(q, i);
   }
   $print("Done: ");
   Queue_print(q);
   $print("\n");
-  if (deadlocked()) $print("DEADLOCK!\n");
+  if (Queue_stuck()) $print("DEADLOCK!\n");
   else $assert(false);
   Queue_destroy(q);
-  finalize();
+  Queue_finalize();
+}
+
+void test3() {
+  int nthread=3;
+  tid_init(nthread);
+  Queue_initialize(nthread);
+  Queue q = Queue_create();
+  $parfor (int i: 0..nthread-1) {
+    tid_register(i);
+    if (i==0)
+      Queue_enq(q, i);
+    else {
+      int x = Queue_deq(q);
+      $assert(Queue_stuck() || x >= 0);
+    }
+    tid_unregister();
+  }
+  Queue_destroy(q);
+  Queue_finalize();
 }
 
 int main() {
+  /*
   $print("Test 1 ... \n");
   test1();
   $print("Test 2 ... \n");
   test2();
+  */
+  test3();
 }
 #endif

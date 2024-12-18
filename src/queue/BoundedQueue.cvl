@@ -6,8 +6,9 @@
  * This is a simple bounded queue implementation using two
  * conditions.
  *
- * Created : 2024-Jun-17
- * Authors : Josh Davis and Stephen F. Siegel
+ * Created  : 2024-06-17
+ * Modified : 2024-12-13
+ * Authors  : Josh Davis and Stephen F. Siegel
  * Verified Software Laboratory, Dept. Computer & Info. Sciences,
  * University of Delaware.
  */
@@ -21,23 +22,23 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-#ifndef INITIAL_CAPACITY
-#define INITIAL_CAPACITY 2
+#ifndef CAPACITY
+#define CAPACITY 2
 #endif
 
-void initialize(int nthread) {
+void Queue_initialize(int nthread) {
   Condition_init(nthread);
 }
 
-void finalize() {
+void Queue_finalize() {
   Condition_finalize();
 }
 
-void terminate(int tid) {
+void Queue_terminate(int tid) {
   Condition_terminate(tid);
 }
 
-bool deadlocked() {
+bool Queue_stuck() {
   return Condition_isDeadlocked();
 }
 
@@ -74,7 +75,7 @@ struct Queue {
 
 Queue Queue_create() {
   Queue this = malloc(sizeof(struct Queue));
-  this->capacity = INITIAL_CAPACITY;
+  this->capacity = CAPACITY;
   this->head = Node_create(-1);
   this->tail = this->head;
   this->size = AtomicInteger_create(0);

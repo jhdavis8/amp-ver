@@ -1,78 +1,62 @@
 #ifndef _SET_H
 #define _SET_H
+/* Filanme : Set.h
+   Author  : Josh Davis and Stephen F. Siegel
+   Created :
+   Modified: 2024-12-12
 
+   Interface for a set collection.  Note: in the actual concurrent
+   executions we model, a method call may get "stuck", i.e., result in
+   deadlock.  However, in our framework, the functions modeling these
+   methods will always return.  Instead, a stuck flag will be set in
+   the implementation.  The flag can be checked using the isStuck()
+   function; if it is set (true), the return value of the previous
+   function call should be ignored and no further calls should be made
+   on the collection.  In general, isStuck() should be called after
+   each function returns, unless you have some reason to be sure the
+   method could not get stuck.
+*/
 #include <stdbool.h>
 #include "types.h"
 
 typedef struct Set * Set;
 
+/* Call this once before any other methods in the concurrent data
+   sructure are invoked. */
+void Set_initialize(int nthread);
 
-/* add(Set set, T value)
- * Input:  set, a pointer to a given Hash Set
- *         value, a positive integer
- * Output: true if the value is successfully added,
- *         false if the value is not added
- * If add is given faulty input (ex: a negative number, a non-integer, etc.), 
- * the code will return false for wrong input
- * A value is successfully added if:
- * - it is a non-negative integer
- * - the value does not already exist in the set
- * - the set exists and is unlocked
- * - the value is successfully stored in the set 
- */
+/* Call this method once at the end; do not call any methods in the
+   concurrent data structure implementation after this. */
+void Set_finalize(void);
+
+/* Inform the concurrent data structure that the thread with given tid
+   has terminated. */
+void Set_terminate(int tid);
+
+/* Did the concurrent execution deadlock? */
+bool Set_stuck(void);
+
+/* Adds value to set.  Returns true iff value was not already in the
+   set. */
 bool Set_add(Set set, T value);
 
-
-/* remove(Set set, T value)
- * Input:  set, a pointer to a given Hash Set
- *         value, a positive integer
- * Output: true if the value is successfully discarded from the set
- *         false if the value is not discarded 
- * If discard is given faulty input (ex: a negative number, a non-integer, etc.), 
- * the code will return false for wrong input
- * A value is successfully discarded if:
- * - it is a non-negative integer
- * - the value initially exists in the set
- * - the set exists and is unlocked
- * - the value is successfully removed from the set
- */
+/* Removes value from set, if value was in set.  Returns true iff
+   value was in the set. */
 bool Set_remove(Set set, T value);
 
-
-/* contains(Set set, int value)
- * Input:  set, a pointer to a given Hash Set
- *         value, a positive integer
- * Output: true if the value exists in the set
- *         false if the value does not exist in the set 
- * If contains is given faulty input (ex: a negative number, a non-integer, etc.), 
- * the code will return false for wrong input
- * A value exists in the set if
- * - it is a non-negative integer
- * - the set exists and is unlocked
- * - the value can be referenced at some location in the set
- */
+/* Determines whether set contains value. */
 bool Set_contains(Set set, T value);
 
-
-/* create()
- * Output: Pointer to created set
- * If create is given faulty input (ex: a negative number, a non-integer, etc.), 
- * the code will return NULL for wrong input
- * A set is created if
- * - its memory has been allocated
- * - its values are initialized to -1
- * - the set can be referenced at some location in memory
- */
+/* Creates a new empty set, returning an opaque handle to it. */
 Set Set_create();
 
-
-/* destroy(Set set)
- * Input:  set, a pointer to a given Hash Set
- */
+/* Destroys the set.  */
 void Set_destroy(Set set);
 
+/* Prints the set in human-readable form. */
 void Set_print(Set set);
 
+/* Returns the number of elements currently in the set */
 int Set_size(Set set);
 
 #endif

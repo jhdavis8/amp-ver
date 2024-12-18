@@ -5,27 +5,26 @@
  *
  * This is a concurrent cuckoo hashset using lock striping and phasing
  *
- * Created : 2018-Apr-26
- * Modified: 2023-Jan-05
+ * Created : 2018-04-26
+ * Modified: 2024-12-13
  * Authors : Josh Davis and Stephen F. Siegel
  * Verified Software Laboratory, Dept. Computer & Info. Sciences,
  * University of Delaware.
  */
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
+#include "ArrayList.h"
+#include "Lock.h"
 #include "Set.h"
 #include "hash.cvh"
-#include "Lock.h"
-#include "ArrayList.h"
 #include "types.h"
+#include <stdbool.h>
+#include <stdlib.h>
 
 #define LIMIT 8
 #define PROBE_SIZE 2
 #define THRESHOLD (PROBE_SIZE / 2)
 #define INITIAL_CAPACITY 1
-// need this because our interface doesn't have a constructor that takes an initial size
+// need this because our interface doesn't have a constructor
+// that takes an initial size
 
 struct Set {
   int capacity;
@@ -33,6 +32,18 @@ struct Set {
   ArrayList* table[2];
 };
 
+void Set_initialize(int nthread) {
+}
+
+void Set_finalize(void) {
+}
+
+void Set_terminate(int tid) {
+}
+
+bool Set_stuck(void) {
+  return false;
+}
 
 Set Set_create() {
   // PhasedCuckooHashSet constructor
@@ -295,9 +306,9 @@ void Set_print(Set s) {
   for (int i = 0; i < 2; i++) {
     for (int j = 0; j < s->capacity; j++) {
       ArrayList_print(s->table[i][j]);
-      printf("\n");
+      $print("\n");
     }
-    printf("\n");
+    $print("\n");
   }
 }
 

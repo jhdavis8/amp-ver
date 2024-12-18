@@ -1,22 +1,16 @@
-/* CIVL model of CoarseHashSet class from "The Art of Multiprocessor
- * Programming" 2nd ed, by Herlihy, Luchangco, Shavit, and Spear,
- * Sec. 13.2.1 "A coarse-grained hash set", and companion code
- * ch13/src/hash/CoarseHashSet.java.
- *
- * A concurrent hash set synchronized using a single reentrant lock.
- *
- * Created : 2018-Apr-15
- * Authors : Josh Davis and Stephen F. Siegel
- * Verified Software Laboratory, Dept. Computer & Info. Sciences,
- * University of Delaware.
+/* Filename : CoarseHashSet.cvl
+   Authors  : Josh Davis and Stephen F. Siegel
+   Created  : 2018-Apr-15
+   Modified : 2024-12-13
+
+
  */
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
+#include "ArrayList.h"
+#include "Lock.h"
 #include "Set.h"
 #include "hash.cvh"
-#include "Lock.h"
-#include "ArrayList.h"
+#include <stdbool.h>
+#include <stdlib.h>
 
 #define INIT_CAP 1
 
@@ -34,6 +28,19 @@ static void release(Set set, T x);
 static bool policy(Set set);
 
 static void resize(Set set);
+
+void Set_initialize(int nthread) {
+}
+
+void Set_finalize(void) {
+}
+
+void Set_terminate(int tid) {
+}
+
+bool Set_stuck(void) {
+  return false;
+}
 
 Set Set_create() {
   Set set = malloc(sizeof(struct Set));
@@ -134,14 +141,14 @@ static bool policy(Set set) {
 
 void Set_print(Set set) {
   int n = set->length;
-  printf("{ ");
+  $print("{ ");
   for (int i = 0; i < n; i++) {
     ArrayList row = set->table[i];
     int m = ArrayList_size(row);
     for (int j = 0; j < m; j++)
-      printf("%d ", ArrayList_get(row, j));
+      $print(ArrayList_get(row, j), " ");
   }
-  printf("}");
+  $print("}");
 }
 
 #ifdef _COARSE_HASH_SET_MAIN
@@ -153,8 +160,8 @@ int main() {
     Set_add(set, i);
   }
   for (int i=0; i<4; i++)
-    printf("hash(%d)=%d ", i, hash_code(i));
-  printf("\n");
+    $print("hash(", i, ")=", hash_code(i), " ");
+  $print("\n");
   Set_print(set);
   $for (int i : 0 .. 3) {
     $assert(Set_contains(set, i));
