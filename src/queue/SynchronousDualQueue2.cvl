@@ -1,8 +1,15 @@
-/* Filename : SynchronousDualQueue.cvl
+/* Filename : SynchronousDualQueue2.cvl
    Author   : Stephen F. Siegel
-   Created  :
-   Modified : 2024-12-15
+   Created  : 2024-12-21
+   Modified : 2024-12-22
 
+   Synchronous dual queue, based on SynchronousDualQueue class,
+   section 10.7 of Herlihy, et al., Art of Multiprocessor Programming,
+   2nd ed.  This version has been extended with a mechanism to detect
+   and recover when control gets "stuck" (in a non-progress cycle).
+   Hence every call should return.  After returning, the client can
+   invoke Queue_stuck() to determine whether the execution got stuck
+   or terminated normally.
  */
 #pragma CIVL ACSL
 #include "AtomicInteger.h"
@@ -228,7 +235,10 @@ void Queue_print(Queue this) {
   $print("}");
 }
 
+// Tests...
+
 #ifdef _SYNCHRONOUS_DUAL_QUEUE
+
 /* 2N threads: even ones enqueue, odd ones dequeue.  Should never get
    stuck and should always result in an empty queue.  */
 void testBalanced(int N) {
@@ -253,6 +263,7 @@ void testBalanced(int N) {
   $print("Done: ");
   Queue_print(q);
   $print("\n");
+  $assert(AtomicReference_get(q->head) == AtomicReference_get(q->tail));
   $assert(!Queue_stuck());
   Queue_destroy(q);
   Queue_finalize();
@@ -275,8 +286,7 @@ void testEnqs(int nthread) {
   $print("Done: ");
   Queue_print(q);
   $print("\n");
-  if (Queue_stuck()) $print("STUCK!\n");
-  else $assert(false);
+  $assert(Queue_stuck());
   Queue_destroy(q);
   Queue_finalize();
   tid_destroy();
@@ -331,10 +341,23 @@ void testEED() {
 }
 
 int main() {
-  //testBalanced(2);
-  //testEnqs(1);
-  //testEnqs(2);
+#ifdef BALANCED1
+  testBalanced(1);
+#endif
+#ifdef BALANCED2
+  testBalanced(2);
+#endif
+#ifdef ENQS1
+  testEnqs(1);
+#endif
+#ifdef ENQS2
+  testEnqs(2);
+#endif
+#ifdef EDD
   testEDD();
-  //testEED();
+#endif
+#ifdef EED
+  testEED();
+#endif
 }
 #endif

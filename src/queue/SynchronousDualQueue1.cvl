@@ -1,8 +1,11 @@
-/* Filename : SynchronousDualQueue.cvl
+/* Filename : SynchronousDualQueue1.cvl
    Author   : Stephen F. Siegel
-   Created  :
-   Modified : 2024-12-15
+   Created  : 2024-12-21
+   Modified : 2024-12-22
 
+   Synchronous dual queue, based on SynchronousDualQueue class,
+   section 10.7 of Herlihy, et al., Art of Multiprocessor Programming,
+   2nd ed.
  */
 #pragma CIVL ACSL
 #include "AtomicInteger.h"
@@ -167,7 +170,10 @@ void Queue_print(Queue this) {
   $print("}");
 }
 
+// Tests...
+
 #ifdef _SYNCHRONOUS_DUAL_QUEUE
+
 /* 2N threads: even ones enqueue, odd ones dequeue.  Should never get
    stuck and should always result in an empty queue.  */
 void testBalanced(int N) {
@@ -191,6 +197,7 @@ void testBalanced(int N) {
   $print("Done: ");
   Queue_print(q);
   $print("\n");
+  $assert(AtomicReference_get(q->head) == AtomicReference_get(q->tail));
   Queue_destroy(q);
   Queue_finalize();
   tid_destroy();
@@ -208,12 +215,15 @@ void testEnqs(int nthread) {
     Queue_terminate(i);
     tid_unregister();
   }
+  $assert(false); // you should never make it here
+  /*
   $print("Done: ");
   Queue_print(q);
   $print("\n");
   Queue_destroy(q);
   Queue_finalize();
   tid_destroy();
+  */
 }
 
 /* Three threads: one enqueues, the other two dequeue.  Should get
@@ -237,10 +247,13 @@ void testEDD() {
     Queue_terminate(i);
     tid_unregister();
   }
+  $assert(false);
+  /*
   $assert(Queue_stuck());
   Queue_destroy(q);
   Queue_finalize();
   tid_destroy();
+  */
 }
 
 void testEED() {
@@ -262,17 +275,32 @@ void testEED() {
     Queue_terminate(i);
     tid_unregister();
   }
+  $assert(false);
+  /*
   Queue_destroy(q);
   Queue_finalize();
   tid_destroy();
+  */
 }
 
 int main() {
+#ifdef BALANCED1
   testBalanced(1);
-  //testBalanced(2);
-  //testEnqs(1);
-  //testEnqs(2);
-  //testEDD();
-  //testEED();
+#endif
+#ifdef BALANCED2
+  testBalanced(2);
+#endif
+#ifdef ENQS1
+  testEnqs(1);
+#endif
+#ifdef ENQS2
+  testEnqs(2);
+#endif
+#ifdef EDD
+  testEDD();
+#endif
+#ifdef EED
+  testEED();
+#endif
 }
 #endif
