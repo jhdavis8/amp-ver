@@ -1,0 +1,340 @@
+/* Filename : SynchronousDualQueue.cvl
+   Author   : Stephen F. Siegel
+   Created  :
+   Modified : 2024-12-15
+
+ */
+#pragma CIVL ACSL
+#include "AtomicInteger.h"
+#include "AtomicReference.cvh"
+#include "NPDetector.cvh"
+#include "Queue.h"
+#include "tid.h"
+#include "types.h"
+#include <stdbool.h>
+#include <stdlib.h>
+
+bool static ar_compareAndSet(AtomicReference ref, void * expect,
+                             void * update) {
+  if (AtomicReference_compare_and_set(ref, expect, update)) {
+    npd_signalAll();
+    return true;
+  }
+  return false;
+}
+
+bool static ai_compareAndSet(AtomicInteger ref, int expect, int update) {
+  if (AtomicInteger_compareAndSet(ref, expect, update)) {
+    npd_signalAll();
+    return true;
+  }
+  return false;
+}
+
+void Queue_initialize(int nthread) {
+  npd_initialize(nthread);
+}
+
+void Queue_finalize() {
+  npd_finalize();
+}
+
+void Queue_terminate(int tid) {
+  npd_terminate(tid);
+}
+
+bool Queue_stuck() {
+  return npd_stuck();
+}
+
+/* Spin while *p==val, but breakout if livelock occurs.  Returns true
+   iff livelock occurred. */
+static bool spin_while_eq(int tid, int * p, int val) {
+  npd_loop_enter(tid);
+  while (*p==val) {
+    npd_loop_top(tid);
+    if (npd_loop_bottom(tid))
+      return true;
+  }
+  npd_loop_exit(tid);
+  return false;
+}
+
+/* Spin while *p==val.  Does not have special handling for
+   deadlock. */
+static void spin_while_eq_alt(int * p, int val) {
+  $when (*p!=val);
+}
+
+typedef enum NodeType {ITEM, RESERVATION} NodeType;
+
+typedef struct Node {
+  NodeType type;
+  AtomicInteger item;
+  AtomicReference next;
+} * Node;
+
+static Node Node_create(T myItem, NodeType myType) {
+  Node this = malloc(sizeof(struct Node));
+  this->item = AtomicInteger_create(myItem);
+  this->next = AtomicReference_create(NULL);
+  this->type = myType;
+  return this;
+}
+
+// not in original code...
+static void Node_destroy(Node this) {
+  AtomicReference_destroy(this->next);
+  AtomicInteger_destroy(this->item);
+  free(this);
+}
+
+struct Queue {
+  AtomicReference head;
+  AtomicReference tail;
+};
+
+Queue Queue_create() {
+  Queue this = malloc(sizeof(struct Queue));
+  Node sentinel = Node_create(-1, ITEM); // new Node(null, ITEM)
+  this->head = AtomicReference_create(sentinel);
+  this->tail = AtomicReference_create(sentinel);
+  return this;
+}
+
+// not in original code...
+void Queue_destroy(Queue queue) {
+  // if node is not null, its next is not null
+  Node curr = AtomicReference_get(queue->head);
+  Node prev = NULL;
+  while (curr != NULL) {
+    prev = curr;
+    curr = AtomicReference_get(curr->next);
+    Node_destroy(prev);
+  }
+  AtomicReference_destroy(queue->head);
+  AtomicReference_destroy(queue->tail);
+  free(queue);
+}
+
+void Queue_enq(Queue this, T e) {
+  int tid = tid_get(), nthread = tid_nthread();
+  $assert(0<=tid && tid<nthread);
+  Node offer = Node_create(e, ITEM);
+  npd_loop_enter(tid);
+  while (true) {
+    npd_loop_top(tid);
+    Node t = AtomicReference_get(this->tail),
+      h = AtomicReference_get(this->head);
+    if (h == t || t->type == ITEM) {
+      Node n = AtomicReference_get(t->next);
+      if (t == AtomicReference_get(this->tail)) {
+        if (n != NULL) {
+          ar_compareAndSet(this->tail, t, n);
+        } else if (ar_compareAndSet(t->next, n, offer)) {
+          ar_compareAndSet(this->tail, t, offer);
+          if (spin_while_eq(tid, &offer->item->value, e))
+            return; // stuck
+          h = AtomicReference_get(this->head);
+          if (offer == AtomicReference_get(h->next))
+            ar_compareAndSet(this->head, h, offer);
+          npd_loop_exit(tid);
+          return;
+        }
+      }
+    } else {
+      Node n = AtomicReference_get(h->next);
+      if (t != AtomicReference_get(this->tail) ||
+          h != AtomicReference_get(this->head) ||
+          n == NULL) {
+        if (npd_loop_bottom(tid)) return;
+        continue;
+      }
+      bool success = ai_compareAndSet(n->item, -1, e);
+      ar_compareAndSet(this->head, h, n);
+      if (success) {
+        npd_loop_exit(tid);
+        return;
+      }
+    }
+    if (npd_loop_bottom(tid)) return;
+  } // end of while loop
+}
+
+T Queue_deq(Queue this) {
+  int tid = tid_get(), nthread = tid_nthread();
+  $assert(0<=tid && tid<nthread);
+  Node offer = Node_create(-1, RESERVATION);
+  npd_loop_enter(tid);
+  while (true) {
+    npd_loop_top(tid);
+    Node t = AtomicReference_get(this->tail),
+      h = AtomicReference_get(this->head);
+    if (h == t || t->type == RESERVATION) {
+      Node n = AtomicReference_get(t->next);
+      if (t == AtomicReference_get(this->tail)) {
+        if (n != NULL) {
+          ar_compareAndSet(this->tail, t, n);
+        } else if (ar_compareAndSet(t->next, n, offer)) {
+          ar_compareAndSet(this->tail, t, offer);
+          if (spin_while_eq(tid, &offer->item->value, -1))
+            return -1; // stuck
+          h = AtomicReference_get(this->head);
+          if (offer == AtomicReference_get(h->next))
+            ar_compareAndSet(this->head, h, offer);
+          npd_loop_exit(tid);
+          return AtomicInteger_get(offer->item);
+        }
+      }
+    } else {
+      Node n = AtomicReference_get(h->next);
+      if (t != AtomicReference_get(this->tail) ||
+          h != AtomicReference_get(this->head) ||
+          n == NULL) {
+        if (npd_loop_bottom(tid)) return -1;
+        continue;
+      }
+      T item = AtomicInteger_get(n->item);
+      // added by Josh to correct defect...
+      if (item == -1) {
+        if (npd_loop_bottom(tid)) return -1;
+        continue;
+      }
+      bool success = ai_compareAndSet(n->item, item, -1);
+      ar_compareAndSet(this->head, h, n);
+      if (success) {
+        npd_loop_exit(tid);
+        return item;
+      }
+    }
+    if (npd_loop_bottom(tid)) return -1;
+  } // end of while loop
+}
+
+void Queue_print(Queue this) {
+  Node prev = AtomicReference_get(this->head),
+    curr = AtomicReference_get(prev->next);
+  $print("{ ");
+  while (curr != NULL) {
+    int val = AtomicInteger_get(curr->item);
+    $print(val);
+    if (curr->type == RESERVATION)
+      $print("[R] ");
+    else
+      $print(" ");
+    prev = curr;
+    curr = AtomicReference_get(curr->next);
+  }
+  $print("}");
+}
+
+#ifdef _SYNCHRONOUS_DUAL_QUEUE
+/* 2N threads: even ones enqueue, odd ones dequeue.  Should never get
+   stuck and should always result in an empty queue.  */
+void testBalanced(int N) {
+  $assert(N>=1);
+  int nthread=2*N;
+  tid_init(nthread);
+  Queue_initialize(nthread);
+  Queue q = Queue_create();
+  $parfor (int i: 0..nthread-1) {
+    tid_register(i);
+    if (i%2 == 0) {
+      Queue_enq(q, i);
+    }
+    else {
+      int result = Queue_deq(q);
+      $assert(result >= 0 && result<=2*nthread-2 && result%2==0);
+    }
+    if (!Queue_stuck())
+      Queue_terminate(i);
+    tid_unregister();
+  }
+  $print("Done: ");
+  Queue_print(q);
+  $print("\n");
+  $assert(!Queue_stuck());
+  Queue_destroy(q);
+  Queue_finalize();
+  tid_destroy();
+}
+
+/* All threads enqueue.  This should always get stuck. */
+void testEnqs(int nthread) {
+  $assert(nthread >= 1);
+  tid_init(nthread);
+  Queue_initialize(nthread);
+  Queue q = Queue_create();
+  $parfor (int i: 0..nthread-1) {
+    tid_register(i);
+    Queue_enq(q, i);
+    if (!Queue_stuck())
+      Queue_terminate(i);
+    tid_unregister();
+  }
+  $print("Done: ");
+  Queue_print(q);
+  $print("\n");
+  if (Queue_stuck()) $print("STUCK!\n");
+  else $assert(false);
+  Queue_destroy(q);
+  Queue_finalize();
+  tid_destroy();
+}
+
+/* Three threads: one enqueues, the other two dequeue.  Should get
+   stuck. */
+void testEDD() {
+  int nthread=3;
+  tid_init(nthread);
+  Queue_initialize(nthread);
+  Queue q = Queue_create();
+  $parfor (int i: 0..nthread-1) {
+    tid_register(i);
+    if (i==0)
+      Queue_enq(q, i);
+    else {
+      int x = Queue_deq(q);
+      $assert(Queue_stuck() || x >= 0);
+    }
+    if (!Queue_stuck())
+      Queue_terminate(i);
+    tid_unregister();
+  }
+  $assert(Queue_stuck());
+  Queue_destroy(q);
+  Queue_finalize();
+  tid_destroy();
+}
+
+void testEED() {
+  int nthread=3;
+  tid_init(nthread);
+  Queue_initialize(nthread);
+  Queue q = Queue_create();
+  $parfor (int i: 0..nthread-1) {
+    tid_register(i);
+    if (i<=1) {
+      Queue_enq(q, i);
+    } else {
+      int x = Queue_deq(q);
+      $assert(Queue_stuck() || x >= 0);
+    }
+    if (!Queue_stuck())
+      Queue_terminate(i);
+    tid_unregister();
+  }
+  $assert(Queue_stuck());
+  Queue_destroy(q);
+  Queue_finalize();
+  tid_destroy();
+}
+
+int main() {
+  //testBalanced(2);
+  //testEnqs(1);
+  //testEnqs(2);
+  testEDD();
+  //testEED();
+}
+#endif

@@ -4,6 +4,7 @@
    Modified : 2024-12-15
 
  */
+#pragma CIVL ACSL
 #include "AtomicInteger.h"
 #include "AtomicReference.cvh"
 #include "Queue.h"
@@ -12,32 +13,19 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-static int nnonterm; // number of non-terminated threads
-static int nin; // number of threads in a waiting region
-static bool deadlock = false;
-// flag i set to true if all threads are waiting and the
-// condition on which thread i is waiting is false
-static bool * flag;
-
 void Queue_initialize(int nthread) {
-  nnonterm = nthread;
-  nin = 0;
-  flag = malloc(nthread*sizeof(bool));
-  for (int i=0; i<nthread; i++) flag[i] = false;
 }
 
 void Queue_finalize() {
-  free(flag);
 }
 
 void Queue_terminate(int tid) {
-  nnonterm--;
-  //$print("Thread ", tid, " terminating.  nnonterm=", nnonterm, "\n");
 }
 
 bool Queue_stuck() {
-  return deadlock;
+  return false;
 }
+
 
 typedef enum NodeType {ITEM, RESERVATION} NodeType;
 
@@ -91,8 +79,6 @@ void Queue_destroy(Queue queue) {
 }
 
 void Queue_enq(Queue this, T e) {
-  $assert(!deadlock);
-  int tid = tid_get(), nthread = tid_nthread();
   Node offer = Node_create(e, ITEM);
   while (true) {
     Node t = AtomicReference_get(this->tail),
@@ -104,27 +90,7 @@ void Queue_enq(Queue this, T e) {
           AtomicReference_compare_and_set(this->tail, t, n);
         } else if (AtomicReference_compare_and_set(t->next, n, offer)) {
           AtomicReference_compare_and_set(this->tail, t, offer);
-          // begin busy-wait
-          nin++;
-          while (AtomicInteger_get(offer->item) == e && !deadlock) {
-            $atomic {
-              if (nin == nnonterm && AtomicInteger_get(offer->item) == e) {
-                flag[tid] = true;
-                int sum = 0;
-                for (int i=0; i<nthread; i++) sum += flag[i];
-                if (sum == nin) deadlock = true;
-              }
-            }
-          }
-          if (deadlock) {
-            $assert(AtomicInteger_get(offer->item) == e);
-            return;
-          }
-          $atomic {
-            nin--;
-            for (int i=0; i<nthread; i++) flag[i] = false;
-          }
-          // end busy-wait
+          $when(offer->item->value != e);
           h = AtomicReference_get(this->head);
           if (offer == AtomicReference_get(h->next))
             AtomicReference_compare_and_set(this->head, h, offer);
@@ -143,12 +109,10 @@ void Queue_enq(Queue this, T e) {
       if (success)
         return;
     }
-  }      
+  } // end of while loop
 }
 
 T Queue_deq(Queue this) {
-  $assert(!deadlock);
-  int tid = tid_get(), nthread = tid_nthread();
   Node offer = Node_create(-1, RESERVATION);
   while (true) {
     Node t = AtomicReference_get(this->tail),
@@ -160,32 +124,10 @@ T Queue_deq(Queue this) {
           AtomicReference_compare_and_set(this->tail, t, n);
         } else if (AtomicReference_compare_and_set(t->next, n, offer)) {
           AtomicReference_compare_and_set(this->tail, t, offer);
-          // begin busy-wait
-          nin++;
-          while (AtomicInteger_get(offer->item) == -1) {
-            $atomic {
-              if (nin == nnonterm && AtomicInteger_get(offer->item) == -1) {
-                flag[tid] = true;
-                int sum = 0;
-                for (int i=0; i<nthread; i++) sum += flag[i];
-                if (sum == nin) deadlock = true;
-              }
-            }
-          }
-          if (deadlock) {
-            $assert(AtomicInteger_get(offer->item) == -1);
-            $print("Returning[0]: -1\n");
-            return -1;
-          }
-          $atomic {
-            nin--;
-            for (int i=0; i<nthread; i++) flag[i] = false;
-          }
-          // end busy-wait
+          $when(offer->item->value != -1);
           h = AtomicReference_get(this->head);
           if (offer == AtomicReference_get(h->next))
             AtomicReference_compare_and_set(this->head, h, offer);
-          $print("Returning[1] ", AtomicInteger_get(offer->item), "\n");
           return AtomicInteger_get(offer->item);
         }
       }
@@ -197,14 +139,15 @@ T Queue_deq(Queue this) {
         continue;
       }
       T item = AtomicInteger_get(n->item);
+      // added by Josh to correct defect...
+      if (item == -1) continue;
       bool success = AtomicInteger_compareAndSet(n->item, item, -1);
       AtomicReference_compare_and_set(this->head, h, n);
       if (success) {
-        $print("Returning[2] ", item, "\n");
         return item;
       }
     }
-  }
+  } // end of while loop
 }
 
 void Queue_print(Queue this) {
@@ -225,84 +168,111 @@ void Queue_print(Queue this) {
 }
 
 #ifdef _SYNCHRONOUS_DUAL_QUEUE
-
-void test1() {
-  int N=2, nthread=2*N;
+/* 2N threads: even ones enqueue, odd ones dequeue.  Should never get
+   stuck and should always result in an empty queue.  */
+void testBalanced(int N) {
+  $assert(N>=1);
+  int nthread=2*N;
+  tid_init(nthread);
   Queue_initialize(nthread);
   Queue q = Queue_create();
   $parfor (int i: 0..nthread-1) {
+    tid_register(i);
     if (i%2 == 0) {
       Queue_enq(q, i);
-      /*
-      $atomic {
-        $print("Thread ", i, " enqueued ", i, "\n");
-        Queue_print(q);
-        $print("\n");
-      }
-      */
     }
     else {
       int result = Queue_deq(q);
-      /*
-      $atomic {
-        $print("Thread ", i, " dequeued ", result, "\n");
-        Queue_print(q);
-        $print("\n");
-      }
-      */
+      $assert(result >= 0 && result<=2*nthread-2 && result%2==0);
     }
+    Queue_terminate(i);
+    tid_unregister();
   }
   $print("Done: ");
   Queue_print(q);
   $print("\n");
-  $assert(!Queue_stuck());
   Queue_destroy(q);
   Queue_finalize();
+  tid_destroy();
 }
 
-void test2() {
-  int nthread=2;
+/* All threads enqueue.  This should always get stuck. */
+void testEnqs(int nthread) {
+  $assert(nthread >= 1);
+  tid_init(nthread);
   Queue_initialize(nthread);
   Queue q = Queue_create();
   $parfor (int i: 0..nthread-1) {
-    
+    tid_register(i);
     Queue_enq(q, i);
+    Queue_terminate(i);
+    tid_unregister();
   }
   $print("Done: ");
   Queue_print(q);
   $print("\n");
-  if (Queue_stuck()) $print("DEADLOCK!\n");
-  else $assert(false);
   Queue_destroy(q);
   Queue_finalize();
+  tid_destroy();
 }
 
-void test3() {
+/* Three threads: one enqueues, the other two dequeue.  Should get
+   stuck. */
+void testEDD() {
   int nthread=3;
   tid_init(nthread);
   Queue_initialize(nthread);
   Queue q = Queue_create();
+  int ndeqdone = 0;
   $parfor (int i: 0..nthread-1) {
     tid_register(i);
     if (i==0)
       Queue_enq(q, i);
     else {
       int x = Queue_deq(q);
+      ndeqdone++;
+      $assert(ndeqdone <= 1);
       $assert(Queue_stuck() || x >= 0);
     }
+    Queue_terminate(i);
+    tid_unregister();
+  }
+  $assert(Queue_stuck());
+  Queue_destroy(q);
+  Queue_finalize();
+  tid_destroy();
+}
+
+void testEED() {
+  int nthread=3;
+  tid_init(nthread);
+  Queue_initialize(nthread);
+  Queue q = Queue_create();
+  int nenqdone = 0;
+  $parfor (int i: 0..nthread-1) {
+    tid_register(i);
+    if (i<=1) {
+      Queue_enq(q, i);
+      nenqdone++;
+      $assert(nenqdone <= 1);
+    } else {
+      int x = Queue_deq(q);
+      $assert(x >= 0);
+    }
+    Queue_terminate(i);
     tid_unregister();
   }
   Queue_destroy(q);
   Queue_finalize();
+  tid_destroy();
 }
 
 int main() {
-  /*
-  $print("Test 1 ... \n");
-  test1();
-  $print("Test 2 ... \n");
-  test2();
-  */
-  test3();
+  testBalanced(1);
+  //testBalanced(2);
+  //testEnqs(1);
+  //testEnqs(2);
+  //testEDD();
+  //testEED();
 }
 #endif

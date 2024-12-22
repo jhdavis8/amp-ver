@@ -10,6 +10,10 @@
 
 #include <stdbool.h>
 
+struct AtomicInteger {
+  int value;
+};
+
 typedef struct AtomicInteger * AtomicInteger;
 
 AtomicInteger AtomicInteger_create(int initialValue);

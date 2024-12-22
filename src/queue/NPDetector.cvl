@@ -1,0 +1,76 @@
+#pragma CIVL ACSL
+#include "NPDetector.cvh"
+#include <stdlib.h>
+
+static int nthread; // number of threads
+static int nnonterm; // number of non-terminated threads
+static int * state;
+
+//@ depends_on(\nothing);
+$atomic_f void npd_initialize(int _nthread) {
+  $assert(_nthread >= 1);
+  nnonterm = nthread = _nthread;
+  state = malloc(nthread*sizeof(int));
+  for (int i=0; i<nthread; i++) state[i] = 0;
+}
+
+//@ depends_on(\nothing);
+$atomic_f void npd_finalize() {
+  free(state);
+}
+
+//@ depends_on(\nothing);
+$atomic_f void npd_terminate(int tid) {
+  state[tid] = 0;
+  nnonterm--;
+}
+
+//@ depends_on(\nothing);
+$atomic_f static void npd_signalAll() {
+  $assert(!npd_stuck());
+  for (int i=0; i<nthread; i++)
+    state[i]=0;
+}
+
+//@ depends_on(\nothing);
+$atomic_f void npd_loop_enter(int tid) {
+  state[tid]=3*state[tid];
+}
+
+//@ depends_on(\nothing);
+$atomic_f void npd_loop_exit(int tid) {
+  state[tid]/=3;
+}
+
+//@ depends_on(\nothing);
+$atomic_f void npd_loop_top(int tid) {
+  if (state[tid]%3==0) state[tid]++;
+}
+
+//@ depends_on(\nothing);
+$atomic_f bool npd_loop_bottom(int tid) {
+  if (state[tid]%3==1)
+    state[tid]++;
+  if (state[tid]%3==2)
+    return npd_stuck();
+  return false;
+}
+
+//@ depends_on(\nothing);
+$atomic_f bool npd_stuck() {
+  if (nnonterm == 0) return false;
+  int  sum=0;
+  for (int i=0; i<nthread; i++) {
+    int s = state[i];
+    while (s>0 && s%3!=2) s=s/3;
+    if (s>0) sum++;
+  }
+  return sum==nnonterm;
+}
+
+void npd_print(void) {
+  $print("nnonterm=", nnonterm, " state={ ");
+  for (int i=0; i<nthread; i++)
+    $print(state[i], " ");
+  $print("}\n");
+}
