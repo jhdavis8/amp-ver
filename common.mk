@@ -80,6 +80,8 @@ SOURCES = $(JROOT)/src/ampver/module-info.java \
   $(JSRC)/PQScheduleIterator.java \
   $(JSRC)/AVUtil.java
 
+myall: all
+
 $(MAIN_CLASS): $(SOURCES)
 	$(JAVAC) -d $(JROOT)/bin/ampver\
   -p $(CIVL_ROOT)/mods/dev.civl.mc/bin $(SOURCES)
