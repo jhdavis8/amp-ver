@@ -39,7 +39,7 @@ void collection_destroy(void * c) {
    unless deadlock.  Check what to do if item already there. */
 bool collection_add(void * c, T a0, int a1) {
   PQueue_add(c, a0, a1);
-  return !iPQueue_isStuck();
+  return !PQueue_stuck();
 }
 
 /* Priority queues do not implement contains */

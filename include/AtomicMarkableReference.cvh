@@ -6,6 +6,7 @@
  * Apr-2018
  * VIP-HPC, Univ. of Delaware
  */
+#include <stdbool.h>
 
 typedef struct AtomicMarkableReference * AtomicMarkableReference;
 

@@ -33,29 +33,29 @@ clean:
 
 # 63 schedules
 LIST_LIMITS_1  = -kind=set -hashKind=ident -valueBound=2 -nthread=1..2 \
-     -nstep=1..2 -npreAdd=0 -threadSym -checkTermination -ncore=$(NCORE)
+  -nstep=1..2 -npreAdd=0 -threadSym -checkTermination -ncore=$(NCORE)
 
 # 1758 schedules
 LIST_LIMITS_2 = -kind=set -hashKind=ident -valueBound=3 -nthread=1..3 \
-     -nstep=1..3 -npreAdd=0 -threadSym -checkTermination -ncore=$(NCORE)
+  -nstep=1..3 -npreAdd=0 -threadSym -checkTermination -ncore=$(NCORE)
 
 # 5274 schedules: approx 15 minutes on Mac
 LIST_LIMITS_3  = -kind=set -hashKind=ident -valueBound=3 -nthread=1..3 \
-     -nstep=1..3 -npreAdd=1..3 -threadSym -checkTermination -ncore=$(NCORE)
+  -nstep=1..3 -npreAdd=1..3 -threadSym -checkTermination -ncore=$(NCORE)
 
 # 3645 schedules: estimate 5 hours on Mac
 LIST_LIMITS_4  = -kind=set -hashKind=ident -valueBound=3 -nthread=3 \
-     -nstep=4 -npreAdd=0 -threadSym -checkTermination -ncore=$(NCORE)
+  -nstep=4 -npreAdd=0 -threadSym -checkTermination -ncore=$(NCORE)
 
 # Not used...
 
 # 21,846 schedules
 # LIST_LIMITS_3  = -kind=set -hashKind=ident -valueBound=3 -nthread=1..3 \
-#     -nstep=1..4 -npreAdd=0 -threadSym -checkTermination -ncore=$(NCORE)
+#  -nstep=1..4 -npreAdd=0 -threadSym -checkTermination -ncore=$(NCORE)
 
 # # 1365 schedules
 # LIST_LIMITS_4  = -kind=set -hashKind=ident -valueBound=4 -nthread=4 \
-#      -nstep=4 -npreAdd=0 -threadSym -checkTermination -ncore=2
+#   -nstep=4 -npreAdd=0 -threadSym -checkTermination -ncore=2
 # # about 3 minutes each with 2 cores, or 34 hours
 
 LIST_INC = $(DRIVER_INC) $(LIST_H) lists.mk

@@ -40,7 +40,6 @@ QUEUE_LIMITS_2 = -kind=queue -genericVals -threadSym -nthread=1..3 \
 QUEUE_LIMITS_3  = -kind=queue -genericVals -threadSym -nthread=1..3 \
   -nstep=1..4 -npreAdd=0..2 -checkTermination -ncore=$(NCORE)
 
-
 QUEUE_INC = $(DRIVER_INC) $(QUEUE_H) queues.mk
 QUEUE_SRC = $(DRIVER_SRC) $(QUEUE_COL)
 QUEUE_DEP = $(QUEUE_INC) $(QUEUE_SRC)
@@ -125,6 +124,8 @@ out/LockFreeQueue_S%.out: $(LFQUEUE_DEP) $(QUEUE_SCHED_$*)
 
 
 # SynchronousDualQueue
+
+# This one uses the synchronous queue oracle.
 
 SDQUEUE = $(QUEUE_DIR)/SynchronousDualQueue2.cvl
 SDQUEUE_SRC = $(SDQUEUE) $(AI_SRC) $(AR_SRC) $(QUEUE_DIR)/NPDetector.cvl

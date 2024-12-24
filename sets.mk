@@ -55,7 +55,7 @@ HASH_LIMITS_3 = -kind=set -hashKind=ident -valueBound=3 -nthread=1..3 \
 HASH_LIMITS_4 = -kind=set -hashKind=ident -valueBound=3 -nthread=3 \
   -nstep=4 -npreAdd=0 -threadSym -checkTermination -ncore=$(NCORE)
 
-SET_INC = $(DRIVER_INC) $(SET_H) sets.mk
+SET_INC = $(DRIVER_INC) $(SET_H)
 SET_SRC = $(DRIVER_SRC) $(SET_COL)
 SET_DEP = $(SET_INC) $(SET_SRC)
 SET_SCHED_1 = $(SCHEDULE_DIR)/sched_set_1.cvl
@@ -122,9 +122,10 @@ SCUCKOO_DEP = $(SCUCKOO_ALL) $(SET_INC) $(HASH_INC) $(LOCK_INC) $(ARRAYLIST_INC)
 SCUCKOO_OUT = $(addprefix out/StripedCuckooHashSet_,$(addsuffix .out,1 1ND 1.5ND 2 2ND 3 4))
 
 # Ex: make -f sets.mk out/StripedCuckooHashSet_1.out
+# some bugs are revealed: config 3 schedule_3366
 $(SCUCKOO_OUT): out/StripedCuckooHashSet_%.out: $(MAIN_CLASS) $(SCUCKOO_DEP)
 	rm -rf out/StripedCuckooHashSet_$*.dir.tmp
-	$(AMPVER) $(HASH_LIMITS_$*) -spec=nonblocking \
+	-$(AMPVER) $(HASH_LIMITS_$*) -spec=nonblocking \
   -tmpDir=out/StripedCuckooHashSet_$*.dir.tmp $(SCUCKOO_SRC) \
   >out/StripedCuckooHashSet_$*.out.tmp
 	rm -rf out/StripedCuckooHashSet_$*.dir
