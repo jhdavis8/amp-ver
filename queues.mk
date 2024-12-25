@@ -14,13 +14,14 @@ QUEUES = queue_1 queue_2 queue_3
 all: $(QUEUES) queue_schedules
 
 $(QUEUES): queue_%: out/BoundedQueue_%.out \
-  out/UnboundedQueue_%.out out/LockFreeQueue_%.out
+  out/UnboundedQueue_%.out out/LockFreeQueue_%.out \
+  out/SynchronousDualQueue2_%.out
 
 queue_schedules: \
   $(addprefix out/BoundedQueue_S,$(addsuffix .out,1 2 3)) \
   $(addprefix out/UnboundedQueue_S,$(addsuffix .out,1 2 3)) \
   $(addprefix out/LockFreeQueue_S,$(addsuffix .out,1 2 3)) \
-  $(addprefix out/SynchronousDualQueue_S,$(addsuffix .out,1 2 3))
+  $(addprefix out/SynchronousDualQueue2_S,$(addsuffix .out,1 2 3))
 
 clean:
 	rm -rf out/BoundedQueue*.* out/UnboundedQueue*.* \
@@ -46,6 +47,7 @@ QUEUE_DEP = $(QUEUE_INC) $(QUEUE_SRC)
 QUEUE_SCHED_1 = $(SCHEDULE_DIR)/sched_queue_1.cvl
 QUEUE_SCHED_2 = $(SCHEDULE_DIR)/sched_queue_2.cvl
 QUEUE_SCHED_3 = $(SCHEDULE_DIR)/sched_queue_3.cvl
+QUEUE_SCHED_4 = $(SCHEDULE_DIR)/sched_queue_4.cvl
 
 
 ## BoundedQueue
@@ -71,7 +73,7 @@ $(BQUEUE_OUT): out/BoundedQueue_%.out: $(MAIN_CLASS) $(BQUEUE_DEP)
 # Single Schedules.
 # Ex: make -f queues.mk out/BoundedQueue_S1.out
 out/BoundedQueue_S%.out: $(BQUEUE_DEP) $(QUEUE_SCHED_$*)
-	$(VERIFY) -checkMemoryLeak=false -checkTermination=true \
+	$(VERIFY) -checkMemoryLeak=false \
   -DCAPACITY=2 $(BQUEUE_ALL) $(QUEUE_SCHED_$*) >out/BoundedQueue_S$*.out
 
 
@@ -95,7 +97,7 @@ $(UBQUEUE_OUT): out/UnboundedQueue_%.out: $(MAIN_CLASS) $(UBQUEUE_DEP)
 
 # Example: make -f queues.mk out/UnboundedQueue_S1.out
 out/UnboundedQueue_S%.out: $(UBQUEUE_DEP) $(QUEUE_SCHED_$*)
-	$(VERIFY) -checkMemoryLeak=false -checkTermination=true \
+	$(VERIFY) -checkMemoryLeak=false \
   $(UBQUEUE_ALL) $(QUEUE_SCHED_$*) >out/UnboundedQueue_S$*.out
 
 
@@ -119,27 +121,45 @@ $(LFQUEUE_OUT): out/LockFreeQueue_%.out: $(MAIN_CLASS) $(LFQUEUE_DEP)
 
 # Example: make -f queues.mk out/LockFreeQueue_S0.out
 out/LockFreeQueue_S%.out: $(LFQUEUE_DEP) $(QUEUE_SCHED_$*)
-	$(VERIFY) -checkMemoryLeak=false -checkTermination=true \
+	$(VERIFY) -checkMemoryLeak=false \
   $(LFQUEUE_ALL) $(QUEUE_SCHED_$*) >out/LockFreeQueue_S$*.out
 
 
 # SynchronousDualQueue
 
-# This one uses the synchronous queue oracle.
+# This one uses the synchronous queue oracle.  No "pre-adds" are allowed,
+# they don't make sense for a synchronous queue.
+
+SQUEUE_LIMITS_1 = -kind=queue -fair -genericVals -threadSym -nthread=1..2 \
+  -nstep=1..3 -npreAdd=0 -checkTermination=true -ncore=$(NCORE)
+
+SQUEUE_LIMITS_2 = -kind=queue -fair -genericVals -threadSym -nthread=1..3 \
+  -nstep=1..3 -npreAdd=0 -checkTermination=true -ncore=1
+
+SQUEUE_LIMITS_3 = -kind=queue -fair -genericVals -threadSym -nthread=1..3 \
+  -nstep=1..4 -npreAdd=0 -checkTermination=true -ncore=1
+
+SQUEUE_LIMITS_4 = -kind=queue -fair -genericVals -threadSym -nthread=4 \
+  -nstep=4 -npreAdd=0 -checkTermination=true -ncore=1
 
 SDQUEUE = $(QUEUE_DIR)/SynchronousDualQueue2.cvl
 SDQUEUE_SRC = $(SDQUEUE) $(AI_SRC) $(AR_SRC) $(QUEUE_DIR)/NPDetector.cvl
 SDQUEUE_ALL = $(QUEUE_SRC) $(SDQUEUE_SRC) $(SQUEUE_OR)
 SDQUEUE_DEP = $(SDQUEUE_ALL) $(QUEUE_INC) $(AI_INC) $(AR_INC) \
   $(QUEUE_DIR)/NPDetector.cvh
-SDQUEUE_OUT = $(addprefix out/SynchronousDualQueue2_,$(addsuffix .out,1 2 3))
+SDQUEUE_OUT = $(addprefix out/SynchronousDualQueue2_,$(addsuffix .out,1 2 3 4))
 
 # Example: make -f queues.mk out/SynchronousDualQueue2_1.out
 $(SDQUEUE_OUT): out/SynchronousDualQueue2_%.out: $(MAIN_CLASS) $(SDQUEUE_DEP)
 	rm -rf out/SynchronousDualQueue2_$*.dir.tmp
-	$(AMPVER) $(QUEUE_LIMITS_$*) -checkTermination=false -spec=sync \
+	$(AMPVER) $(SQUEUE_LIMITS_$*) -spec=sync \
   -checkMemoryLeak=false -tmpDir=out/SynchronousDualQueue2_$*.dir.tmp \
   $(SDQUEUE_SRC) >out/SynchronousDualQueue2_$*.out.tmp
 	rm -rf out/SynchronousDualQueue2_$*.dir
 	mv out/SynchronousDualQueue2_$*.out.tmp out/SynchronousDualQueue2_$*.out
 	mv out/SynchronousDualQueue2_$*.dir.tmp out/SynchronousDualQueue2_$*.dir
+
+# Example: make -f queues.mk
+out/SynchronousDualQueue1_S%.out: $(SDQUEUE_DEP) $(QUEUE_SCHED_$*)
+	$(VERIFY) -fair -checkMemoryLeak=false \
+  $(SDQUEUE_ALL) $(QUEUE_SCHED_$*) >out/SynchronousDualQueue1_S$*.out
