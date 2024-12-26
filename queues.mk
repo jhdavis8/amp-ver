@@ -159,7 +159,12 @@ $(SDQUEUE_OUT): out/SynchronousDualQueue2_%.out: $(MAIN_CLASS) $(SDQUEUE_DEP)
 	mv out/SynchronousDualQueue2_$*.out.tmp out/SynchronousDualQueue2_$*.out
 	mv out/SynchronousDualQueue2_$*.dir.tmp out/SynchronousDualQueue2_$*.dir
 
+
+SDQUEUE1 = $(QUEUE_DIR)/SynchronousDualQueue1.cvl
+SDQUEUE1_SRC = $(SDQUEUE1) $(AI_SRC) $(AR_SRC)
+SDQUEUE1_ALL = $(QUEUE_SRC) $(SDQUEUE1_SRC) $(SQUEUE_OR)
+SDQUEUE1_DEP = $(SDQUEUE1_ALL) $(QUEUE_INC) $(AI_INC) $(AR_INC)
 # Example: make -f queues.mk
-out/SynchronousDualQueue1_S%.out: $(SDQUEUE_DEP) $(QUEUE_SCHED_$*)
-	$(VERIFY) -fair -checkMemoryLeak=false \
-  $(SDQUEUE_ALL) $(QUEUE_SCHED_$*) >out/SynchronousDualQueue1_S$*.out
+out/SynchronousDualQueue1_S%.out: $(SDQUEUE1_DEP) $(QUEUE_SCHED_$*)
+	$(VERIFY) -fair -checkMemoryLeak=false -preemptionBound=4 \
+  $(SDQUEUE1_ALL) $(QUEUE_SCHED_$*) >out/SynchronousDualQueue1_S$*.out
