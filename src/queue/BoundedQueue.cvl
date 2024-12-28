@@ -175,37 +175,37 @@ void Queue_print(Queue this) {
 }
 
 #ifdef _BOUNDED_QUEUE_MAIN
-int main() {
+int main(void) {
   int nthread = 2; // 3 is OK with time
   tid_init(nthread);
-  initialize(nthread);
+  Queue_initialize(nthread);
   Queue q = Queue_create();
   $print("Starting...\n");
   $parfor (int i: 0..nthread-1) {
     tid_register(i);
     //$print("Thread ", i, " will enqueue ", i, " ...\n");
     Queue_enq(q, i);
-    if (deadlocked()) goto END;
+    if (Queue_stuck()) goto END;
     //$print("Thread ", i, " successfully enqueued ", i,
     //           " and will now dequeue.\n");
     int x = Queue_deq(q);
-    if (deadlocked()) goto END;
+    if (Queue_stuck()) goto END;
     //$print("Thread ", i, " dequeued ", x, ".\n");
     $assert(x >= 0);
     $assert(x < 3);
-    terminate(i);
+    Queue_terminate(i);
     tid_unregister();
   END: ;
   }
-  if (deadlocked()) {
-    $print("DEADLOCK!\n");
+  if (Queue_stuck()) {
+    $print("STUCK!\n");
     $assert(false);
   }
   $print("Done: ");
   Queue_print(q);
   $print("\n");
   Queue_destroy(q);
-  finalize();
+  Queue_finalize();
   tid_destroy();
 }
 #endif

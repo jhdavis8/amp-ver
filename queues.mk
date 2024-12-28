@@ -15,17 +15,18 @@ all: $(QUEUES) queue_schedules
 
 $(QUEUES): queue_%: out/BoundedQueue_%.out \
   out/UnboundedQueue_%.out out/LockFreeQueue_%.out \
-  out/SynchronousDualQueue2_%.out
+  out/SynchronousQueue_%.out out/SynchronousDualQueue2_%.out
 
 queue_schedules: \
   $(addprefix out/BoundedQueue_S,$(addsuffix .out,1 2 3)) \
   $(addprefix out/UnboundedQueue_S,$(addsuffix .out,1 2 3)) \
   $(addprefix out/LockFreeQueue_S,$(addsuffix .out,1 2 3)) \
+  $(addprefix out/SynchronousQueue_S,$(addsuffix .out,1 2 3)) \
   $(addprefix out/SynchronousDualQueue2_S,$(addsuffix .out,1 2 3))
 
 clean:
 	rm -rf out/BoundedQueue*.* out/UnboundedQueue*.* \
-  out/LockFreeQueue*.* out/SynchronousDualQueue*.*
+  out/LockFreeQueue*.* out/SynchronousQueue*.* out/SynchronousDualQueue*.*
 
 .PHONY: clean all myall $(QUEUES) queue_schedules
 
@@ -125,6 +126,31 @@ out/LockFreeQueue_S%.out: $(LFQUEUE_DEP) $(QUEUE_SCHED_$*)
   $(LFQUEUE_ALL) $(QUEUE_SCHED_$*) >out/LockFreeQueue_S$*.out
 
 
+## SynchronousQueue
+
+SQUEUE = $(QUEUE_DIR)/SynchronousQueue.cvl
+SQUEUE_SRC = $(SQUEUE) $(LOCK_SRC) $(COND2_SRC)
+SQUEUE_ALL = $(QUEUE_SRC) $(SQUEUE_SRC) $(SQUEUE_OR)
+SQUEUE_DEP = $(SQUEUE_ALL) $(QUEUE_INC) $(LOCK_INC) $(COND2_INC)
+SQUEUE_OUT =  $(addprefix out/SynchronousQueue_,$(addsuffix .out,1 2 3))
+
+# Example: make -f queues.mk out/SynchronousQueue_1.out
+$(SQUEUE_OUT): out/SynchronousQueue_%.out: $(MAIN_CLASS) $(SQUEUE_DEP)
+	rm -rf out/SynchronousQueue_$*.dir.tmp
+	$(AMPVER) $(QUEUE_LIMITS_$*) -spec=sync \
+  -checkMemoryLeak=true -checkTermination=true \
+  -tmpDir=out/SynchronousQueue_$*.dir.tmp \
+  $(SQUEUE_SRC) >out/SynchronousQueue_$*.out.tmp
+	rm -rf out/SynchronousQueue_$*.dir
+	mv out/SynchronousQueue_$*.out.tmp out/SynchronousQueue_$*.out
+	mv out/SynchronousQueue_$*.dir.tmp out/SynchronousQueue_$*.dir
+
+# Example: make -f queues.mk out/SynchronousQueue_S0.out
+out/SynchronousQueue_S%.out: $(SQUEUE_DEP) $(QUEUE_SCHED_$*)
+	$(VERIFY) -checkMemoryLeak=true -checkTermination=true \
+  $(SQUEUE_ALL) $(QUEUE_SCHED_$*) >out/SynchronousQueue_S$*.out
+
+
 # SynchronousDualQueue
 
 # This one uses the synchronous queue oracle.  No "pre-adds" are allowed,
@@ -166,5 +192,17 @@ SDQUEUE1_ALL = $(QUEUE_SRC) $(SDQUEUE1_SRC) $(SQUEUE_OR)
 SDQUEUE1_DEP = $(SDQUEUE1_ALL) $(QUEUE_INC) $(AI_INC) $(AR_INC)
 # Example: make -f queues.mk
 out/SynchronousDualQueue1_S%.out: $(SDQUEUE1_DEP) $(QUEUE_SCHED_$*)
-	$(VERIFY) -fair -checkMemoryLeak=false -preemptionBound=4 \
+	$(VERIFY) -fair -checkMemoryLeak=false -checkTermination=true \
+  -preemptionBound=4 \
   $(SDQUEUE1_ALL) $(QUEUE_SCHED_$*) >out/SynchronousDualQueue1_S$*.out
+
+
+SDQUEUE3 = $(QUEUE_DIR)/SynchronousDualQueue3.cvl
+SDQUEUE3_SRC = $(SDQUEUE3) $(AI_SRC) $(AR_SRC)
+SDQUEUE3_ALL = $(QUEUE_SRC) $(SDQUEUE3_SRC) $(SQUEUE_OR)
+SDQUEUE3_DEP = $(SDQUEUE3_ALL) $(QUEUE_INC) $(AI_INC) $(AR_INC)
+# Example: make -f queues.mk
+out/SynchronousDualQueue3_S%.out: $(SDQUEUE3_DEP) $(QUEUE_SCHED_$*)
+	$(VERIFY) -fair -checkMemoryLeak=false -checkTermination=true \
+  -preemptionBound=4 \
+  $(SDQUEUE3_ALL) $(QUEUE_SCHED_$*) >out/SynchronousDualQueue3_S$*.out

@@ -84,11 +84,18 @@ void Queue_destroy(Queue queue) {
 void Queue_enq(Queue this, T e) {
   Node offer = Node_create(e, ITEM);
   while (true) {
-    Node t = AtomicReference_get(this->tail),
+    Node t, h;
+    $atomic {
+      t = AtomicReference_get(this->tail),
       h = AtomicReference_get(this->head);
+    }
     if (h == t || t->type == ITEM) {
-      Node n = AtomicReference_get(t->next);
-      if (t == AtomicReference_get(this->tail)) {
+      Node n, tmp1;
+      $atomic {
+        n = AtomicReference_get(t->next);
+        tmp1 = AtomicReference_get(this->tail);
+      }
+      if (t == tmp1) {
         if (n != NULL) {
           AtomicReference_compare_and_set(this->tail, t, n);
         } else if (AtomicReference_compare_and_set(t->next, n, offer)) {
@@ -101,10 +108,13 @@ void Queue_enq(Queue this, T e) {
         }
       }
     } else {
-      Node n = AtomicReference_get(h->next);
-      if (t != AtomicReference_get(this->tail) ||
-          h != AtomicReference_get(this->head) ||
-          n == NULL) {
+      Node n, tmp2, tmp3;
+      $atomic {
+        n = AtomicReference_get(h->next);
+        tmp2 = AtomicReference_get(this->tail);
+        tmp3 = AtomicReference_get(this->head);
+      }
+      if (t != tmp2 || h != tmp3 || n == NULL) {
         continue;
       }
       bool success = AtomicInteger_compareAndSet(n->item, -1, e);
@@ -118,11 +128,18 @@ void Queue_enq(Queue this, T e) {
 T Queue_deq(Queue this) {
   Node offer = Node_create(-1, RESERVATION);
   while (true) {
-    Node t = AtomicReference_get(this->tail),
+    Node t, h;
+    $atomic {
+      t = AtomicReference_get(this->tail);
       h = AtomicReference_get(this->head);
+    }
     if (h == t || t->type == RESERVATION) {
-      Node n = AtomicReference_get(t->next);
-      if (t == AtomicReference_get(this->tail)) {
+      Node n, tmp1;
+      $atomic {
+        n = AtomicReference_get(t->next);
+        tmp1 = AtomicReference_get(this->tail);
+      }
+      if (t == tmp1) {
         if (n != NULL) {
           AtomicReference_compare_and_set(this->tail, t, n);
         } else if (AtomicReference_compare_and_set(t->next, n, offer)) {
@@ -135,10 +152,13 @@ T Queue_deq(Queue this) {
         }
       }
     } else {
-      Node n = AtomicReference_get(h->next);
-      if (t != AtomicReference_get(this->tail) ||
-          h != AtomicReference_get(this->head) ||
-          n == NULL) {
+      Node n, tmp2, tmp3;
+      $atomic {
+        n = AtomicReference_get(h->next);
+        tmp2 = AtomicReference_get(this->tail);
+        tmp3 = AtomicReference_get(this->head);
+      }
+      if (t != tmp2 || h != tmp3 || n == NULL) {
         continue;
       }
       T item = AtomicInteger_get(n->item);
@@ -283,7 +303,7 @@ void testEED() {
   */
 }
 
-int main(void) {
+int main() {
 #ifdef BALANCED1
   testBalanced(1);
 #endif

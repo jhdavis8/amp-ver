@@ -295,12 +295,21 @@ int main() {
   nthread = schedule.nthread;
   tid_init(nthread);
   void * collection = collection_create();
-  // use one thread to perform the pre-add operations...
-  tid_register(0);
-  for (int i=0; i<schedule.npreAdd; i++)
-    collection_add(collection, schedule.preAdds[i].args[0],
-                   schedule.preAdds[i].args[1]);
-  tid_unregister();
+
+  // Perform pre-adds:
+  if (schedule.npreAdd > 0) {
+    tid_register(0);
+    collection_initialize(nthread);
+    for (int i=0; i<schedule.npreAdd; i++) {
+      collection_add(collection, schedule.preAdds[i].args[0],
+                     schedule.preAdds[i].args[1]);
+      $assert(!collection_stuck(), "Collection got stuck during pre-adds!\n");
+    }
+    collection_finalize();
+    tid_unregister();
+  }
+
+  // run concurrent schedule with nthread threads:
   $print("Collection initial state. ");
   collection_print(collection);
   $print("\n");

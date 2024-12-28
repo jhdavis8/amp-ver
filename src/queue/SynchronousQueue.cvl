@@ -12,13 +12,11 @@
  * Verified Software Laboratory, Dept. Computer & Info. Sciences,
  * University of Delaware.
  */
-#include "AtomicInteger.h"
 #include "Condition_dl.h"
 #include "Lock.h"
 #include "Queue.h"
 #include "tid.h"
 #include "types.h"
-#include <limits.h>
 #include <stdbool.h>
 #include <stdlib.h>
 
@@ -30,24 +28,24 @@ struct Queue {
 };
 
 void Queue_initialize(int nthread) {
-  // TODO
+  Condition_init(nthread);
 }
 
 void Queue_finalize() {
-  // TODO
+  Condition_finalize();
 }
 
 void Queue_terminate(int tid) {
-  // TODO
+  Condition_terminate(tid);
 }
 
 bool Queue_stuck() {
-  // TODO
+  return Condition_isDeadlocked();
 }
 
 Queue Queue_create() {
   Queue q = (Queue)malloc(sizeof(struct Queue));
-  q->item = -2;
+  q->item = -1;
   q->enqueueing = false;
   q->lock = Lock_create();
   q->condition = Condition_create(q->lock);
@@ -82,28 +80,148 @@ T Queue_deq(Queue q) {
 void Queue_enq(Queue q, T value) {
   Lock_acquire(q->lock);
   // try
-  while (enqueueing) {
+  while (q->enqueueing) {
     Condition_await(q->condition);
     if (Condition_isDeadlocked()) {
       Lock_release(q->lock);
       return;
     }
-    q->enqueueing = true;
-    q->item = value;
-    Condition_signalAll(q->condition);
-    while (q->item != -1) {
-      Condition_await(q->condition);
-      if (Condition_isDeadlocked()) {
-        Lock_release(q->lock);
-        return;
-      }
-    }
-    q->enqueueing = false;
-    Condition_signalAll(q->condition);
-    // finally
-    Lock_release(q->lock);
-    return;
   }
+  q->enqueueing = true;
+  q->item = value;
+  Condition_signalAll(q->condition);
+  while (q->item != -1) {
+    Condition_await(q->condition);
+    if (Condition_isDeadlocked()) {
+      Lock_release(q->lock);
+      return;
+    }
+  }
+  q->enqueueing = false;
+  Condition_signalAll(q->condition);
+  // finally
+  Lock_release(q->lock);
 }
 
-// TODO: Create a main function for testing
+void Queue_print(Queue this) {
+  $print("{ ");
+  if (this->item >= 0)
+    $print(this->item, " ");
+  $print("}");
+}
+
+// Tests ...
+
+#ifdef _SYNC_QUEUE_MAIN
+
+/* 2N threads: even ones enqueue, odd ones dequeue.  Should never get
+   stuck and should always result in an empty queue.  */
+void testBalanced(int N) {
+  $assert(N>=1);
+  int nthread=2*N;
+  tid_init(nthread);
+  Queue_initialize(nthread);
+  Queue q = Queue_create();
+  $parfor (int i: 0..nthread-1) {
+    tid_register(i);
+    if (i%2 == 0)
+      Queue_enq(q, i);
+    else {
+      int result = Queue_deq(q);
+      $assert(result >= 0);
+      $assert(result <= nthread-2 && result%2 == 0);
+    }
+    Queue_terminate(i);
+    tid_unregister();
+  }
+  $print("Done: ");
+  Queue_print(q);
+  $print("\n");
+  $assert(q->item == -1); // q is empty
+  Queue_destroy(q);
+  Queue_finalize();
+  tid_destroy();
+}
+
+/* All threads enqueue.  This should always get stuck. */
+void testEnqs(int nthread) {
+  $assert(nthread >= 1);
+  tid_init(nthread);
+  Queue_initialize(nthread);
+  Queue q = Queue_create();
+  $parfor (int i: 0..nthread-1) {
+    tid_register(i);
+    Queue_enq(q, i);
+    Queue_terminate(i);
+    tid_unregister();
+  }
+  $assert(false); // you should never make it here
+}
+
+/* Three threads: one enqueues, the other two dequeue.  Should get
+   stuck. */
+void testEDD() {
+  int nthread=3;
+  tid_init(nthread);
+  Queue_initialize(nthread);
+  Queue q = Queue_create();
+  int ndeqdone = 0;
+  $parfor (int i: 0..nthread-1) {
+    tid_register(i);
+    if (i==0)
+      Queue_enq(q, i);
+    else {
+      int x = Queue_deq(q);
+      ndeqdone++;
+      $assert(ndeqdone <= 1);
+      $assert(Queue_stuck() || x >= 0);
+    }
+    Queue_terminate(i);
+    tid_unregister();
+  }
+  $assert(false);
+}
+
+void testEED() {
+  int nthread=3;
+  tid_init(nthread);
+  Queue_initialize(nthread);
+  Queue q = Queue_create();
+  int nenqdone = 0;
+  $parfor (int i: 0..nthread-1) {
+    tid_register(i);
+    if (i<=1) {
+      Queue_enq(q, i);
+      nenqdone++;
+      $assert(nenqdone <= 1);
+    } else {
+      int x = Queue_deq(q);
+      $assert(x >= 0);
+    }
+    Queue_terminate(i);
+    tid_unregister();
+  }
+  $assert(false);
+}
+
+int main(void) {
+#ifdef BALANCED1
+  testBalanced(1);
+#endif
+#ifdef BALANCED2
+  testBalanced(2);
+#endif
+#ifdef ENQS1
+  testEnqs(1);
+#endif
+#ifdef ENQS2
+  testEnqs(2);
+#endif
+#ifdef EDD
+  testEDD();
+#endif
+#ifdef EED
+  testEED();
+#endif
+}
+#endif
