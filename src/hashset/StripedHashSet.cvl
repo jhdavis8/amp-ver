@@ -6,7 +6,7 @@
  * This is a concurrent closed-address hashset using lock striping
  *
  * Created : 2017-11-30
- * Modified: 2024-12-13
+ * Modified: 2024-12-30
  * Authors : Josh Davis and Stephen F. Siegel
  * Verified Software Laboratory, Dept. Computer & Info. Sciences,
  * University of Delaware.
@@ -16,12 +16,15 @@
 #include "Lock.h"
 #include "Set.h"
 #include "hash.cvh"
+#include "tid.h"
 #include "types.h"
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 
 #define INITIAL_CAPACITY 1
+
+// Types...
 
 struct Set {
   ArrayList* table;
@@ -31,35 +34,21 @@ struct Set {
   Lock* locks;
 };
 
-void Set_initialize(int nthread) {
-}
-
-void Set_finalize(void) {
-}
-
-void Set_terminate(int tid) {
-}
-
-bool Set_stuck(void) {
-  return false;
-}
+// Functions...
 
 Set Set_create() {
   Set s = malloc(sizeof(struct Set));
   s->table_length = INITIAL_CAPACITY;
   s->size = 0;
   s->locks_length = s->table_length;
-
   s->table = malloc(s->table_length * sizeof(ArrayList));
   for (int i = 0; i < s->table_length; i++) {
     s->table[i] = ArrayList_create();
   }
-
   s->locks = malloc(s->locks_length * sizeof(Lock));
   for (int k = 0; k < s->locks_length; k++) {
     s->locks[k] = Lock_create();
   }
-
   return s;
 }
 
@@ -73,6 +62,20 @@ void Set_destroy(Set s) {
   free(s->table);
   free(s->locks);
   free(s);
+}
+
+void Set_initialize_context(void) {}
+
+void Set_finalize_context(void) {}
+
+void Set_initialize(Set set) {}
+
+void Set_finalize(Set set) {}
+
+void Set_terminate(int tid) {}
+
+bool Set_stuck(void) {
+  return false;
 }
 
 static void resize(Set s);
@@ -124,16 +127,16 @@ bool Set_remove(Set s, T x) {
 
 // called if policy is true or a bucket is overfull
 static void resize(Set s) {
-  int oldCapacity = s->table_length;
   for (int i = 0; i < s->locks_length; i++)
     Lock_acquire(s->locks[i]);
   // try
-  if (oldCapacity != s->table_length) {
-    // finally
-    for (int i = 0; i < s->locks_length; i++)
-      Lock_release(s->locks[i]);
-    return; // someone beat us to it
+  if (!policy(s)) {
+    goto FINALLY; // someone beat us to it
+    /* for (int i = 0; i < s->locks_length; i++) */
+    /*   Lock_release(s->locks[i]); */
+    /* return; // someone beat us to it */
   }
+  int oldCapacity = s->table_length;
   int newCapacity = 2 * oldCapacity;
   ArrayList* oldTable = s->table;
   s->table = malloc(newCapacity * sizeof(ArrayList));
@@ -144,7 +147,7 @@ static void resize(Set s) {
   for (int i = 0; i < oldCapacity; i++)
     ArrayList_destroy(oldTable[i]);
   free(oldTable);
-  // finally
+ FINALLY:
   for (int i = 0; i < s->locks_length; i++)
     Lock_release(s->locks[i]);
 }
@@ -171,64 +174,98 @@ static void release(Set s, T x) {
 
 // resize policy to check if load factor exceeds a set limit
 static bool policy(Set s) {
-  return s->size / s->table_length > 4;
+  return s->size / s->table_length > 2;
 }
 
 void Set_print(Set s) {
+  $print("{ ");
   for (int i = 0; i < s->table_length; i++) {
-    $print("Bucket ", i, ": ");
     ArrayList_print(s->table[i]);
-    $print("\n");
+    $print(" ");
   }
-  $print("\n");
+  $print("}");
 }
 
 #ifdef _STRIPED_HASH_SET_MAIN
-int main() {
-  Set s = Set_create();
 
-  $parfor (int val : 0 .. 4) {
-    Set_add(s, val);
+static void test1(Set set, int nthread) {
+  tid_init(nthread);
+  Set_initialize_context();
+  Set_initialize(set);
+  $parfor (int i : 0 .. nthread-1) {
+    tid_register(i);
+    Set_add(set, 2*i);
+    Set_add(set, 2*i+1);
+    Set_terminate(i);
+    tid_unregister();
   }
-
-  Set_print(s);
-
-  $for (int val : 0 .. 4) {
-    $assert(Set_contains(s, val));
+  $print("Set after adds: ");
+  Set_print(set);
+  $print("\n");
+  $assert(!Set_stuck());
+  Set_finalize(set);
+  Set_finalize_context();
+  tid_finalize();
+  
+  for (int i=0; i<nthread; i++)
+    $print("hash(", i, ")=", hash_code(i), " ");
+  $print("\n");
+  $for (int i : 0 .. nthread-1)
+    $assert(Set_contains(set, i));
+  
+  tid_init(nthread);
+  Set_initialize_context();
+  Set_initialize(set);
+  $parfor (int i : 0 .. nthread-1) {
+    tid_register(i);
+    Set_remove(set, 2*i);
+    Set_remove(set, 2*i+1);
+    Set_terminate(i);
+    tid_unregister();
   }
+  $print("Set after removes: ");
+  Set_print(set);
+  $print("\n");
+  $assert(!Set_stuck());
+  Set_finalize(set);
+  Set_finalize_context();
+  tid_finalize();
+  $for (int i : 0 .. 2*nthread-1)
+    $assert(!Set_contains(set, i));
+}
 
-  $parfor (int val : 1 .. 2) {
-    Set_remove(s, val);
+static void test2(Set set, int nthread) {
+  tid_init(nthread);
+  Set_initialize_context();
+  Set_initialize(set);
+  $parfor (int i: 0 .. nthread-1) {
+    tid_register(i);
+    Set_add(set, 2*i);
+    Set_add(set, 2*i+1);
+    Set_remove(set, 2*i);
+    Set_remove(set, 2*i+1);
+    Set_terminate(i);
+    tid_unregister();
   }
+  $for (int i : 0 .. 2*nthread-1)
+    $assert(!Set_contains(set, i));
+  Set_finalize(set);
+  Set_finalize_context();
+  tid_finalize();
+}
 
-  Set_print(s);
-
-  $for (int val : 0 .. 4) {
-    if (val == 1 || val == 2) {
-      $assert(!Set_contains(s, val));
-    } else {
-      $assert(Set_contains(s, val));
-    }
-  }
-
-  $parfor (int val : 0 .. 4) {
-    if (val == 2) {
-      Set_add(s, val);
-    } else {
-      Set_remove(s, val);
-    }
-  }
-
-  Set_print(s);
-
-  $for (int val : 0 .. 4) {
-    if (val == 2) {
-      $assert(Set_contains(s, val));
-    } else {
-      $assert(!Set_contains(s, val));
-    }
-  }
-
-  Set_destroy(s);
+int main(void) {
+  Set set = Set_create();
+  $print("Initial set: ");
+  Set_print(set);
+  $print("\n");
+  int test = 1+$choose_int(2);
+  $print("\n*** Starting test ", test, " ***\n");
+  if (test == 1)
+    test1(set, 3);
+  else
+    test2(set, 2);
+  Set_destroy(set);
+  $print("Test ", test, " complete.\n");
 }
 #endif

@@ -5,12 +5,12 @@ all: UnboundedQueue LockFreeQueue SynchronousQueue SynchronousDualQueue
 
 UnboundedQueue: UnboundedQueue.cvl $(LOCK_INC) $(LOCK_SRC) \
   $(TID_INC) $(TID_SRC)
-	$(VERIFY) -D_UNBOUNDED_QUEUE_MAIN UnboundedQueue.cvl \
-  $(LOCK_SRC) $(TID_SRC)
+	$(VERIFY) -D_UNBOUNDED_QUEUE_MAIN -checkTermination=true \
+  -checkMemoryLeak=true UnboundedQueue.cvl $(LOCK_SRC) $(TID_SRC)
 
-LockFreeQueue: LockFreeQueue.cvl $(AR_INC) $(AR_SRC)
+LockFreeQueue: LockFreeQueue.cvl $(AR_INC) $(AR_SRC) $(TID_INC) $(TID_SRC)
 	$(VERIFY) -checkMemoryLeak=false -checkTermination=true \
-  -D_LOCK_FREE_QUEUE_MAIN LockFreeQueue.cvl $(AR_SRC)
+  -D_LOCK_FREE_QUEUE_MAIN LockFreeQueue.cvl $(AR_SRC) $(TID_SRC)
 
 BoundedQueue: BoundedQueue.cvl $(LOCK_INC) $(LOCK_SRC) \
   $(COND2_INC) $(COND2_SRC) $(TID_INC) $(TID_SRC) $(AI_INC) $(AI_SRC)
@@ -22,7 +22,7 @@ BoundedQueue: BoundedQueue.cvl $(LOCK_INC) $(LOCK_SRC) \
 SynchronousQueue: SynchronousQueue.cvl $(LOCK_INC) $(LOCK_SRC) \
   $(COND2_INC) $(COND2_SRC) $(TID_INC) $(TID_SRC)
 	$(VERIFY) -checkMemoryLeak=true -enablePrintf=false \
-  -checkTermination=true -D_SYNC_QUEUE_MAIN -DBALANCED2 SynchronousQueue.cvl \
+  -checkTermination=true -D_SYNC_QUEUE_MAIN SynchronousQueue.cvl \
   $(LOCK_SRC) $(COND2_SRC) $(TID_SRC)
 
 SynchronousDualQueue: sdq1 sdq2

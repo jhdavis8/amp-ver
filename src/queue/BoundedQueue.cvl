@@ -7,7 +7,7 @@
  * conditions.
  *
  * Created  : 2024-06-17
- * Modified : 2024-12-13
+ * Modified : 2024-12-30
  * Authors  : Josh Davis and Stephen F. Siegel
  * Verified Software Laboratory, Dept. Computer & Info. Sciences,
  * University of Delaware.
@@ -25,22 +25,6 @@
 #ifndef CAPACITY
 #define CAPACITY 2
 #endif
-
-void Queue_initialize(int nthread) {
-  Condition_init(nthread);
-}
-
-void Queue_finalize() {
-  Condition_finalize();
-}
-
-void Queue_terminate(int tid) {
-  Condition_terminate(tid);
-}
-
-bool Queue_stuck() {
-  return Condition_isDeadlocked();
-}
 
 typedef struct Node {
   T value;
@@ -100,6 +84,32 @@ void Queue_destroy(Queue queue) {
   Lock_destroy(queue->deqLock);
   Condition_destroy(queue->notEmptyCondition);
   free(queue);
+}
+
+void Queue_initialize_context(void) {
+  Condition_init_context();
+}
+
+void Queue_finalize_context(void) {
+  Condition_finalize_context();
+}
+
+void Queue_initialize(Queue queue) {
+  Condition_initialize(queue->notEmptyCondition);
+  Condition_initialize(queue->notFullCondition);
+}
+
+void Queue_finalize(Queue queue) {
+  Condition_finalize(queue->notEmptyCondition);
+  Condition_finalize(queue->notFullCondition);
+}
+
+void Queue_terminate(int tid) {
+  Condition_terminate(tid);
+}
+
+bool Queue_stuck() {
+  return Condition_isDeadlocked();
 }
 
 T Queue_deq(Queue this) {
@@ -176,36 +186,31 @@ void Queue_print(Queue this) {
 
 #ifdef _BOUNDED_QUEUE_MAIN
 int main(void) {
+  Queue q = Queue_create();
   int nthread = 2; // 3 is OK with time
   tid_init(nthread);
-  Queue_initialize(nthread);
-  Queue q = Queue_create();
+  Queue_initialize_context();
+  Queue_initialize(q);
   $print("Starting...\n");
   $parfor (int i: 0..nthread-1) {
     tid_register(i);
-    //$print("Thread ", i, " will enqueue ", i, " ...\n");
     Queue_enq(q, i);
     if (Queue_stuck()) goto END;
-    //$print("Thread ", i, " successfully enqueued ", i,
-    //           " and will now dequeue.\n");
     int x = Queue_deq(q);
     if (Queue_stuck()) goto END;
-    //$print("Thread ", i, " dequeued ", x, ".\n");
     $assert(x >= 0);
-    $assert(x < 3);
+    $assert(x < nthread);
     Queue_terminate(i);
+  END:
     tid_unregister();
-  END: ;
   }
-  if (Queue_stuck()) {
-    $print("STUCK!\n");
-    $assert(false);
-  }
+  $assert(!Queue_stuck(), "Stuck execution!\n");
+  Queue_finalize(q);
+  Queue_finalize_context();
+  tid_finalize();
   $print("Done: ");
   Queue_print(q);
   $print("\n");
   Queue_destroy(q);
-  Queue_finalize();
-  tid_destroy();
 }
 #endif

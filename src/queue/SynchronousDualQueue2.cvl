@@ -1,7 +1,7 @@
 /* Filename : SynchronousDualQueue2.cvl
    Author   : Stephen F. Siegel
    Created  : 2024-12-21
-   Modified : 2024-12-22
+   Modified : 2024-12-31
 
    Synchronous dual queue, based on SynchronousDualQueue class,
    section 10.7 of Herlihy, et al., Art of Multiprocessor Programming,
@@ -21,57 +21,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-bool static ar_compareAndSet(AtomicReference ref, void * expect,
-                             void * update) {
-  if (AtomicReference_compare_and_set(ref, expect, update)) {
-    npd_signalAll();
-    return true;
-  }
-  return false;
-}
-
-bool static ai_compareAndSet(AtomicInteger ref, int expect, int update) {
-  if (AtomicInteger_compareAndSet(ref, expect, update)) {
-    npd_signalAll();
-    return true;
-  }
-  return false;
-}
-
-void Queue_initialize(int nthread) {
-  npd_initialize(nthread);
-}
-
-void Queue_finalize() {
-  npd_finalize();
-}
-
-void Queue_terminate(int tid) {
-  npd_terminate(tid);
-}
-
-bool Queue_stuck() {
-  return npd_stuck();
-}
-
-/* Spin while *p==val, but breakout if livelock occurs.  Returns true
-   iff livelock occurred. */
-static bool spin_while_eq(int tid, int * p, int val) {
-  npd_loop_enter(tid);
-  while (*p==val) {
-    npd_loop_top(tid);
-    if (npd_loop_bottom(tid))
-      return true;
-  }
-  npd_loop_exit(tid);
-  return false;
-}
-
-/* Spin while *p==val.  Does not have special handling for
-   deadlock. */
-static void spin_while_eq_alt(int * p, int val) {
-  $when (*p!=val);
-}
+// Nodes...
 
 typedef enum NodeType {ITEM, RESERVATION} NodeType;
 
@@ -95,6 +45,8 @@ static void Node_destroy(Node this) {
   AtomicInteger_destroy(this->item);
   free(this);
 }
+
+// Queues...
 
 struct Queue {
   AtomicReference head;
@@ -122,6 +74,56 @@ void Queue_destroy(Queue queue) {
   AtomicReference_destroy(queue->head);
   AtomicReference_destroy(queue->tail);
   free(queue);
+}
+
+void Queue_initialize_context(void) {
+  npd_initialize(tid_nthread());
+}
+
+void Queue_finalize_context(void) {
+  npd_finalize();
+}
+
+void Queue_initialize(Queue queue) {}
+
+void Queue_finalize(Queue queue) {}
+
+void Queue_terminate(int tid) {
+  npd_terminate(tid);
+}
+
+bool Queue_stuck() {
+  return npd_stuck();
+}
+
+bool static ar_compareAndSet(AtomicReference ref, void * expect,
+                             void * update) {
+  if (AtomicReference_compare_and_set(ref, expect, update)) {
+    npd_signalAll();
+    return true;
+  }
+  return false;
+}
+
+bool static ai_compareAndSet(AtomicInteger ref, int expect, int update) {
+  if (AtomicInteger_compareAndSet(ref, expect, update)) {
+    npd_signalAll();
+    return true;
+  }
+  return false;
+}
+
+/* Spin while *p==val, but breakout if livelock occurs.  Returns true
+   iff livelock occurred. */
+static bool spin_while_eq(int tid, int * p, int val) {
+  npd_loop_enter(tid);
+  while (*p==val) {
+    npd_loop_top(tid);
+    if (npd_loop_bottom(tid))
+      return true;
+  }
+  npd_loop_exit(tid);
+  return false;
 }
 
 void Queue_enq(Queue this, T e) {
@@ -239,14 +241,25 @@ void Queue_print(Queue this) {
 
 #ifdef _SYNCHRONOUS_DUAL_QUEUE
 
+
+static void startup(Queue q, int nproc) {
+  tid_init(nproc);
+  Queue_initialize_context();
+  Queue_initialize(q);
+}
+
+static void shutdown(Queue q) {
+  Queue_finalize(q);
+  Queue_finalize_context();
+  tid_finalize();
+}
+
 /* 2N threads: even ones enqueue, odd ones dequeue.  Should never get
    stuck and should always result in an empty queue.  */
-void testBalanced(int N) {
+void testBalanced(Queue q, int N) {
   $assert(N>=1);
   int nthread=2*N;
-  tid_init(nthread);
-  Queue_initialize(nthread);
-  Queue q = Queue_create();
+  startup(q, nthread);
   $parfor (int i: 0..nthread-1) {
     tid_register(i);
     if (i%2 == 0) {
@@ -265,17 +278,13 @@ void testBalanced(int N) {
   $print("\n");
   $assert(AtomicReference_get(q->head) == AtomicReference_get(q->tail));
   $assert(!Queue_stuck());
-  Queue_destroy(q);
-  Queue_finalize();
-  tid_destroy();
+  shutdown(q);
 }
 
 /* All threads enqueue.  This should always get stuck. */
-void testEnqs(int nthread) {
+void testEnqs(Queue q, int nthread) {
   $assert(nthread >= 1);
-  tid_init(nthread);
-  Queue_initialize(nthread);
-  Queue q = Queue_create();
+  startup(q, nthread);
   $parfor (int i: 0..nthread-1) {
     tid_register(i);
     Queue_enq(q, i);
@@ -287,77 +296,82 @@ void testEnqs(int nthread) {
   Queue_print(q);
   $print("\n");
   $assert(Queue_stuck());
-  Queue_destroy(q);
-  Queue_finalize();
-  tid_destroy();
+  shutdown(q);
 }
 
 /* Three threads: one enqueues, the other two dequeue.  Should get
    stuck. */
-void testEDD() {
+void testEDD(Queue q) {
   int nthread=3;
-  tid_init(nthread);
-  Queue_initialize(nthread);
-  Queue q = Queue_create();
+  startup(q, nthread);
+  int ndeqdone = 0;
   $parfor (int i: 0..nthread-1) {
     tid_register(i);
-    if (i==0)
+    if (i==0) {
       Queue_enq(q, i);
+      $assert(!Queue_stuck());
+      Queue_terminate(i);
+    }
     else {
       int x = Queue_deq(q);
-      $assert(Queue_stuck() || x >= 0);
+      if (!Queue_stuck()) {
+        $assert(x>=0);
+        ndeqdone++;
+        $assert(ndeqdone <= 1);
+        Queue_terminate(i);
+      }
     }
-    if (!Queue_stuck())
-      Queue_terminate(i);
     tid_unregister();
   }
   $assert(Queue_stuck());
-  Queue_destroy(q);
-  Queue_finalize();
-  tid_destroy();
+  shutdown(q);
 }
 
-void testEED() {
+void testEED(Queue q) {
   int nthread=3;
-  tid_init(nthread);
-  Queue_initialize(nthread);
-  Queue q = Queue_create();
+  startup(q, 3);
+  int nenqdone = 0;
   $parfor (int i: 0..nthread-1) {
     tid_register(i);
     if (i<=1) {
       Queue_enq(q, i);
+      if (!Queue_stuck()) {
+        nenqdone++;
+        $assert(nenqdone <= 1);
+        Queue_terminate(i);
+      }
     } else {
       int x = Queue_deq(q);
-      $assert(Queue_stuck() || x >= 0);
-    }
-    if (!Queue_stuck())
+      $assert(!Queue_stuck());
+      $assert(x >= 0);
       Queue_terminate(i);
+    }
     tid_unregister();
   }
   $assert(Queue_stuck());
-  Queue_destroy(q);
-  Queue_finalize();
-  tid_destroy();
+  shutdown(q);
 }
 
 int main() {
+  Queue q = Queue_create();
 #ifdef BALANCED1
-  testBalanced(1);
+  testBalanced(q, 1);
 #endif
 #ifdef BALANCED2
-  testBalanced(2);
+  testBalanced(q, 2);
 #endif
 #ifdef ENQS1
-  testEnqs(1);
+  testEnqs(q, 1);
 #endif
 #ifdef ENQS2
-  testEnqs(2);
+  testEnqs(q, 2);
 #endif
 #ifdef EDD
-  testEDD();
+  testEDD(q);
 #endif
 #ifdef EED
-  testEED();
+  testEED(q);
 #endif
+  Queue_destroy(q);
 }
 #endif

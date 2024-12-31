@@ -27,22 +27,6 @@ struct Queue {
   Condition condition;
 };
 
-void Queue_initialize(int nthread) {
-  Condition_init(nthread);
-}
-
-void Queue_finalize() {
-  Condition_finalize();
-}
-
-void Queue_terminate(int tid) {
-  Condition_terminate(tid);
-}
-
-bool Queue_stuck() {
-  return Condition_isDeadlocked();
-}
-
 Queue Queue_create() {
   Queue q = (Queue)malloc(sizeof(struct Queue));
   q->item = -1;
@@ -57,6 +41,30 @@ void Queue_destroy(Queue q) {
   Lock_destroy(q->lock);
   Condition_destroy(q->condition);
   free(q);
+}
+
+void Queue_initialize_context(void) {
+  Condition_init_context();
+}
+
+void Queue_finalize_context(void) {
+  Condition_finalize_context();
+}
+
+void Queue_initialize(Queue queue) {
+  Condition_initialize(queue->condition);
+}
+
+void Queue_finalize(Queue queue) {
+  Condition_finalize(queue->condition);
+}
+
+void Queue_terminate(int tid) {
+  Condition_terminate(tid);
+}
+
+bool Queue_stuck() {
+  return Condition_isDeadlocked();
 }
 
 T Queue_deq(Queue q) {
@@ -114,14 +122,24 @@ void Queue_print(Queue this) {
 
 #ifdef _SYNC_QUEUE_MAIN
 
+static void startup(Queue q, int nproc) {
+  tid_init(nproc);
+  Queue_initialize_context();
+  Queue_initialize(q);
+}
+
+static void shutdown(Queue q) {
+  Queue_finalize(q);
+  Queue_finalize_context();
+  tid_finalize();
+}
+
 /* 2N threads: even ones enqueue, odd ones dequeue.  Should never get
    stuck and should always result in an empty queue.  */
-void testBalanced(int N) {
+void testBalanced(Queue q, int N) {
   $assert(N>=1);
   int nthread=2*N;
-  tid_init(nthread);
-  Queue_initialize(nthread);
-  Queue q = Queue_create();
+  startup(q, nthread);
   $parfor (int i: 0..nthread-1) {
     tid_register(i);
     if (i%2 == 0)
@@ -137,91 +155,102 @@ void testBalanced(int N) {
   $print("Done: ");
   Queue_print(q);
   $print("\n");
+  $assert(!Queue_stuck());
   $assert(q->item == -1); // q is empty
-  Queue_destroy(q);
-  Queue_finalize();
-  tid_destroy();
+  shutdown(q);
 }
 
 /* All threads enqueue.  This should always get stuck. */
-void testEnqs(int nthread) {
+void testEnqs(Queue q, int nthread) {
   $assert(nthread >= 1);
-  tid_init(nthread);
-  Queue_initialize(nthread);
-  Queue q = Queue_create();
+  startup(q, nthread);
   $parfor (int i: 0..nthread-1) {
     tid_register(i);
     Queue_enq(q, i);
     Queue_terminate(i);
     tid_unregister();
   }
-  $assert(false); // you should never make it here
+  $assert(Queue_stuck());
+  shutdown(q);
 }
 
 /* Three threads: one enqueues, the other two dequeue.  Should get
    stuck. */
-void testEDD() {
+void testEDD(Queue q) {
   int nthread=3;
-  tid_init(nthread);
-  Queue_initialize(nthread);
-  Queue q = Queue_create();
+  startup(q, nthread);
   int ndeqdone = 0;
   $parfor (int i: 0..nthread-1) {
     tid_register(i);
-    if (i==0)
+    if (i==0) {
       Queue_enq(q, i);
-    else {
+      $assert(!Queue_stuck());
+      Queue_terminate(i);
+    } else {
       int x = Queue_deq(q);
-      ndeqdone++;
-      $assert(ndeqdone <= 1);
-      $assert(Queue_stuck() || x >= 0);
+      if (!Queue_stuck()) {
+        ndeqdone++;
+        $assert(ndeqdone <= 1);
+        $assert(x >= 0);
+        Queue_terminate(i);
+      }
     }
-    Queue_terminate(i);
     tid_unregister();
   }
-  $assert(false);
+  $assert(Queue_stuck());
+  shutdown(q);
 }
 
-void testEED() {
+void testEED(Queue q) {
   int nthread=3;
-  tid_init(nthread);
-  Queue_initialize(nthread);
-  Queue q = Queue_create();
+  startup(q, nthread);
   int nenqdone = 0;
   $parfor (int i: 0..nthread-1) {
     tid_register(i);
     if (i<=1) {
       Queue_enq(q, i);
-      nenqdone++;
-      $assert(nenqdone <= 1);
+      if (!Queue_stuck()) {
+        nenqdone++;
+        $assert(nenqdone <= 1);
+        Queue_terminate(i);
+      }
     } else {
       int x = Queue_deq(q);
       $assert(x >= 0);
+      $assert(!Queue_stuck());
+      Queue_terminate(i);
     }
-    Queue_terminate(i);
     tid_unregister();
   }
-  $assert(false);
+  $assert(Queue_stuck());
+  shutdown(q);
 }
 
 int main(void) {
-#ifdef BALANCED1
-  testBalanced(1);
-#endif
-#ifdef BALANCED2
-  testBalanced(2);
-#endif
-#ifdef ENQS1
-  testEnqs(1);
-#endif
-#ifdef ENQS2
-  testEnqs(2);
-#endif
-#ifdef EDD
-  testEDD();
-#endif
-#ifdef EED
-  testEED();
-#endif
+  Queue q = Queue_create();
+  int test = $choose_int(6);
+  switch (test) {
+  case 0:
+    testBalanced(q, 1);
+    break;
+  case 1:
+    testBalanced(q, 2);
+    break;
+  case 2:
+    testEnqs(q, 1);
+    break;
+  case 3:
+    testEnqs(q, 2);
+    break;
+  case 4:
+    testEDD(q);
+    break;
+  case 5:
+    testEED(q);
+    break;
+  default:
+    $assert(false);
+  }
+  Queue_destroy(q);
 }
 #endif

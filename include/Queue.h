@@ -3,7 +3,7 @@
 /* Filename : Queue.h
    Author   : Stephen F. Siegel
    Created  :
-   Modified : 2024-12-12
+   Modified : 2024-12-31
 
    Interface for a queue.
 */
@@ -12,26 +12,35 @@
 
 typedef struct Queue * Queue;
 
-/* Call this once before any other methods in the concurrent data
-   sructure are invoked. */
-void Queue_initialize(int nthread);
-
-/* Call this method once at the end; do not call any methods in the
-   concurrent data structure implementation after this. */
-void Queue_finalize(void);
-
-/* Inform the concurrent data structure that the thread with given tid
-   has terminated. */
-void Queue_terminate(int tid);
-
-/* Did the concurrent execution deadlock? */
-bool Queue_stuck(void);
-
 /* Creates a new empty queue, returning an opaque handle to it. */
 Queue Queue_create();
 
 /* Destroys the queue. */
 void Queue_destroy(Queue queue);
+
+/* Prepares for a concurrent execution.  Call this after setting
+   number of threads with tid_init(nthread). */
+void Queue_initialize_context(void);
+
+/* Frees memory allocated by Queue_initialize_context.  Called
+   after a concurrent execution ends. */
+void Queue_finalize_context(void);
+
+/* Prepares the given Queue for a concurrent execution.  Call this on
+   each queue that will be used in the execution, after calling
+   Queue_initialize_context(). */
+void Queue_initialize(Queue queue);
+
+/* Frees up memory allocated by Queue_initialize(queue).  Call this on
+   each queue after the concurrent execution ends. */
+void Queue_finalize(Queue queue);
+
+/* Inform the context that the thread with given tid has
+   terminated. */
+void Queue_terminate(int tid);
+
+/* Did the concurrent execution deadlock? */
+bool Queue_stuck(void);
 
 /* Enqueues an element on the queue. */
 void Queue_enq(Queue queue, T value);

@@ -32,7 +32,7 @@ int tid_nthread(void);
 
 /* This method should be called once, after the threads are destroyed.
  */
-void tid_destroy(void);
+void tid_finalize(void);
 
 /* Each thread should call this function once, specifying its ID.  A
  * thread typically calls this shortly after its creation.  It must be
