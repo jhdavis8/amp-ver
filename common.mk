@@ -47,6 +47,8 @@ LOCK_SRC = $(SRC)/util/ReentrantLock.cvl
 FAIRLOCK_SRC = $(SRC)/util/FairReentrantLock.cvl
 ARRAYLIST_INC = $(INC)/ArrayList.h
 ARRAYLIST_SRC = $(SRC)/util/ArrayList.cvl
+NPD_INC = $(INC)/NPDetector.cvh
+NPD_SRC = $(SRC)/util/NPDetector.cvl
 DRIVER_INC = $(INC)/driver.h $(INC)/perm.h $(INC)/schedule.h $(INC)/types.h \
   $(INC)/tid.h $(INC)/collection.h $(INC)/oracle.h
 DRIVER_SRC = $(DRIVER_DIR)/driver.cvl $(DRIVER_DIR)/perm.c \

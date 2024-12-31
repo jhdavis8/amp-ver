@@ -60,9 +60,8 @@ sdq1_eed:  $(SDQ1_DEP)
 # SDQ2 has a mechanism to detect and recover when it gets stuck, using
 # a "non-progress detector"...
 
-SDQ2_SRC = SynchronousDualQueue2.cvl $(AI_SRC) $(AR_SRC) $(TID_SRC) \
-  NPDetector.cvl
-SDQ2_DEP = $(SDQ2_SRC) $(AI_INC) $(AR_INC)  $(TID_H) NPDetector.cvh
+SDQ2_SRC = SynchronousDualQueue2.cvl $(AI_SRC) $(AR_SRC) $(TID_SRC) $(NPD_SRC)
+SDQ2_DEP = $(SDQ2_SRC) $(AI_INC) $(AR_INC)  $(TID_H) $(NPD_INC)
 SDQ2_RUN = $(VERIFY) -fair -checkDeadlock=absolute -checkTermination=true \
   -checkMemoryLeak=false -D_SYNCHRONOUS_DUAL_QUEUE
 

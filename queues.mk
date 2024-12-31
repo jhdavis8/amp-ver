@@ -169,10 +169,9 @@ SQUEUE_LIMITS_4 = -kind=queue -fair -genericVals -threadSym -nthread=4 \
   -nstep=4 -npreAdd=0 -checkTermination=true -ncore=1
 
 SDQUEUE = $(QUEUE_DIR)/SynchronousDualQueue2.cvl
-SDQUEUE_SRC = $(SDQUEUE) $(AI_SRC) $(AR_SRC) $(QUEUE_DIR)/NPDetector.cvl
+SDQUEUE_SRC = $(SDQUEUE) $(AI_SRC) $(AR_SRC) $(NPD_SRC)
 SDQUEUE_ALL = $(QUEUE_SRC) $(SDQUEUE_SRC) $(SQUEUE_OR)
-SDQUEUE_DEP = $(SDQUEUE_ALL) $(QUEUE_INC) $(AI_INC) $(AR_INC) \
-  $(QUEUE_DIR)/NPDetector.cvh
+SDQUEUE_DEP = $(SDQUEUE_ALL) $(QUEUE_INC) $(AI_INC) $(AR_INC) $(NPD_INC)
 SDQUEUE_OUT = $(addprefix out/SynchronousDualQueue2_,$(addsuffix .out,1 2 3 4))
 
 # Example: make -f queues.mk out/SynchronousDualQueue2_1.out
