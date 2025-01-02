@@ -1,0 +1,40 @@
+#pragma CIVL ACSL
+#include "NPDetector.cvh"
+
+//@ depends_on(\nothing);
+$atomic_f void npd_initialize(int _nthread) {
+}
+
+//@ depends_on(\nothing);
+$atomic_f void npd_finalize() {
+}
+
+//@ depends_on(\nothing);
+$atomic_f void npd_terminate(int tid) {
+}
+
+//@ depends_on(\nothing);
+$atomic_f static void npd_signalAll() {
+}
+
+//@ depends_on(\nothing);
+$atomic_f void npd_loop_enter(int tid) {
+}
+
+//@ depends_on(\nothing);
+$atomic_f void npd_loop_exit(int tid) {
+}
+
+//@ depends_on(\nothing);
+$atomic_f void npd_loop_top(int tid) {
+}
+
+//@ depends_on(\nothing);
+$atomic_f bool npd_loop_bottom(int tid) {
+  return false;
+}
+
+//@ depends_on(\nothing);
+$atomic_f bool npd_stuck() {
+  return false;
+}

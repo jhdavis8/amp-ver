@@ -3,7 +3,7 @@
 /* Filanme : Set.h
    Author  : Josh Davis and Stephen F. Siegel
    Created :
-   Modified: 2024-12-12
+   Modified: 2024-12-30
 
    Interface for a set collection.  Note: in the actual concurrent
    executions we model, a method call may get "stuck", i.e., result in
@@ -21,19 +21,35 @@
 
 typedef struct Set * Set;
 
-/* Call this once before any other methods in the concurrent data
-   sructure are invoked. */
-void Set_initialize(int nthread);
+/* Creates a new empty set, returning an opaque handle to it. */
+Set Set_create();
 
-/* Call this method once at the end; do not call any methods in the
-   concurrent data structure implementation after this. */
-void Set_finalize(void);
+/* Destroys the set.  */
+void Set_destroy(Set set);
 
-/* Inform the concurrent data structure that the thread with given tid
-   has terminated. */
+/* Prepares for a concurrent execution.  Call this after setting
+   number of threads with tid_init(nthread). */
+void Set_initialize_context(void);
+
+/* Frees memory allocated by Set_initialize_context.  Called
+   after a concurrent execution ends. */
+void Set_finalize_context(void);
+
+/* Prepares the given Set for a concurrent execution.  Call this on
+   each set that will be used in the execution, after calling
+   Set_initialize_context(). */
+void Set_initialize(Set set);
+
+/* Frees up memory allocated by Set_initialize(set).  Call this on
+   each set after the concurrent execution ends. */
+void Set_finalize(Set set);
+
+/* Inform the context that the thread with given tid has
+   terminated. */
 void Set_terminate(int tid);
 
-/* Did the concurrent execution deadlock? */
+/* Did the concurrent execution get stuck (due to deadlock or
+   livelock)? */
 bool Set_stuck(void);
 
 /* Adds value to set.  Returns true iff value was not already in the
@@ -46,12 +62,6 @@ bool Set_remove(Set set, T value);
 
 /* Determines whether set contains value. */
 bool Set_contains(Set set, T value);
-
-/* Creates a new empty set, returning an opaque handle to it. */
-Set Set_create();
-
-/* Destroys the set.  */
-void Set_destroy(Set set);
 
 /* Prints the set in human-readable form. */
 void Set_print(Set set);

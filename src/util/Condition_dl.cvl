@@ -20,37 +20,83 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
+/* A Condition object */
 struct Condition {
   Lock lock;
-  int nthread;
   bool * inWaitingRoom;
   int nwait; // number of threads in the waiting room
 };
 
+// The condition context: applies to all Condition objects...
+
+static int nthread = -1;
 static Condition stuckConds[]; // length nthread
 static _Bool terminated[]; // length nthread
-static int nstuck; // number of nonterminated stuck threads
-static int num_nonterm; // number of nonterminated threads
-static _Bool deadlock;
+static int nstuck = 0; // number of nonterminated stuck threads
+static int num_nonterm = 0; // number of nonterminated threads
+static _Bool deadlock = false;
 
-void Condition_init(int nthread) {
+/* Call this first to create a new Condition object, before the
+   threads are created or even known, and before the context has been
+   initialized. */
+Condition Condition_create(Lock lock) {
+  $assert(nthread == -1);
+  Condition result = malloc(sizeof(struct Condition));
+  result->lock = lock;
+  result->inWaitingRoom = NULL;
+  result->nwait = 0;
+  return result;
+}
+
+/* Call this last, after all threads have terminated, the Condition
+   was finalized, and the context was finalized. */
+void Condition_destroy(Condition cond) {
+  free(cond);
+}
+
+/* Call this after the Conditions have been created and
+   tid_init(nthread) has been called.  The threads do not yet need to
+   exist. */
+void Condition_init_context() {
+  $assert(nthread == -1);
+  nthread = tid_nthread();
+  $assert(nthread >= 1, "Must call tid_init(nthread) first.");
   Condition c = NULL;
   $seq_init(&stuckConds, nthread, &c);
-  _Bool b = $false;
+  _Bool b = false;
   $seq_init(&terminated, nthread, &b);
   nstuck = 0;
   num_nonterm = nthread;
-  deadlock = $false;
+  deadlock = false;
 }
 
-void Condition_finalize() {
+void Condition_finalize_context() {
   $seq_init(&stuckConds, 0, NULL);
+  $seq_init(&terminated, 0, NULL);
+  nthread = -1;
+  nstuck = 0;
+  num_nonterm = 0;
+  deadlock = false;
+}
+
+/* Called after Condition has been created and context has been
+   initialized. */
+void Condition_initialize(Condition cond) {
+  $assert(nthread >= 1);
+  cond->inWaitingRoom = malloc(nthread*sizeof(bool));
+  for (int i=0; i<nthread; i++)
+    cond->inWaitingRoom[i] = false;
+  cond->nwait = 0;
+}
+
+void Condition_finalize(Condition cond) {
+  free(cond->inWaitingRoom);
+  cond->nwait = 0;
 }
 
 /* Removes all threads from waiting room for cond. */
 static $atomic_f void releaseAllStuck(Condition cond) {
-  int n = tid_nthread();
-  for (int i=0; i<n; i++)
+  for (int i=0; i<nthread; i++)
     cond->inWaitingRoom[i] = false;
   cond->nwait = 0;
 }
@@ -68,7 +114,6 @@ void Condition_terminate(int tid) {
   num_nonterm--;
   if (nstuck == num_nonterm && nstuck >= 1) { // deadlock!
     deadlock = $true;
-    int nthread = tid_nthread();
     for (int i=0; i<nthread; i++) {
       if (!terminated[i])
         releaseAllStuck(stuckConds[i]);
@@ -76,42 +121,23 @@ void Condition_terminate(int tid) {
   }
 }
 
-_Bool Condition_isDeadlocked() {
+bool Condition_isDeadlocked() {
   return deadlock;
 }
 
-Condition Condition_create(Lock lock) {
-  int nthread = tid_nthread();
-  Condition result = malloc(sizeof(struct Condition));
-  result->lock = lock;
-  result->nthread = nthread;
-  int x = 0;
-  result->inWaitingRoom = malloc(nthread*sizeof(bool));
-  for (int i=0; i<nthread; i++)
-    result->inWaitingRoom[i] = false;
-  result->nwait = 0;
-  return result;
-}
-
-void Condition_destroy(Condition cond) {
-  free(cond->inWaitingRoom);
-  free(cond);
-}
-
-static _Bool awaiting(Condition cond, int tid) {
-  int nthread = tid_nthread();
+static bool awaiting(Condition cond, int tid) {
   $assert(stuckConds[tid] == NULL);
   stuckConds[tid] = cond;
   nstuck++;
   if (nstuck == num_nonterm) { // deadlock!
-    deadlock = $true;
+    deadlock = true;
     for (int i=0; i<nthread; i++) {
       if (!terminated[i])
         releaseAllStuck(stuckConds[i]);
     }
-    return $true;
+    return true;
   }
-  return $false;  
+  return false;  
 }
 
 /*@ depends_on \nothing; */
@@ -142,11 +168,11 @@ void Condition_await(Condition cond) {
 
 /*@ depends_on \access(cond); */
 $atomic_f void Condition_signal(Condition cond) {
-  int n = tid_nthread(), tid = tid_get();
+  int tid = tid_get();
   $assert(Lock_isHeldByCurrentThread(cond->lock));
   if (cond->nwait == 0) return;
   int c = $choose_int(cond->nwait); // choose c in 0..nwait-1
-  for (int i=0; i<n; i++) {
+  for (int i=0; i<nthread; i++) {
     if (cond->inWaitingRoom[i]) {
       if (c == 0) {
         cond->inWaitingRoom[i] = false;
@@ -161,9 +187,9 @@ $atomic_f void Condition_signal(Condition cond) {
 
 /*@ depends_on \access(cond); */
 $atomic_f void Condition_signalAll(Condition cond) {
-  int n = tid_nthread(), tid = tid_get();
+  int tid = tid_get();
   $assert(Lock_isHeldByCurrentThread(cond->lock));
-  for (int i=0; i<n; i++) {
+  for (int i=0; i<nthread; i++) {
     if (cond->inWaitingRoom[i]) {
       cond->inWaitingRoom[i] = false;
       release(i);

@@ -1,0 +1,25 @@
+#ifndef _NP_DETECTOR_H
+#define _NP_DETECTOR_H
+#include <stdbool.h>
+
+$atomic_f void npd_initialize(int nthread);
+
+$atomic_f void npd_finalize(void);
+
+$atomic_f void npd_terminate(int tid);
+
+$atomic_f void npd_signalAll();
+
+$atomic_f void npd_loop_enter(int tid);
+
+$atomic_f void npd_loop_exit(int tid);
+
+$atomic_f void npd_loop_top(int tid);
+
+$atomic_f bool npd_loop_bottom(int tid);
+
+$atomic_f bool npd_stuck(void);
+
+void npd_print(void);
+
+#endif

@@ -6,7 +6,8 @@
  * This is a concurrent cuckoo hashset using lock striping and phasing
  *
  * Created : 2018-04-26
- * Modified: 2024-12-13
+ * Modified: 2024-12-30
+ *
  * Authors : Josh Davis and Stephen F. Siegel
  * Verified Software Laboratory, Dept. Computer & Info. Sciences,
  * University of Delaware.
@@ -15,6 +16,7 @@
 #include "Lock.h"
 #include "Set.h"
 #include "hash.cvh"
+#include "tid.h"
 #include "types.h"
 #include <stdbool.h>
 #include <stdlib.h>
@@ -26,24 +28,15 @@
 // need this because our interface doesn't have a constructor
 // that takes an initial size
 
+// Types...
+
 struct Set {
   int capacity;
   Lock* lock[2];
   ArrayList* table[2];
 };
 
-void Set_initialize(int nthread) {
-}
-
-void Set_finalize(void) {
-}
-
-void Set_terminate(int tid) {
-}
-
-bool Set_stuck(void) {
-  return false;
-}
+// Functions...
 
 Set Set_create() {
   // PhasedCuckooHashSet constructor
@@ -77,6 +70,20 @@ void Set_destroy(Set s) {
     free(s->lock[i]);
   }
   free(s);
+}
+
+void Set_initialize_context(void) {}
+
+void Set_finalize_context(void) {}
+
+void Set_initialize(Set set) {}
+
+void Set_finalize(Set set) {}
+
+void Set_terminate(int tid) {}
+
+bool Set_stuck(void) {
+  return false;
 }
 
 // hash0 provided by hash.cvh
@@ -315,52 +322,28 @@ void Set_print(Set s) {
 #ifdef _STRIPED_CUCKOO_HASH_SET_MAIN
 int main() {
   Set s = Set_create();
-
+  tid_init(1);
+  Set_initialize_context();
+  Set_initialize(s);
+  tid_register(0);
   Set_add(s, 2);
   Set_add(s, 3);
+  Set_terminate(0);
+  tid_unregister();
 
+  tid_init(2);
+  Set_initialize_context();
+  Set_initialize(s);
   $parfor (int val : 0 .. 1) {
+    tid_register(val);
     Set_add(s, val);
+    Set_terminate(val);
+    tid_unregister();
   }
-  /*
-  Set_print(s);
+  Set_finalize(s);
+  Set_finalize_context();
+  tid_finalize();
 
-  $for (int val : 0 .. 4) {
-    $assert(Set_contains(s, val));
-  }
-
-  $parfor (int val : 1 .. 2) {
-    Set_remove(s, val);
-  }
-
-  Set_print(s);
-
-  $for (int val : 0 .. 4) {
-    if (val == 1 || val == 2) {
-      $assert(!Set_contains(s, val));
-    } else {
-      $assert(Set_contains(s, val));
-    }
-  }
-
-  $parfor (int val : 0 .. 4) {
-    if (val == 2) {
-      Set_add(s, val);
-    } else {
-      Set_remove(s, val);
-    }
-  }
-
-  Set_print(s);
-
-  $for (int val : 0 .. 4) {
-    if (val == 2) {
-      $assert(Set_contains(s, val));
-    } else {
-      $assert(!Set_contains(s, val));
-    }
-  }
-  */
   Set_destroy(s);
 }
 #endif

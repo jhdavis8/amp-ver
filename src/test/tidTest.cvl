@@ -1,0 +1,13 @@
+#include "tid.h"
+int x=-1;
+int main(void) {
+  int nthread = 3;
+  tid_init(nthread);
+  $parfor(int i:0..nthread-1) {
+    tid_register(i);
+    $print(i, "\n");
+    x=i;
+    tid_unregister();
+  }
+  tid_finalize();
+}

@@ -42,19 +42,6 @@ struct Queue {
   Node tail;
 };
 
-void Queue_initialize(int nthread) {
-}
-
-void Queue_finalize(void) {
-}
-
-void Queue_terminate(int tid) {
-}
-
-bool Queue_stuck(void) {
-  return false;
-}
-
 Queue Queue_create() {
   Queue this = malloc(sizeof(struct Queue));
   this->head = node_create(-1);
@@ -75,6 +62,20 @@ void Queue_destroy(Queue queue) {
   Lock_destroy(queue->enqLock);
   Lock_destroy(queue->deqLock);
   free(queue);
+}
+
+void Queue_initialize_context(void) {}
+
+void Queue_finalize_context(void) {}
+
+void Queue_initialize(Queue queue) {}
+
+void Queue_finalize(Queue queue) {}
+
+void Queue_terminate(int tid) {}
+
+bool Queue_stuck(void) {
+  return false;
 }
 
 void Queue_enq(Queue this, T x) {
@@ -118,13 +119,23 @@ void Queue_print(Queue this) {
 #ifdef _UNBOUNDED_QUEUE_MAIN
 int main() {
   Queue q = Queue_create();
+  int n=3;
+  tid_init(n);
+  Queue_initialize_context();
+  Queue_initialize(q);
   $parfor (int i: 0..2) {
+    tid_register(i);
     Queue_enq(q, i);
     int x = Queue_deq(q);
     //$print("Thread ", i, " dequeued ", x, "\n");
     $assert(x >= 0);
     $assert(x < 3);
+    Queue_terminate(i);
+    tid_unregister();
   }
+  Queue_finalize(q);
+  Queue_finalize_context();
+  tid_finalize();
   //$print("Done.\n");
   Queue_destroy(q);  
 }

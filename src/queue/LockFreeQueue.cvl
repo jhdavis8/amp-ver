@@ -22,10 +22,13 @@
  */
 #include "AtomicReference.cvh"
 #include "Queue.h"
+#include "tid.h"
 #include "types.h"
 #include <limits.h>
 #include <stdbool.h>
 #include <stdlib.h>
+
+// Nodes...
 
 typedef struct Node {
   T value;
@@ -45,23 +48,13 @@ static void node_destroy(Node this) {
   free(this);
 }
 
+// Queue...
+
 struct Queue {
   AtomicReference head;
   AtomicReference tail;
 };
 
-void Queue_initialize(int nthread) {
-}
-
-void Queue_finalize(void) {
-}
-
-void Queue_terminate(int tid) {
-}
-
-bool Queue_stuck(void) {
-  return false;
-}
 
 Queue Queue_create() {
   Queue this = malloc(sizeof(struct Queue));
@@ -84,6 +77,20 @@ void Queue_destroy(Queue queue) {
   AtomicReference_destroy(queue->head);
   AtomicReference_destroy(queue->tail);
   free(queue);
+}
+
+void Queue_initialize_context(void) {}
+
+void Queue_finalize_context(void) {}
+
+void Queue_initialize(Queue queue) {}
+
+void Queue_finalize(Queue queue) {}
+
+void Queue_terminate(int tid) {}
+
+bool Queue_stuck(void) {
+  return false;
 }
 
 void Queue_enq(Queue this, T value) {
@@ -140,18 +147,23 @@ void Queue_print(Queue queue) {
 
 #ifdef _LOCK_FREE_QUEUE_MAIN
 int main() {
-  int n=3;
   Queue q = Queue_create();
-  $parfor(int i : 1..n) {
+  int n=3;
+  tid_init(n);
+  Queue_initialize_context();
+  Queue_initialize(q);
+  $parfor (int i: 0..2) {
+    tid_register(i);
     Queue_enq(q, i);
-  }
-  Queue_print(q);
-  $parfor(int i : 1..n) {
     int x = Queue_deq(q);
-    $assert(1<=x && x<=n);
+    $assert(x >= 0);
+    $assert(x < 3);
+    Queue_terminate(i);
+    tid_unregister();
   }
-  Queue_print(q);
-  $assert(Queue_deq(q) == -1);
-  Queue_destroy(q);
+  Queue_finalize(q);
+  Queue_finalize_context();
+  tid_finalize();
+  Queue_destroy(q);  
 }
 #endif

@@ -28,11 +28,11 @@ void tid_init(int nthread);
 /* Gets the number of threads specified in tid_init.  Undefined
  * behavior if tid_init has not yet been called.
  */
-int tid_nthread();
+int tid_nthread(void);
 
 /* This method should be called once, after the threads are destroyed.
  */
-void tid_destroy(void);
+void tid_finalize(void);
 
 /* Each thread should call this function once, specifying its ID.  A
  * thread typically calls this shortly after its creation.  It must be
@@ -46,7 +46,7 @@ void tid_register(int tid);
  * After calling this function, the thread can no longer call
  * tid_get().
  */
-void tid_unregister();
+void tid_unregister(void);
 
 /* This method is called by a thread to get its TID.  It can be called
  * any number of times after a thread registers. */

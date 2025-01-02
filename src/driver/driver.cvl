@@ -2,7 +2,7 @@
   Filename : driver.cvl
   Author   : Stephen F. Siegel and Josh Davis
   Created  : 
-  Modified : 2024-12-12
+  Modified : 2024-12-30
 
   Driver contains main function to be linked with a concurrent data
   structure implementation, oracle, and schedule.  It executes the
@@ -212,6 +212,12 @@ static void thread(int tid, void * c) {
       step.result = (int)collection_contains(c, a0);
     else
       $assert(false);
+    // if the operation above did not get stuck, then
+    // collection_stuck() cannot return true, no matter what other
+    // threads do now, because this thread hasn't terminated.  if the
+    // operation above did get stuck then collection_stuck() must
+    // return true, no matter what other threads do, because once
+    // stuck becomes true it must remain true.
     if (collection_stuck()) {
       $print("Deadlock: thread ", tid, " exiting at step ", s, "\n");
       break;
@@ -289,28 +295,50 @@ static void find_match_stuck(void * collection) {
   free(perms);
 }
 
+//@ depends_on(\nothing);
+$atomic_f static void startup(void * collection, int nthread) {
+  tid_init(nthread);
+  collection_initialize_context();
+  collection_initialize(collection);
+}
+
+//@ depends_on(\nothing);
+$atomic_f static void shutdown(void * collection) {
+  collection_finalize(collection);
+  collection_finalize_context();
+  tid_finalize();
+}
+
 int main() {
+  void * collection = collection_create();
   schedule = make_schedule();
   schedule_print(schedule);
   nthread = schedule.nthread;
-  tid_init(nthread);
-  void * collection = collection_create();
-  // use one thread to perform the pre-add operations...
-  tid_register(0);
-  for (int i=0; i<schedule.npreAdd; i++)
-    collection_add(collection, schedule.preAdds[i].args[0],
-                   schedule.preAdds[i].args[1]);
-  tid_unregister();
+
+  // Perform pre-adds:
+  if (schedule.npreAdd > 0) {
+    startup(collection, 1);
+    tid_register(0);
+    for (int i=0; i<schedule.npreAdd; i++) {
+      collection_add(collection, schedule.preAdds[i].args[0],
+                     schedule.preAdds[i].args[1]);
+      $assert(!collection_stuck(), "Collection got stuck during pre-adds!\n");
+    }
+    collection_terminate(0);
+    tid_unregister();
+    shutdown(collection);
+  }
+
+  // run concurrent schedule with nthread threads:
   $print("Collection initial state. ");
   collection_print(collection);
   $print("\n");
-  collection_initialize(nthread); // can this go earlier?
+  startup(collection, nthread);
   $parfor (int tid : 0 .. nthread-1) {
     thread(tid, collection);
   }
   bool deadlock = collection_stuck();
-  collection_finalize(); // can this go later?
-  tid_destroy();
+  shutdown(collection);
   schedule_print(schedule);
   $print("Collection final state... ");
   collection_print(collection);

@@ -9,7 +9,7 @@
  *
  * Authors : Josh Davis and Stpehen F. Siegel
  * Created : 2021-06-30
- * Modified: 2024-12-13
+ * Modified: 2024-12-30
  *
  * Verified Software Lab, Dept. Computer & Info. Sci.,
  * University of Delaware
@@ -17,10 +17,13 @@
 #include "AtomicMarkableReference.cvh"
 #include "Set.h"
 #include "hash.cvh"
+#include "tid.h"
 #include "types.h"
 #include <limits.h>
 #include <stdbool.h>
 #include <stdlib.h>
+
+// Types...
 
 typedef struct Node {
   T item;
@@ -36,6 +39,8 @@ typedef struct Window {
   Node pred;
   Node curr;
 } Window;
+
+// Functions...
 
 static Node node_create(T item) {
   Node result = malloc(sizeof(struct Node));
@@ -68,19 +73,6 @@ static Window make_window(Node p, Node c) {
   return (Window){p, c};
 }
 
-void Set_initialize(int nthread) {
-}
-
-void Set_finalize(void) {
-}
-
-void Set_terminate(int tid) {
-}
-
-bool Set_stuck(void) {
-  return false;
-}
-
 Set Set_create() {
   Set this = malloc(sizeof(struct Set));
   this->head = sentinel_node_create(INT_MIN);
@@ -93,6 +85,20 @@ Set Set_create() {
 void Set_destroy(Set list) {
   node_destroy_rec(list->head);
   free(list);
+}
+
+void Set_initialize_context(void) {}
+
+void Set_finalize_context(void) {}
+
+void Set_initialize(Set set) {}
+
+void Set_finalize(Set set) {}
+
+void Set_terminate(int tid) {}
+
+bool Set_stuck(void) {
+  return false;
 }
 
 static Window find(Node head, int key) {
@@ -198,16 +204,45 @@ void Set_print(Set list) {
 }
 
 #ifdef _LOCK_FREE_LIST_MAIN
-int main() {
-  const int N=3; // number of threads
-  Set list = Set_create();
-  $parfor(int i: 0 .. N-1)
+
+static void startup(Set s, int nproc) {
+  tid_init(nproc);
+  Set_initialize_context();
+  Set_initialize(s);
+}
+
+static void shutdown(Set s) {
+  Set_finalize(s);
+  Set_finalize_context();
+  tid_finalize();
+}
+
+static void test1(Set list, int N) {
+  startup(list, N);
+  $parfor(int i: 0 .. N-1) {
+    tid_register(i);
     Set_add(list, i);
+    Set_terminate(i);
+    tid_unregister();
+  }
   Set_print(list);
   $print("\n");
-  Set_destroy(list);
-  list = Set_create();
+  shutdown(list);
+
+  startup(list, N);
+  $parfor(int i: 0 .. N-1) {
+    tid_register(i);
+    $assert(Set_contains(list, i));
+    Set_terminate(i);
+    tid_unregister();
+  }
+  shutdown(list);
+}
+
+static void test2(Set list, int N) {
+  startup(list, N);
   $parfor (int i: 0 .. N-1) {
+    tid_register(i);
     int result = Set_add(list, i);
     $assert(result);
     result = Set_contains(list, i);
@@ -216,9 +251,20 @@ int main() {
     $assert(result);
     result = Set_contains(list, i);
     $assert(!result);
+    tid_unregister();
   }
-  Set_print(list);
-  $print("\n");
+  shutdown(list);
+}
+
+void main() {
+  Set list = Set_create();
+  int test = 1+$choose_int(2);
+  $print("\n*** Starting test ", test, " ***\n");
+  if (test == 1)
+    test1(list, 3);
+  else
+    test2(list, 2);
   Set_destroy(list);
+  $print("Test ", test, " complete.\n");
 }
 #endif
