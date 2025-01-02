@@ -136,3 +136,26 @@ $(SCUCKOO_OUT): out/StripedCuckooHashSet_%.out: $(MAIN_CLASS) $(SCUCKOO_DEP)
 out/StripedCuckooHashSet_S%.out: $(SCUCKOO_DEP) $(SET_SCHED_$*)
 	$(VERIFY) -checkMemoryLeak=false -checkTermination=true \
   $(SCUCKOO_ALL) $(SET_SCHED_$*) >out/StripedCuckooHashSet_S$*.out
+
+## LockFreeHashSet
+
+LOCKFREE = $(SET_DIR)/LockFreeHashSet.cvl
+LOCKFREE_SRC = $(LOCKFREE) $(HASH_SRC) $(AMR_SRC) $(AI_SRC)
+LOCKFREE_ALL = $(SET_SRC) $(LOCKFREE_SRC) $(NBSET_OR)
+LOCKFREE_DEP = $(LOCKFREE_ALL) $(SET_INC) $(HASH_INC) $(AMR_INC) $(AI_INC)
+LOCKFREE_OUT = $(addprefix out/LockFreeHashSet_,$(addsuffix .out,1 1ND 1.5ND 2 2ND 3 4))
+
+# Ex: make -f sets.mk out/LockFreeHashSet_1.out
+$(LOCKFREE_OUT): out/LockFreeHashSet_%.out: $(MAIN_CLASS) $(LOCKFREE_DEP)
+	rm -rf out/LockFreeHashSet_$*.dir.tmp
+	-$(AMPVER) -fair -checkTermination -checkMemoryLeak=false $(HASH_LIMITS_$*) \
+  -spec=nonblocking -tmpDir=out/LockFreeHashSet_$*.dir.tmp $(LOCKFREE_SRC) \
+  >out/LockFreeHashSet_$*.out.tmp
+	rm -rf out/LockFreeHashSet_$*.dir
+	mv out/LockFreeHashSet_$*.out.tmp out/LockFreeHashSet_$*.out
+	mv out/LockFreeHashSet_$*.dir.tmp out/LockFreeHashSet_$*.dir
+
+# Ex: make -f sets.mk out/LockFreeHashSet_S1.out
+out/LockFreeHashSet_S%.out: $(LOCKFREE_DEP) $(SET_SCHED_$*)
+	$(VERIFY) -fair -checkMemoryLeak=false -checkTermination=true \
+  $(LOCKFREE_ALL) $(SET_SCHED_$*) >out/LockFreeHashSet_S$*.out
