@@ -16,6 +16,13 @@ StripedHashSet: StripedHashSet.cvl $(ARRAYLIST_INC) $(ARRAYLIST_SRC) \
   -D_STRIPED_HASH_SET_MAIN -checkTermination=true \
   StripedHashSet.cvl $(ARRAYLIST_SRC) $(LOCK_SRC) $(HASH_SRC) $(TID_SRC)
 
+RefinableHashSet: RefinableHashSet.cvl $(ARRAYLIST_INC) $(ARRAYLIST_SRC) \
+     $(LOCK_INC) $(LOCK_SRC) $(HASH_INC) $(HASH_SRC) $(TID_INC) $(TID_SRC) \
+     $(AMR_INC) $(AMR_SRC)
+	$(VERIFY) -inputVAL_B=4 -inputHASH_B=3 -D_STRIPED_HASH_SET_MAIN -fair \
+  -checkMemoryLeak=false -checkTermination=true RefinableHashSet.cvl \
+  $(ARRAYLIST_SRC) $(LOCK_SRC) $(HASH_SRC) $(TID_SRC) $(AMR_SRC)
+
 StripedCuckooHashSet: StripedCuckooHashSet.cvl \
   $(ARRAYLIST_INC) $(ARRAYLIST_SRC) $(LOCK_INC) $(LOCK_SRC) \
   $(HASH_INC) $(HASH_SRC) $(TID_INC) $(TID_SRC)

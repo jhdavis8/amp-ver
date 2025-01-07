@@ -83,3 +83,7 @@ $atomic_f void Lock_release(Lock l) {
   l->count--;
   if (l->count == 0) l->owner = $proc_null;
 }
+
+_Bool Lock_isLocked(Lock l) {
+  return l->owner != $proc_null;
+}
