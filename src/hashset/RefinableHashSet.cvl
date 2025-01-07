@@ -1,12 +1,12 @@
-/* Filename : LockFreeHashSet.cvl
+/* Filename : RefinableHashSet.cvl
    Author   : Josh Davis
    Created  : 2024-1-6
    Modified : 2024-1-6
 
-   CIVL model of StripedHashSet class from "The Art of Multiprocessor
+   CIVL model of RefinableHashSet class from "The Art of Multiprocessor
    Programming" 2nd ed, by Herlihy, Luchangco, Shavit, and Spear,
-   Sec. 13.2.2 "A striped hash set", and companion code
-   ch13/src/hash/StripedHashSet.java.
+   Sec. 13.2.3 "A refinable hash set", and companion code
+   ch13/src/hash/RefinableHashSet.java.
  */
 #pragma CIVL ACSL
 #include "ArrayList.h"
@@ -129,20 +129,18 @@ bool Set_remove(Set this, T x) {
 static void acquire(Set this, T x) {
   bool mark[] = {true};
   $proc me = $self;
-  $proc who;
+  $proc* who;
   while (true) {
     do { // wait until not resizing
-      void* ptr = AtomicMarkableReference_get(this->owner, mark);
-      who = ptr ? *(($proc*)ptr) : $proc_null;
-    } while (mark[0] && who != me);
+      who = AtomicMarkableReference_get(this->owner, mark);
+    } while (mark[0] && (!who || *who != me));
     Lock* oldLocks = this->locks;
     int oldLocks_length = this->locks_length;
     int myBucket = hash_code_bound(x, oldLocks_length);
     Lock oldLock = oldLocks[myBucket];
     Lock_acquire(oldLock); // acquire lock
-    void* ptr = AtomicMarkableReference_get(this->owner, mark);
-    who = ptr ? *(($proc*)ptr) : $proc_null;
-    if ((!mark[0] || who == me) && this->locks == oldLocks) { // recheck
+    who = AtomicMarkableReference_get(this->owner, mark);
+    if ((!mark[0] || (who && *who == me)) && this->locks == oldLocks) { // recheck
       return;
     } else {  //  unlock & try again
       Lock_release(oldLock);
@@ -165,8 +163,9 @@ void quiesce(Set this) {
 static void resize(Set this) {
   int oldCapacity = this->table_length;
   int newCapacity = 2 * oldCapacity;
-  $proc me = $self;
-  if (AtomicMarkableReference_compareAndSet(this->owner, NULL, &me, false, true)) {
+  $proc* me = malloc(sizeof($proc));
+  *me = $self;
+  if (AtomicMarkableReference_compareAndSet(this->owner, NULL, me, false, true)) {
     // try
     if (this->table_length != oldCapacity)  // someone else resized first
       goto FINALLY;
@@ -182,8 +181,9 @@ static void resize(Set this) {
     this->locks_length = newCapacity;
     initializeFrom(this, oldTable, oldCapacity);
     FINALLY:
-    AtomicMarkableReference_set(this->owner, NULL, false);  // restore prior state
+      AtomicMarkableReference_set(this->owner, NULL, false);  // restore prior state
   }
+  //free(me);
 }
 
 static bool policy(Set this) {
