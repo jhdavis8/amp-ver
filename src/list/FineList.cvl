@@ -6,21 +6,22 @@
  * This is a concurrent fine grained list using one lock per node.
  *
  * Authors : Wenhao Wu, Eric Kurtz, Josh Davis, Stephen F. Siegel
- * Created : 2018-May-01
- * Modified: 2024-Jan-09
+ * Created : 2018-05-01
+ * Modified: 2024-12-30
  *
  * Verified Software Lab, Dept. Computer & Info. Sci., 
  * University of Delaware
  */
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <limits.h>
+#include "Lock.h"
 #include "Set.h"
 #include "hash.cvh"
-#include "Lock.h"
+#include "tid.h"
 #include "types.h"
+#include <limits.h>
+#include <stdbool.h>
+#include <stdlib.h>
+
+// Nodes...
 
 typedef struct Node {
   T item;
@@ -58,6 +59,8 @@ static void node_destroy_rec(Node node) {
   node_destroy(node);
 }
 
+// Set...
+
 struct Set {
   Node head;
 };
@@ -72,6 +75,20 @@ Set Set_create() {
 void Set_destroy(Set list) {
   node_destroy_rec(list->head);
   free(list);
+}
+
+void Set_initialize_context(void) {}
+
+void Set_finalize_context(void) {}
+
+void Set_initialize(Set set) {}
+
+void Set_finalize(Set set) {}
+
+void Set_terminate(int tid) {}
+
+bool Set_stuck(void) {
+  return false;
 }
 
 bool Set_add(Set this, T item) {
@@ -152,33 +169,63 @@ bool Set_contains(Set this, T item) {
 
 void Set_print(Set this) {
   Node curr = this->head->next;
-  printf("{ ");
+  $print("{ ");
   while (curr->next != NULL) {
-    printf("%d ", curr->item);
+    $print(curr->item, " ");
     curr = curr->next;
   }
-  printf("}");
+  $print("}");
 }
 
 #ifdef _FINE_LIST_MAIN
+
+static void startup(Set s, int nproc) {
+  tid_init(nproc);
+  Set_initialize_context();
+  Set_initialize(s);
+}
+
+static void shutdown(Set s) {
+  Set_finalize(s);
+  Set_finalize_context();
+  tid_finalize();
+}
+
 void main() {
   Set list = Set_create();
+  startup(list, 3);
   $parfor(int i : 0 .. 2) {
+    tid_register(i);
     Set_add(list, i);
+    Set_terminate(i);
+    tid_unregister();
   }
   Set_print(list);
-  printf("\n");
-  $for(int j : 0 .. 2) {
+  $print("\n");
+  $for(int j : 0 .. 2)
     $assert(Set_contains(list, j));
-  }
+  shutdown(list);
+
+  startup(list, 3);
   $parfor(int i : 0 .. 2) {
+    tid_register(i);
     Set_remove(list, i);
+    Set_terminate(i);
+    tid_unregister();
   }
-  Set_print(list);
-  printf("\n");
+  shutdown(list);
+
+  startup(list, 1);
+  tid_register(0);
   $for(int j : 0 .. 2) {
     $assert(!Set_contains(list, j));
   }
+  Set_terminate(0);
+  tid_unregister();
+  shutdown(list);
+  
+  Set_print(list);
+  $print("\n");
   Set_destroy(list);
 }
 #endif

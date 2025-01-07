@@ -18,4 +18,6 @@ void Lock_acquire(Lock l);
 
 void Lock_release(Lock l);
 
+_Bool Lock_isHeldByCurrentThread(Lock l);
+
 #endif

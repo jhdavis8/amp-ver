@@ -5,19 +5,19 @@
  *
  * This is a simple unbounded queue implementation using two locks.
  *
- * Created : 2021-Aug-01
- * Modified: 2023-Jan-04
+ * Created : 2021-08-01
+ * Modified: 2024-12-13
  * Authors : Josh Davis and Stephen F. Siegel
  * Verified Software Laboratory, Dept. Computer & Info. Sciences,
  * University of Delaware.
  */
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <limits.h>
-#include "types.h"
-#include "Queue.h"
 #include "Lock.h"
+#include "Queue.h"
+#include "tid.h"
+#include "types.h"
+#include <limits.h>
+#include <stdbool.h>
+#include <stdlib.h>
 
 typedef struct Node {
   T value;
@@ -64,10 +64,25 @@ void Queue_destroy(Queue queue) {
   free(queue);
 }
 
+void Queue_initialize_context(void) {}
+
+void Queue_finalize_context(void) {}
+
+void Queue_initialize(Queue queue) {}
+
+void Queue_finalize(Queue queue) {}
+
+void Queue_terminate(int tid) {}
+
+bool Queue_stuck(void) {
+  return false;
+}
+
 void Queue_enq(Queue this, T x) {
   Node e = node_create(x);
   Lock_acquire(this->enqLock);
   // try...
+  // $print("Thread ", tid_get(), " is enqueing ", x, "\n");
   this->tail->next = e;
   this->tail = e;
   // finally...
@@ -93,25 +108,35 @@ T Queue_deq(Queue this) {
 // not in original code...
 void Queue_print(Queue this) {
   Node curr = this->head->next;
-  printf("{ ");
+  $print("{ ");
   while (curr) {
-    printf("%d ", curr->value);
+    $print(curr->value, " ");
     curr = curr->next;
   }
-  printf("}");
+  $print("}");
 }
 
 #ifdef _UNBOUNDED_QUEUE_MAIN
 int main() {
   Queue q = Queue_create();
+  int n=3;
+  tid_init(n);
+  Queue_initialize_context();
+  Queue_initialize(q);
   $parfor (int i: 0..2) {
+    tid_register(i);
     Queue_enq(q, i);
     int x = Queue_deq(q);
-    printf("Thread %d dequeued %d\n", i, x);
+    //$print("Thread ", i, " dequeued ", x, "\n");
     $assert(x >= 0);
     $assert(x < 3);
+    Queue_terminate(i);
+    tid_unregister();
   }
-  printf("Done.\n");
+  Queue_finalize(q);
+  Queue_finalize_context();
+  tid_finalize();
+  //$print("Done.\n");
   Queue_destroy(q);  
 }
 #endif

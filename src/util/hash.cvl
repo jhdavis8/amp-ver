@@ -50,7 +50,7 @@ $atomic_f int hash_code_dual(int x, int which) {
     hash_vals[which][x] = $choose_int(HASH_B);
 #ifdef DEBUG
     printf("hash[%d][%d] = %d\n", which, x, hash_vals[which][x]);
-#endif    
+#endif
   }
   return hash_vals[which][x];
 }

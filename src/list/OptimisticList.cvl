@@ -11,21 +11,22 @@
  * Note it is assumed that the hash function is injective.
  *
  * Authors : Wenhao Wu, Eric Kurtz, Josh Davis, Stephen F. Siegel
- * Created : 2018-May-01
- * Modified: 2024-Jan-09
+ * Created : 2018-05-01
+ * Modified: 2024-12-30
  *
  * Verified Software Lab, Dept. Computer & Info. Sci., 
  * University of Delaware
  */
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <limits.h>
-#include "Set.h"
 #include "Lock.h"
+#include "Set.h"
 #include "hash.cvh"
+#include "tid.h"
 #include "types.h"
+#include <limits.h>
+#include <stdbool.h>
+#include <stdlib.h>
+
+// Nodes...
 
 typedef struct Node {
   T item;
@@ -54,6 +55,8 @@ static void node_destroy_rec(Node node) {
   node_destroy(node);
 }
 
+// Sets...
+
 struct Set {
   Node head;
 };
@@ -70,14 +73,28 @@ void Set_destroy(Set list) {
   free(list);
 }
 
+void Set_initialize_context(void) {}
+
+void Set_finalize_context(void) {}
+
+void Set_initialize(Set set) {}
+
+void Set_finalize(Set set) {}
+
+void Set_terminate(int tid) {}
+
+bool Set_stuck(void) {
+  return false;
+}
+
 void Set_print(Set this) {
   Node curr = this->head->next;
-  printf("{ ");
+  $print("{ ");
   while (curr->next != NULL) {
-    printf("%d ", curr->item);
+    $print(curr->item, " ");
     curr = curr->next;
   }
-  printf("}");
+  $print("}");
 }
 
 static bool validate(Set this, Node pred, Node curr) {
@@ -180,24 +197,67 @@ bool Set_contains(Set this, T item) {
 }
 
 #ifdef _OPTIMISTIC_LIST_MAIN
-void main() {
-  const int N = 3; // number of threads
-  Set list = Set_create();
-  
-  $parfor(int i : 0 .. N-1) {
+
+static void startup(Set s, int nproc) {
+  tid_init(nproc);
+  Set_initialize_context();
+  Set_initialize(s);
+}
+
+static void shutdown(Set s) {
+  Set_finalize(s);
+  Set_finalize_context();
+  tid_finalize();
+}
+
+static void test1(Set list, int N) {
+  startup(list, N);
+  $parfor(int i: 0 .. N-1) {
+    tid_register(i);
     Set_add(list, i);
-  }
-  $for(int j : 0 .. N-1) {
-    $assert(Set_contains(list, j));
-  }
-  $parfor(int i : 0 .. N-1) {
-    Set_remove(list, i);
-  }
-  $for(int j : 0 .. N-1) {
-    $assert(!Set_contains(list, j));
+    Set_terminate(i);
+    tid_unregister();
   }
   Set_print(list);
-  printf("\n");
+  $print("\n");
+  shutdown(list);
+
+  startup(list, N);
+  $parfor(int i: 0 .. N-1) {
+    tid_register(i);
+    $assert(Set_contains(list, i));
+    Set_terminate(i);
+    tid_unregister();
+  }
+  shutdown(list);
+}
+
+static void test2(Set list, int N) {
+  startup(list, N);
+  $parfor (int i: 0 .. N-1) {
+    tid_register(i);
+    int result = Set_add(list, i);
+    $assert(result);
+    result = Set_contains(list, i);
+    $assert(result);
+    result = Set_remove(list, i);
+    $assert(result);
+    result = Set_contains(list, i);
+    $assert(!result);
+    tid_unregister();
+  }
+  shutdown(list);
+}
+
+void main() {
+  Set list = Set_create();
+  int test = 1+$choose_int(2);
+  $print("\n*** Starting test ", test, " ***\n");
+  if (test == 1)
+    test1(list, 3);
+  else
+    test2(list, 2);
   Set_destroy(list);
+  $print("Test ", test, " complete.\n");
 }
 #endif

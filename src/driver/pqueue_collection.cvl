@@ -1,0 +1,65 @@
+/* Filename : pqueue_collection.cvl
+   Author   : Stephen F. Siegel
+   Created  : 2024-12-12
+   Modified : 2024-12-31
+
+   Implementation of collection.h for a priority queue.  This module
+   should be linked with an implementation of PQueue.h.  For the most
+   part this module just wraps calls to the PQueue.h interface.
+*/
+#include "PQueue.h"
+#include "collection.h"
+#include "types.h"
+#include <stdbool.h>
+
+void * collection_create() {
+  return PQueue_create();
+}
+
+void collection_destroy(void * c) {
+  PQueue_destroy(c);
+}
+
+void collection_initialize_context(void) {
+  PQueue_initialize_context();
+}
+
+void collection_finalize_context(void) {
+  PQueue_finalize_context();
+}
+
+void collection_initialize(void * c) {
+  PQueue_initialize(c);
+}
+
+void collection_finalize(void * c) {
+  PQueue_finalize(c);
+}
+
+void collection_terminate(int tid) {
+  PQueue_terminate(tid);
+}
+
+bool collection_stuck(void) {
+  return PQueue_stuck();
+}
+
+/* Enqueues a0 using score a1.  Succeeds and returns true
+   unless deadlock.  Check what to do if item already there. */
+bool collection_add(void * c, T a0, int a1) {
+  PQueue_add(c, a0, a1);
+  return !PQueue_stuck();
+}
+
+/* Priority queues do not implement contains */
+bool collection_contains(void * c, T a) {
+  $assert(false);
+}
+
+int collection_remove(void * c, T a) {
+  return (int)PQueue_removeMin(c);
+}
+
+void collection_print(void * c) {
+  PQueue_print(c);
+}

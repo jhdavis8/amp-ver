@@ -14,19 +14,21 @@
  * complicated and are described in Section 10.6 of the text.  We do
  * not implement those here. Hence this CIVL model does leak memory.
  *
- * Created  : 2021-Jan-19
- * Modified : 2023-Jan-05
- * Authors : Josh Davis and Stephen F. Siegel
+ * Created  : 2021-01-19
+ * Modified : 2024-12-13
+ * Authors  : Josh Davis and Stephen F. Siegel
  * Verified Software Laboratory, Dept. Computer & Info. Sciences,
  * University of Delaware.
  */
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <limits.h>
-#include "types.h"
-#include "Queue.h"
 #include "AtomicReference.cvh"
+#include "Queue.h"
+#include "tid.h"
+#include "types.h"
+#include <limits.h>
+#include <stdbool.h>
+#include <stdlib.h>
+
+// Nodes...
 
 typedef struct Node {
   T value;
@@ -46,10 +48,13 @@ static void node_destroy(Node this) {
   free(this);
 }
 
+// Queue...
+
 struct Queue {
   AtomicReference head;
   AtomicReference tail;
 };
+
 
 Queue Queue_create() {
   Queue this = malloc(sizeof(struct Queue));
@@ -72,6 +77,20 @@ void Queue_destroy(Queue queue) {
   AtomicReference_destroy(queue->head);
   AtomicReference_destroy(queue->tail);
   free(queue);
+}
+
+void Queue_initialize_context(void) {}
+
+void Queue_finalize_context(void) {}
+
+void Queue_initialize(Queue queue) {}
+
+void Queue_finalize(Queue queue) {}
+
+void Queue_terminate(int tid) {}
+
+bool Queue_stuck(void) {
+  return false;
 }
 
 void Queue_enq(Queue this, T value) {
@@ -114,43 +133,37 @@ T Queue_deq(Queue this) {
   }
 }
 
-// not in original...
 void Queue_print(Queue queue) {
   Node curr = AtomicReference_get(queue->head);
   curr = AtomicReference_get(curr->next);
-  printf("{");
+  $print("{ ");
   while (curr) {
-    printf(" %d ", curr->value);
+    $print(curr->value, " ");
     curr = AtomicReference_get(curr->next);
   }
-  printf("}\n");
+  $print("}\n");
   return;
 }
 
 #ifdef _LOCK_FREE_QUEUE_MAIN
 int main() {
   Queue q = Queue_create();
-  $parfor(int i : 1..5) {
+  int n=3;
+  tid_init(n);
+  Queue_initialize_context();
+  Queue_initialize(q);
+  $parfor (int i: 0..2) {
+    tid_register(i);
     Queue_enq(q, i);
+    int x = Queue_deq(q);
+    $assert(x >= 0);
+    $assert(x < 3);
+    Queue_terminate(i);
+    tid_unregister();
   }
-  Queue_print(q);
-  int x = Queue_deq(q);
-  Queue_print(q);
-  $assert(x == 1 || x == 2 || x == 3 || x == 4 || x == 5);
-
-  int y[3];
-  $parfor(int i : 0..2) {
-    y[i] = Queue_deq(q);
-  }
-  $for(int i : 0..2) {
-    $assert(y[i] == 1 || y[i] == 2 || y[i] == 3 || y[i] == 4 || y[i] == 5);
-  }
-  Queue_print(q);
-
-  int z = Queue_deq(q);
-  Queue_print(q);
-  $assert(z == 1 || z == 2 || z == 3 || z == 4 || z == 5);
-  $assert(Queue_deq(q) == -1);
-  Queue_destroy(q);
+  Queue_finalize(q);
+  Queue_finalize_context();
+  tid_finalize();
+  Queue_destroy(q);  
 }
 #endif

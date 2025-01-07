@@ -1,0 +1,67 @@
+/* Filename : queue_collection.cvl
+   Author   : Stephen F. Siegel
+   Created  : 2024-12-12
+   Modified : 2024-12-30
+
+   Implementation of collection.h for a queue.  This module should be
+   linked with an implementation of Queue.h For the most part this
+   module just wraps calls to the Queue.h interface.
+*/
+#include "Queue.h"
+#include "collection.h"
+#include "types.h"
+#include <stdbool.h>
+
+void * collection_create() {
+  return Queue_create();
+}
+
+void collection_destroy(void * c) {
+  Queue_destroy(c);
+}
+
+void collection_initialize_context(void) {
+  Queue_initialize_context();
+}
+
+void collection_finalize_context(void) {
+  Queue_finalize_context();
+}
+
+void collection_initialize(void * c) {
+  Queue_initialize(c);
+}
+
+void collection_finalize(void * c) {
+  Queue_finalize(c);
+}
+
+void collection_terminate(int tid) {
+  Queue_terminate(tid);
+}
+
+bool collection_stuck(void) {
+  return Queue_stuck();
+}
+
+/* Enqueues a0 on c.  The enqueue operation succeeds unless the call
+   deadlocks.  Argument a1 is ignored. */
+bool collection_add(void * c, T a0, int a1) {
+  Queue_enq(c, a0);
+  return true;
+}
+
+/* This operation is not supported by queues. */
+bool collection_contains(void * c, T a) {
+  $assert(false);
+}
+
+/* This dequeues an item.  Argument a is ignored.  If the queue is
+   empty, or the program deadlocks, -1 is returned. */
+int collection_remove(void * c, T a) {
+  return (int)Queue_deq(c);
+}
+
+void collection_print(void * c) {
+  Queue_print(c);
+}

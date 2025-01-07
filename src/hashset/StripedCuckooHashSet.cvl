@@ -5,27 +5,29 @@
  *
  * This is a concurrent cuckoo hashset using lock striping and phasing
  *
- * Created : 2018-Apr-26
- * Modified: 2023-Jan-05
+ * Created : 2018-04-26
+ * Modified: 2024-12-30
  * Authors : Josh Davis and Stephen F. Siegel
  * Verified Software Laboratory, Dept. Computer & Info. Sciences,
  * University of Delaware.
  */
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
+#include "ArrayList.h"
+#include "Lock.h"
 #include "Set.h"
 #include "hash.cvh"
-#include "Lock.h"
-#include "ArrayList.h"
+#include "tid.h"
 #include "types.h"
+#include <stdbool.h>
+#include <stdlib.h>
 
 #define LIMIT 8
 #define PROBE_SIZE 2
 #define THRESHOLD (PROBE_SIZE / 2)
 #define INITIAL_CAPACITY 1
-// need this because our interface doesn't have a constructor that takes an initial size
+// need this because our interface doesn't have a constructor
+// that takes an initial size
+
+// Types...
 
 struct Set {
   int capacity;
@@ -33,6 +35,7 @@ struct Set {
   ArrayList* table[2];
 };
 
+// Functions...
 
 Set Set_create() {
   // PhasedCuckooHashSet constructor
@@ -66,6 +69,20 @@ void Set_destroy(Set s) {
     free(s->lock[i]);
   }
   free(s);
+}
+
+void Set_initialize_context(void) {}
+
+void Set_finalize_context(void) {}
+
+void Set_initialize(Set set) {}
+
+void Set_finalize(Set set) {}
+
+void Set_terminate(int tid) {}
+
+bool Set_stuck(void) {
+  return false;
 }
 
 // hash0 provided by hash.cvh
@@ -147,7 +164,7 @@ static bool present(Set s, T x) {
 // Forward declaration needed for Set_add
 static bool relocate(Set s, T i, int hi);
 
-// Forward declaration needed for Set_ad
+// Forward declaration needed for Set_add
 static void resize(Set s);
 
 bool Set_add(Set s, T x) {
@@ -208,7 +225,7 @@ static void resize(Set s) {
 
   s->capacity = 2 * s->capacity;
 #ifdef DEBUG
-  printf("Resizing.  New size = %d\n", s->capacity);
+  $print("Resizing.  New size = ", s->capacity, "\n");
 #endif
   for (int i = 0; i < 2; i++) {
     s->table[i] = malloc(s->capacity*sizeof(ArrayList));
@@ -237,24 +254,6 @@ static void resize(Set s) {
     Lock_release(s->lock[0][i]);
   }
 }
-
-/*
-#ifdef ENABLE_PATCH
-    Lock_acquire(s->lock[i][hi % INITIAL_CAPACITY]);
-#endif
-#ifdef ENABLE_PATCH
-    if (ArrayList_size(iSet) > 0) {
-#endif
-#ifdef ENABLE_PATCH
-   } else {
-      // the probe we are supposed to balance is empty
-      // so someone else must have balanced it already
-      Lock_release(s->lock[i][hi % INITIAL_CAPACITY]);
-      return true;
-    }
-    Lock_release(s->lock[i][hi % INITIAL_CAPACITY]);
-#endif
- */
 
 static bool relocate(Set s, int i, int hi) {
   int hj = 0;
@@ -297,62 +296,101 @@ static bool relocate(Set s, int i, int hi) {
 }
 
 void Set_print(Set s) {
-  printf("{ ");
+  $print("{ ");
   for (int i = 0; i < 2; i++) {
     for (int j = 0; j < s->capacity; j++) {
       int size = ArrayList_size(s->table[i][j]);
       for (int k = 0; k < size; k++) {
-        printf("%d ", ArrayList_get(s->table[i][j], k));
+        $print(ArrayList_get(s->table[i][j], k), " ");
       }
     }
   }
-  printf("}");
+  $print("}");
 }
 
 #ifdef _STRIPED_CUCKOO_HASH_SET_MAIN
+
 int main() {
   Set s = Set_create();
-
-  $parfor (int val : 0 .. 4) {
-    Set_add(s, val);
+  int nthread = 5;
+  tid_init(nthread);
+  Set_initialize_context();
+  Set_initialize(s);
+  $parfor (int i : 0 .. nthread-1) {
+    tid_register(i);
+    Set_add(s, i);
+    Set_terminate(i);
+    tid_unregister();
   }
-
+  Set_finalize(s);
+  Set_finalize_context();
+  tid_finalize();
+  
+  $print("Set after adding 0..", nthread-1, ": ");
   Set_print(s);
+  $print("\n");
 
-  $for (int val : 0 .. 4) {
-    $assert(Set_contains(s, val));
+  tid_init(1);
+  Set_initialize_context();
+  Set_initialize(s);
+  tid_register(0);
+  $for (int i : 0 .. nthread-1)
+    $assert(Set_contains(s, i));
+  Set_terminate(0);
+  tid_unregister();
+  Set_finalize(s);
+  Set_finalize_context();
+  tid_finalize();
+
+  tid_init(nthread);
+  Set_initialize_context();
+  Set_initialize(s);
+  $parfor (int i : 1 .. 2) {
+    tid_register(i);
+    Set_remove(s, i);
+    Set_terminate(i);
+    tid_unregister();
   }
-
-  $parfor (int val : 1 .. 2) {
-    Set_remove(s, val);
-  }
-
+  Set_finalize(s);
+  Set_finalize_context();
+  tid_finalize();
+  
+  $print("Set after removing 1..2: ");
   Set_print(s);
+  $print("\n");
 
-  $for (int val : 0 .. 4) {
-    if (val == 1 || val == 2) {
-      $assert(!Set_contains(s, val));
-    } else {
-      $assert(Set_contains(s, val));
-    }
+  $for (int i : 0 .. nthread-1) {
+    if (i == 1 || i == 2)
+      $assert(!Set_contains(s, i));
+    else 
+      $assert(Set_contains(s, i));
   }
-
-  $parfor (int val : 0 .. 4) {
-    if (val == 2) {
-      Set_add(s, val);
-    } else {
-      Set_remove(s, val);
-    }
+  
+  tid_init(nthread);
+  Set_initialize_context();
+  Set_initialize(s);
+  $parfor (int i : 0 .. nthread-1) {
+    tid_register(i);
+    if (i == 2)
+      Set_add(s, i);
+    else 
+      Set_remove(s, i);
+    Set_terminate(i);
+    tid_unregister();
   }
-
+  Set_finalize(s);
+  Set_finalize_context();
+  tid_finalize();
+  
+  $print("Set after adding 2 and removing everything else: ");
   Set_print(s);
+  $print("\n");
 
-  $for (int val : 0 .. 4) {
-    if (val == 2) {
-      $assert(Set_contains(s, val));
-    } else {
-      $assert(!Set_contains(s, val));
-    }
+  $for (int i : 0 .. nthread-1) {
+    if (i == 2)
+      $assert(Set_contains(s, i));
+    else
+      $assert(!Set_contains(s, i));
   }
 
   Set_destroy(s);

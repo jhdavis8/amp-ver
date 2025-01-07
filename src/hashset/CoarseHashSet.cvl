@@ -1,12 +1,22 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
+/* Filename : CoarseHashSet.cvl
+   Authors  : Josh Davis and Stephen F. Siegel
+   Created  : 2018-Apr-15
+   Modified : 2024-12-30
+
+   Simple concurrent hash set using a lock to fully protect
+   each method call.
+ */
+#include "ArrayList.h"
+#include "Lock.h"
 #include "Set.h"
 #include "hash.cvh"
-#include "Lock.h"
-#include "ArrayList.h"
+#include "tid.h"
+#include <stdbool.h>
+#include <stdlib.h>
 
 #define INIT_CAP 1
+
+// Types...
 
 struct Set {
   int length; // length of array table
@@ -15,71 +25,7 @@ struct Set {
   Lock lock;
 };
 
-static void acquire(Set set, T x);
-
-static void release(Set set, T x);
-
-static bool policy(Set set);
-
-static void resize(Set set);
-
-Set Set_create() {
-  Set set = malloc(sizeof(struct Set));
-  set->length = INIT_CAP;
-  set->size = 0;
-  set->table = malloc(set->length*sizeof(ArrayList));
-  for (int i = 0; i < set->length; i++) {
-    set->table[i] = ArrayList_create();
-  }
-  set->lock = Lock_create();
-  return set;
-}
-
-void Set_destroy(Set set) {
-  for(int i = 0; i < set->length; i++){
-    ArrayList_destroy(set->table[i]);
-  }
-  free(set->table);
-  Lock_destroy(set->lock);
-  free(set);
-}
-
-bool Set_contains(Set set, T value) {
-  acquire(set, value);
-  // try
-  int myBucket = hash_code_bound(value, set->length); // hashCode
-  bool result = ArrayList_contains(set->table[myBucket], value);
-  release(set, value); // finally
-  return result;
-}
-
-bool Set_add(Set set, T value) {
-  bool result = false;
-  acquire(set, value);
-  // try
-  int myBucket = hash_code_bound(value, set->length);
-  // difference between 2nd ed. book text and companion code;
-  // we use the book's version
-  if (!ArrayList_contains(set->table[myBucket], value)) {
-    ArrayList_add(set->table[myBucket], value);
-    result = true;
-    set->size = result ? set->size + 1 : set->size;
-  }
-  release(set, value); // finally
-  if (policy(set))
-    resize(set);
-  return result;
-}
-
-bool Set_remove(Set set, T value) {
-  acquire(set, value);
-  // try
-  int myBucket = hash_code_bound(value, set->length);
-  bool result = ArrayList_remove_item(set->table[myBucket], value);
-  set->size = result ? set->size - 1 : set->size;
-  release(set, value); // finally
-  return result;
-}
+// Private (static) functions ...
 
 static void resize(Set set) {
   int oldCapacity = set->length;
@@ -120,42 +66,166 @@ static bool policy(Set set) {
   return set->size / set->length > 4;
 }
 
+Set Set_create() {
+  Set set = malloc(sizeof(struct Set));
+  set->length = INIT_CAP;
+  set->size = 0;
+  set->table = malloc(set->length*sizeof(ArrayList));
+  for (int i = 0; i < set->length; i++) {
+    set->table[i] = ArrayList_create();
+  }
+  set->lock = Lock_create();
+  return set;
+}
+
+void Set_destroy(Set set) {
+  for(int i = 0; i < set->length; i++){
+    ArrayList_destroy(set->table[i]);
+  }
+  free(set->table);
+  Lock_destroy(set->lock);
+  free(set);
+}
+
+void Set_initialize_context(void) {}
+
+void Set_finalize_context(void) {}
+
+void Set_initialize(Set set) {}
+
+void Set_finalize(Set set) {}
+
+void Set_terminate(int tid) {}
+
+bool Set_stuck(void) {
+  return false;
+}
+
+bool Set_contains(Set set, T value) {
+  acquire(set, value);
+  // try
+  int myBucket = hash_code_bound(value, set->length); // hashCode
+  bool result = ArrayList_contains(set->table[myBucket], value);
+  release(set, value); // finally
+  return result;
+}
+
+bool Set_add(Set set, T value) {
+  bool result = false;
+  acquire(set, value);
+  // try
+  int myBucket = hash_code_bound(value, set->length);
+  // difference between 2nd ed. book text and companion code;
+  // we use the book's version
+  if (!ArrayList_contains(set->table[myBucket], value)) {
+    ArrayList_add(set->table[myBucket], value);
+    result = true;
+    set->size = result ? set->size + 1 : set->size;
+  }
+  release(set, value); // finally
+  if (policy(set))
+    resize(set);
+  return result;
+}
+
+bool Set_remove(Set set, T value) {
+  acquire(set, value);
+  // try
+  int myBucket = hash_code_bound(value, set->length);
+  bool result = ArrayList_remove_item(set->table[myBucket], value);
+  set->size = result ? set->size - 1 : set->size;
+  release(set, value); // finally
+  return result;
+}
+
 void Set_print(Set set) {
   int n = set->length;
-  printf("{ ");
+  $print("{ ");
   for (int i = 0; i < n; i++) {
     ArrayList row = set->table[i];
     int m = ArrayList_size(row);
     for (int j = 0; j < m; j++)
-      printf("%d ", ArrayList_get(row, j));
+      $print(ArrayList_get(row, j), " ");
   }
-  printf("}");        
+  $print("}");
 }
 
 #ifdef _COARSE_HASH_SET_MAIN
-int main() {
-  Set set = Set_create();
-  Set_print(set);
 
-  $for (int i : 0 .. 3) {
+static void test1(Set set, int nthread) {
+  tid_init(nthread);
+  Set_initialize_context();
+  Set_initialize(set);
+  $parfor (int i : 0 .. nthread-1) {
+    tid_register(i);
     Set_add(set, i);
+    Set_terminate(i);
+    tid_unregister();
   }
-  for (int i=0; i<4; i++)
-    printf("hash(%d)=%d ", i, hash_code(i));
-  printf("\n");
+  $print("Set after adds: ");
   Set_print(set);
-  $for (int i : 0 .. 3) {
+  $print("\n");
+  $assert(!Set_stuck());
+  Set_finalize(set);
+  Set_finalize_context();
+  tid_finalize();
+  
+  for (int i=0; i<nthread; i++)
+    $print("hash(", i, ")=", hash_code(i), " ");
+  $print("\n");
+  $for (int i : 0 .. nthread-1)
     $assert(Set_contains(set, i));
-  }
-  Set_print(set);
-  $for (int i : 0 .. 3) {
+  
+  tid_init(nthread);
+  Set_initialize_context();
+  Set_initialize(set);
+  $parfor (int i : 0 .. nthread-1) {
+    tid_register(i);
     Set_remove(set, i);
+    Set_terminate(i);
+    tid_unregister();
   }
+  $print("Set after removes: ");
   Set_print(set);
-  $for (int i : 0 .. 3) {
+  $print("\n");
+  $assert(!Set_stuck());
+  Set_finalize(set);
+  Set_finalize_context();
+  tid_finalize();
+  $for (int i : 0 .. nthread-1)
     $assert(!Set_contains(set, i));
+}
+
+static void test2(Set set, int nthread) {
+  tid_init(nthread);
+  Set_initialize_context();
+  Set_initialize(set);
+  $parfor (int i: 0 .. nthread-1) {
+    tid_register(i);
+    Set_add(set, i);
+    Set_remove(set, i);
+    Set_terminate(i);
+    tid_unregister();
   }
+  $for (int i : 0 .. nthread-1)
+    $assert(!Set_contains(set, i));
+  Set_finalize(set);
+  Set_finalize_context();
+  tid_finalize();
+}
+
+int main(void) {
+  Set set = Set_create();
+  $print("Initial set: ");
   Set_print(set);
+  $print("\n");
+  int test = 1+$choose_int(2);
+  $print("\n*** Starting test ", test, " ***\n");
+  if (test == 1)
+    test1(set, 3);
+  else
+    test2(set, 2);
   Set_destroy(set);
+  $print("Test ", test, " complete.\n");
 }
 #endif

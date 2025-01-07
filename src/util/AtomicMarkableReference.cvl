@@ -23,7 +23,7 @@ void AtomicMarkableReference_destroy(AtomicMarkableReference ref) {
 
 /*@ depends_on \access(amr); */
 $atomic_f bool
-AtomicMarkableReference_compare_and_set(AtomicMarkableReference amr,
+AtomicMarkableReference_compareAndSet(AtomicMarkableReference amr,
                     void* exp_ref, void* new_ref,
                     bool exp_mark, bool new_mark) {
   if (amr->reference == exp_ref && amr->mark == exp_mark) {
@@ -37,7 +37,7 @@ AtomicMarkableReference_compare_and_set(AtomicMarkableReference amr,
 
 /*@ depends_on \access(amr); */
 $atomic_f bool
-AtomicMarkableReference_attempt_mark(AtomicMarkableReference amr,
+AtomicMarkableReference_attemptMark(AtomicMarkableReference amr,
                  void* exp_ref, bool new_mark) {
   if (amr->reference == exp_ref) {
     amr->mark = new_mark;
@@ -62,11 +62,11 @@ AtomicMarkableReference_get(AtomicMarkableReference amr, bool* mark_out) {
 }
 
 void*
-AtomicMarkableReference_get_reference(AtomicMarkableReference amr) {
+AtomicMarkableReference_getReference(AtomicMarkableReference amr) {
   return amr->reference;
 }
 
 bool
-AtomicMarkableReference_is_marked(AtomicMarkableReference amr) {
+AtomicMarkableReference_isMarked(AtomicMarkableReference amr) {
   return amr->mark;
 }

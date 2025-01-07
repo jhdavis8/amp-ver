@@ -7,21 +7,20 @@
  * lock synchronization over a heap represented as an array of HeapNodes.
  *
  * Authors : Josh Davis and Stephen F. Siegel
- * Created : 2021-Mar-02
- * Modified: 2024-Jan-12
+ * Created : 2021-03-02
+ * Modified: 2024-12-31
  *
  * Verified Software Lab, Dept. Computer & Info. Sci.,
  * University of Delaware
  */
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <string.h>
-#include <limits.h>
-#include "types.h"
-#include "PQueue.h"
 #include "Lock.h"
+#include "PQueue.h"
+#include "tid.h"
+#include "types.h"
+#include <limits.h>
+#include <stdbool.h>
+#include <stdlib.h>
+#include <string.h>
 
 #define ROOT 1
 #define NO_ONE $proc_null
@@ -29,7 +28,7 @@
 
 typedef enum _status {EMPTY, AVAILABLE, BUSY} Status;
 
-// =============== Start HeapNode class ===============
+// HeapNode class ...
 
 typedef struct HeapNode {
   Status tag;
@@ -78,7 +77,7 @@ static bool HeapNode_amOwner(HeapNode n) {
   return false; // not reached
 }
 
-// =============== End HeapNode class ===============
+// FineGrainedHeap ...
 
 struct PQueue {
   Lock heapLock;
@@ -108,6 +107,20 @@ void PQueue_destroy(PQueue q) {
   free(q);
 }
 
+void PQueue_initialize_context(void) {}
+
+void PQueue_finalize_context(void) {}
+
+void PQueue_initialize(PQueue pq) {}
+
+void PQueue_finalize(PQueue pq) {}
+
+void PQueue_terminate(int tid) {}
+
+bool PQueue_stuck(void) {
+  return false;
+}
+
 static void swap(PQueue q, int i, int j);
 
 void PQueue_add(PQueue q, T item, int priority) {
@@ -123,7 +136,8 @@ void PQueue_add(PQueue q, T item, int priority) {
     HeapNode_lock(q->heap[child]);
     int oldChild = child;
     // try
-    if (q->heap[parent]->tag == AVAILABLE && HeapNode_amOwner(q->heap[child])) {
+    if (q->heap[parent]->tag == AVAILABLE &&
+        HeapNode_amOwner(q->heap[child])) {
       if (q->heap[child]->score < q->heap[parent]->score) {
         swap(q, child, parent);
         child = parent;
@@ -183,7 +197,8 @@ T PQueue_removeMin(PQueue q) {
       HeapNode_unlock(q->heap[right]);
       HeapNode_unlock(q->heap[left]);
       break;
-    } else if (q->heap[right]->tag == EMPTY || q->heap[left]->score < q->heap[right]->score) {
+    } else if (q->heap[right]->tag == EMPTY ||
+               q->heap[left]->score < q->heap[right]->score) {
       HeapNode_unlock(q->heap[right]);
       child = left;
     } else {
@@ -219,45 +234,60 @@ static void swap(PQueue q, int i, int j) {
 }
 
 void PQueue_print(PQueue q) {
-  printf("{ ");
+  $print("{ ");
   for (int i = 1; i < q->next; i++) {
-    printf("(%d,%d) ", q->heap[i]->item, q->heap[i]->score);
+    $print("(", q->heap[i]->item, ",", q->heap[i]->score, ") ");
   }
-  printf("}");
+  $print("}");
 }
 
 #ifdef _FINE_GRAINED_HEAP_MAIN
+
+static void startup(PQueue pq, int nproc) {
+  tid_init(nproc);
+  PQueue_initialize_context();
+  PQueue_initialize(pq);
+}
+
+static void shutdown(PQueue pq) {
+  PQueue_finalize(pq);
+  PQueue_finalize_context();
+  tid_finalize();
+}
+
 int main() {
-  PQueue q = PQueue_create();
-
-  int N = 3;
-
-  $for(int i : 0 .. N - 1) {
-    PQueue_add(q, i, i);
+  PQueue pq = PQueue_create();
+  int N = 2;
+  startup(pq, N);
+  $parfor(int i : 0 .. N - 1) {
+    tid_register(i);
+    PQueue_add(pq, i, i);
+    PQueue_terminate(i);
+    tid_unregister();
   }
-
-  PQueue_print(q);
-
+  $print("PQueue after adds: ");
+  PQueue_print(pq);
+  $print("\n");
+  shutdown(pq);
+  
   int result[N];
-
-  $parfor(int i : 0 .. N - 2) {
-    result[i] = PQueue_removeMin(q);
+  startup(pq, N);
+  $parfor(int i : 0 .. N - 1) {
+    tid_register(i);
+    result[i] = PQueue_removeMin(pq);
+    PQueue_terminate(i);
+    tid_unregister();
   }
-
-  /*
-  PQueue_print(q);
+  $print("PQueue after removes: ");
+  PQueue_print(pq);
+  $print("\n");
+  shutdown(pq);
 
   // could use forall exists to do this instead of checksum
-
   int checkSum = 0;
-
-  $for(int i : 0 .. N - 1) {
+  $for(int i : 0 .. N - 1)
     checkSum += result[i];
-  }
-
   $assert(checkSum == (N * (N - 1)) / 2);
-  */
-
-  PQueue_destroy(q);
+  PQueue_destroy(pq);
 }
 #endif

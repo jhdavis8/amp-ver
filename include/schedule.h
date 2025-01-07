@@ -10,6 +10,9 @@
 #define REMOVE 1   // takes 1 arg for SET; 0 for QUEUE and PQUEUE
 #define CONTAINS 2 // takes 1 arg
 
+#define UNUSED (-1) // an unused slot in a step
+#define UNDEF (-2) // a slot that is used but is currently undefined
+
 // The different kinds of data structures
 typedef enum kind { SET, QUEUE, PQUEUE } kind_t;
 
@@ -49,12 +52,5 @@ void schedule_destroy(schedule_t sched);
 
 /* Prints a schedule in nice human-readable form (for debugging). */
 void schedule_print(schedule_t sched);
-
-/* Is the schedule with results filled in sequentially consistent? */
-bool schedule_isSC(schedule_t sched);
-
-/* Is the schedule with results filled in linearizable? (Note: not
-   currently used.) */
-bool schedule_isLinearizable(schedule_t sched);
 
 #endif

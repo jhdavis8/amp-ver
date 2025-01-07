@@ -6,9 +6,14 @@
 #include "Set.h"
 #include "driver.h"
 
+#ifndef INITIAL_CAPACITY
+#define INITIAL_CAPACITY 2
+#endif
+
 // sequence of values sorted
 typedef struct SimpleSet {
-  int data[];  
+  int data[];
+  int capacity;
 } * SimpleSet;
 
 void * collection_create() {
@@ -38,6 +43,7 @@ void collection_print(void * c) {
 void * oracle_create() {
   SimpleSet oracle = malloc(sizeof(struct SimpleSet));
   $seq_init(&oracle->data, 0, NULL);
+  oracle->capacity = INITIAL_CAPACITY;
   return oracle;
 }
 
@@ -45,8 +51,20 @@ void oracle_destroy(void * o) {
   free(o);
 }
 
+// add enabled iff the number of elements in the set is less than the capacity
+// and a0 is not already in the set
+bool oracle_add_enabled(void * o, int a0, int a1) {
+  SimpleSet oracle = (SimpleSet)o;
+  if ($seq_length(&oracle->data) >= oracle->capacity) return false;
+  int i=0, n = $seq_length(&oracle->data);
+  while (i<n && oracle->data[i] < a0) i++;
+  if (i<n && oracle->data[i] == a0) return false;
+  return true;
+}
+
 // inserts a0 in the right spot. a1 is ignored.
 bool oracle_add(void * o, int a0, int a1) {
+  $assert(oracle_add_enabled(o, a0, a1));
   SimpleSet oracle = (SimpleSet)o;
   int i=0, n = $seq_length(&oracle->data);
   while (i<n && oracle->data[i] < a0) i++;
@@ -63,8 +81,18 @@ bool oracle_contains(void * o, int a) {
   return false;
 }
 
+// remove is enbled iff a is present in the set
+bool oracle_remove_enabled(void * o, int a, int expect) {
+  SimpleSet oracle = (SimpleSet)o;
+  int i=0, n = $seq_length(&oracle->data);
+  while (i<n && oracle->data[i] < a) i++;
+  if (i<n && oracle->data[i] == a) return true;
+  return false;
+}
+
 // removes a if present. expect is ignored.
 int oracle_remove(void * o, int a, int expect) {
+  $assert(oracle_remove_enabled(o, a, expect));
   SimpleSet oracle = (SimpleSet)o;
   int i=0, n = $seq_length(&oracle->data);
   while (i<n && oracle->data[i] < a) i++;

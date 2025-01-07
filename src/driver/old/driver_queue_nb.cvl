@@ -1,0 +1,88 @@
+#include <stdbool.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <seq.cvh>
+#include "types.h"
+#include "Queue.h"
+#include "driver.h"
+
+typedef struct SimpleQueue {
+  int data[];
+} * SimpleQueue;
+
+void * collection_create() {
+  return Queue_create();
+}
+
+void collection_destroy(void * c) {
+  Queue_destroy(c);
+}
+
+bool collection_add(void * c, int a0, int a1) {
+  Queue_enq(c, a0);
+  return true;
+}
+
+bool collection_contains(void * c, int a) {
+  $assert(false);
+}
+
+int collection_remove(void * c, int a) {
+  return Queue_deq(c);
+}
+
+void collection_print(void * c) {
+  Queue_print(c);
+}
+
+void * oracle_create() {
+  SimpleQueue sq = malloc(sizeof(struct SimpleQueue));
+  $seq_init(&sq->data, 0, NULL);
+  return sq;
+}
+
+void oracle_destroy(void * o) {
+  free(o);
+}
+
+// add is always enabled for non-blocking queues
+bool oracle_add_enabled(void * o, int a0, int a1) {
+  return true;
+}
+
+// append a0 to end.  a1 ignored.
+bool oracle_add(void * o, int a0, int a1) {
+  SimpleQueue sq = (SimpleQueue)o;
+  int n = $seq_length(&sq->data);
+  $seq_insert(&sq->data, n, &a0, 1);
+  return true;
+}
+
+bool oracle_contains(void * o, int a) {
+  $assert(false);
+}
+
+// remove is always enabled for non-blocking queues
+bool oracle_remove_enabled(void * o, int a, int expect) {
+  return true;
+}
+
+// remove from pos 0.  a and expect are ignored
+int oracle_remove(void * o, int a, int expect) {
+  SimpleQueue sq = (SimpleQueue)o;
+  int n = $seq_length(&sq->data);
+  if (n==0) return -1;
+  int result;
+  $seq_remove(&sq->data, 0, &result, 1);
+  return result;
+}
+
+void oracle_print(void * o) {
+  SimpleQueue sq = (SimpleQueue)o;
+  int n = $seq_length(&sq->data);
+  printf("{ ");
+  for (int i=0; i<n; i++) {
+    printf("%d ", sq->data[i]);
+  }
+  printf("}");
+}

@@ -8,20 +8,22 @@
  * Java garbage collector).
  *
  * Authors : Josh Davis and Stpehen F. Siegel
- * Created : 2021-Jun-30
- * Modified: 2024-Jun-09
+ * Created : 2021-06-30
+ * Modified: 2024-12-30
  *
  * Verified Software Lab, Dept. Computer & Info. Sci.,
  * University of Delaware
  */
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <limits.h>
-#include "Set.h"
 #include "AtomicMarkableReference.cvh"
+#include "Set.h"
 #include "hash.cvh"
+#include "tid.h"
 #include "types.h"
+#include <limits.h>
+#include <stdbool.h>
+#include <stdlib.h>
+
+// Types...
 
 typedef struct Node {
   T item;
@@ -37,6 +39,8 @@ typedef struct Window {
   Node pred;
   Node curr;
 } Window;
+
+// Functions...
 
 static Node node_create(T item) {
   Node result = malloc(sizeof(struct Node));
@@ -61,7 +65,7 @@ static void node_destroy(Node node) {
 
 static void node_destroy_rec(Node node) {
   if (node == NULL) return;
-  node_destroy_rec(AtomicMarkableReference_get_reference(node->next));
+  node_destroy_rec(AtomicMarkableReference_getReference(node->next));
   node_destroy(node);
 }
 
@@ -73,7 +77,7 @@ Set Set_create() {
   Set this = malloc(sizeof(struct Set));
   this->head = sentinel_node_create(INT_MIN);
   Node tail = sentinel_node_create(INT_MAX);
-  while (!AtomicMarkableReference_compare_and_set
+  while (!AtomicMarkableReference_compareAndSet
          (this->head->next, NULL, (void*) tail, false, false));
   return this;
 }
@@ -83,6 +87,20 @@ void Set_destroy(Set list) {
   free(list);
 }
 
+void Set_initialize_context(void) {}
+
+void Set_finalize_context(void) {}
+
+void Set_initialize(Set set) {}
+
+void Set_finalize(Set set) {}
+
+void Set_terminate(int tid) {}
+
+bool Set_stuck(void) {
+  return false;
+}
+
 static Window find(Node head, int key) {
   Node pred = NULL, curr = NULL, succ = NULL;
   bool f = false;
@@ -90,19 +108,19 @@ static Window find(Node head, int key) {
   bool snip;
  retry: while (true) {
     pred = head;
-    curr = AtomicMarkableReference_get_reference(pred->next);
+    curr = AtomicMarkableReference_getReference(pred->next);
     while (true) {
       succ = AtomicMarkableReference_get(curr->next, marked);
       while (*marked) {
-	snip = AtomicMarkableReference_compare_and_set
+        snip = AtomicMarkableReference_compareAndSet
           (pred->next, curr, succ, false, false);
-	if (!snip) goto retry;
-	// companion code: curr = pred->next->reference;
+        if (!snip) goto retry;
+        // companion code: curr = pred->next->reference;
         curr = succ;
-	succ = AtomicMarkableReference_get(curr->next, marked);
+        succ = AtomicMarkableReference_get(curr->next, marked);
       }
       if (curr->key >= key)
-	return make_window(pred, curr);
+        return make_window(pred, curr);
       pred = curr;
       curr = succ;
     }
@@ -121,9 +139,9 @@ bool Set_add(Set this, T item) {
       Node node = node_create(item);
       free(node->next); // TODO: really?  node destroy?
       node->next = AtomicMarkableReference_create(curr, false);
-      if (AtomicMarkableReference_compare_and_set
+      if (AtomicMarkableReference_compareAndSet
           (pred->next, curr, node, false, false)) {
-	return true;
+        return true;
       }
     }
   }
@@ -138,16 +156,16 @@ bool Set_remove(Set this, T item) {
     if (curr->key != key) {
       return false;
     } else {
-      Node succ = AtomicMarkableReference_get_reference(curr->next);
+      Node succ = AtomicMarkableReference_getReference(curr->next);
 #ifdef ORIGINAL // companion code, known bug
-      snip = AtomicMarkableReference_attempt_mark(curr->next, succ, true);
+      snip = AtomicMarkableReference_attemptMark(curr->next, succ, true);
 #else
-      snip = AtomicMarkableReference_compare_and_set
+      snip = AtomicMarkableReference_compareAndSet
         (curr->next, succ, succ, false, true);
 #endif
       if (!snip)
-	continue;
-      AtomicMarkableReference_compare_and_set
+        continue;
+      AtomicMarkableReference_compareAndSet
         (pred->next, curr, succ, false, false);
       return true;
     }
@@ -168,34 +186,63 @@ bool Set_contains(Set this, T item) {
   int key = hash_code(item);
   Node curr = this->head;
   while (curr->key < key) {
-    curr = AtomicMarkableReference_get_reference(curr->next);
+    curr = AtomicMarkableReference_getReference(curr->next);
   }
-  return (curr->key == key && !AtomicMarkableReference_is_marked(curr->next));
+  return (curr->key == key && !AtomicMarkableReference_isMarked(curr->next));
 }
 
 void Set_print(Set list) {
-  Node curr = AtomicMarkableReference_get_reference(list->head->next);
-  printf("{ ");
+  Node curr = AtomicMarkableReference_getReference(list->head->next);
+  $print("{ ");
   while (true) {
-    Node next = AtomicMarkableReference_get_reference(curr->next);
+    Node next = AtomicMarkableReference_getReference(curr->next);
     if (next == NULL) break;
-    printf("%d ", curr->item);
+    $print(curr->item, " ");
     curr = next;
   }
-  printf("}");
+  $print("}");
 }
 
 #ifdef _LOCK_FREE_LIST_MAIN
-int main() {
-  const int N=3; // number of threads
-  Set list = Set_create();
-  $parfor(int i: 0 .. N-1)
+
+static void startup(Set s, int nproc) {
+  tid_init(nproc);
+  Set_initialize_context();
+  Set_initialize(s);
+}
+
+static void shutdown(Set s) {
+  Set_finalize(s);
+  Set_finalize_context();
+  tid_finalize();
+}
+
+static void test1(Set list, int N) {
+  startup(list, N);
+  $parfor(int i: 0 .. N-1) {
+    tid_register(i);
     Set_add(list, i);
+    Set_terminate(i);
+    tid_unregister();
+  }
   Set_print(list);
-  printf("\n");
-  Set_destroy(list);
-  list = Set_create();
+  $print("\n");
+  shutdown(list);
+
+  startup(list, N);
+  $parfor(int i: 0 .. N-1) {
+    tid_register(i);
+    $assert(Set_contains(list, i));
+    Set_terminate(i);
+    tid_unregister();
+  }
+  shutdown(list);
+}
+
+static void test2(Set list, int N) {
+  startup(list, N);
   $parfor (int i: 0 .. N-1) {
+    tid_register(i);
     int result = Set_add(list, i);
     $assert(result);
     result = Set_contains(list, i);
@@ -204,10 +251,20 @@ int main() {
     $assert(result);
     result = Set_contains(list, i);
     $assert(!result);
+    tid_unregister();
   }
-  Set_print(list);
-  printf("\n");
+  shutdown(list);
+}
+
+void main() {
+  Set list = Set_create();
+  int test = 1+$choose_int(2);
+  $print("\n*** Starting test ", test, " ***\n");
+  if (test == 1)
+    test1(list, 3);
+  else
+    test2(list, 2);
   Set_destroy(list);
+  $print("Test ", test, " complete.\n");
 }
 #endif
-

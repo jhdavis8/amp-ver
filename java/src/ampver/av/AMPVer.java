@@ -16,7 +16,6 @@ import static av.Schedule.DSKind.*;
 import static av.Step.Op;
 import static av.Step.Op.*;
 
-
 public class AMPVer {
 
   public final static PrintStream out = System.out;
@@ -129,6 +128,24 @@ public class AMPVer {
    */
   private boolean linear = true;
 
+  /**
+    The kind of specification to use for the concurrent data
+    structure.  This string is also the prefix of the name of the
+    oracle file.  Currently supported "nonblocking" (default),
+    "bounded", and "sync".  Nonblocking: all calls are expected to
+    return in all cases.  Bounded: a call to add will block if the
+    collection is full; a call to remove will block if the collection
+    is empty.  Sync: a call to add cannot complete unless matching
+    call to remove is made.
+  */
+  private String spec = "nonblocking";
+
+  /**
+     If nonnegative, this is the capacity of the data structure,
+     i.e., the maximum number of entries it can hold.
+  */
+  private int capacity = -1;
+
   /** Number of Java threads to use */
   private int ncore = 4;
 
@@ -156,10 +173,13 @@ public class AMPVer {
     File includeDir = new File(rootDir, "include");
     File srcDir = new File(rootDir, "src");
     File driverDir = new File(srcDir, "driver");
-    File driverBase = new File(driverDir, "driver_base.cvl");
-    File driver2 = new File(driverDir, "driver_"+kindStr()+".cvl");
+    File driverSrc = new File(driverDir, "driver.cvl");
+    File colSrc = new File(driverDir, kindStr() + "_collection.cvl");
     File permsSrc = new File(driverDir, "perm.c");
     File scheduleSrc = new File(driverDir, "schedule.cvl");
+    File utilDir = new File(srcDir, "util");
+    File tidSrc = new File(utilDir, "tid.cvl");
+    File oracleSrc = new File(driverDir, spec+"_"+kindStr()+"_oracle.cvl");
     
     coreCommands.add("verify");
     coreCommands.addAll(civlOptions);
@@ -176,10 +196,15 @@ public class AMPVer {
       coreCommands.add("-inputVAL_B="+hashDomainBound);
       coreCommands.add("-inputHASH_B="+hashRangeBound);
     }
-    coreCommands.add(driverBase.toString());
-    coreCommands.add(driver2.toString());
+    if (capacity >= 0) {
+      coreCommands.add("-DCAPACITY="+capacity);
+    }
+    coreCommands.add(driverSrc.toString());
+    coreCommands.add(colSrc.toString());
+    coreCommands.add(oracleSrc.toString());
     coreCommands.add(permsSrc.toString());
     coreCommands.add(scheduleSrc.toString());
+    coreCommands.add(tidSrc.toString());
     coreCommands.addAll(filenames);
   }
 
@@ -318,7 +343,8 @@ public class AMPVer {
         else if (value.equals("ident"))
           hashND=false;
         else
-          err("-hashKind expects either nd (nondeterministic) or ident (identity)");
+          err("-hashKind expects either nd (nondeterministic) or "+
+              "ident (identity)");
         break;
       case "hashDomainBound":
         hashDomainBound = nat(key, value);
@@ -335,13 +361,19 @@ public class AMPVer {
       case "ncore":
         ncore = nat(key, value);
         break;
+      case "spec":
+        spec = value;
+        break;
+      case "capacity":
+        capacity = nat(key, value);
+        break;
       default:
         civlOptions.add(arg);
       }
     }
     if (tmpDir == null) {
       Path workingPath =
-        FileSystems.getDefault().getPath(""); // .toAbsolutePath();
+        FileSystems.getDefault().getPath("");
       Path tmpPath = Files.createTempDirectory(workingPath, "AVREP_");
       tmpDir = tmpPath.toFile();
     } else {
@@ -350,6 +382,9 @@ public class AMPVer {
     }
     if (filenames.isEmpty())
       err("No filename specified on command line");
+    if (!("nonblocking".equals(spec) || "bounded".equals(spec) ||
+          "sync".equals(spec)))
+      err("spec must be one of nonblocking, bounded, or sync");
     if (valueBound < 1)
       err("valueBound must be at least 1");
     if (nthread_lo < 1)
@@ -388,7 +423,8 @@ public class AMPVer {
                 "npreAdd="+npreAdd_lo+".."+npreAdd_hi);
     out.print("hashND="+hashND);
     if (hashND) {
-      out.print(" hashDomainBound="+hashDomainBound+" hashRangeBound="+hashRangeBound);
+      out.print(" hashDomainBound="+hashDomainBound+
+                " hashRangeBound="+hashRangeBound);
     }
     out.println();
     out.println("genericVals="+genericVals+" "+
@@ -593,11 +629,8 @@ public class AMPVer {
     out.println(sid+" schedules generated.  All tests pass.");
     printTime();
   }
-
-  
   
   public static void main(String[] args) throws IOException {
-    
     System.out.println("AMP Verification Driver v0.1");
     AMPVer av = new AMPVer();
     av.parseCommandLine(args);

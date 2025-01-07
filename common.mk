@@ -22,14 +22,24 @@ QUEUE_DIR = $(SRC)/queue
 PQUEUE_DIR = $(SRC)/pqueue
 SCHEDULE_DIR = $(SRC)/schedule
 
-
 # Important files
+SET_H = $(INC)/Set.h
+QUEUE_H = $(INC)/Queue.h
+PQUEUE_H = $(INC)/PQueue.h
 AR_INC = $(INC)/AtomicReference.cvh
 AR_SRC = $(SRC)/util/AtomicReference.cvl
 AMR_INC = $(INC)/AtomicMarkableReference.cvh
 AMR_SRC = $(SRC)/util/AtomicMarkableReference.cvl
 AB_INC = $(INC)/AtomicBoolean.cvh
 AB_SRC = $(SRC)/util/AtomicBoolean.cvl
+AI_INC = $(INC)/AtomicInteger.h
+AI_SRC = $(SRC)/util/AtomicInteger.cvl
+COND_INC = $(INC)/Condition.h
+COND_SRC = $(SRC)/util/Condition.cvl
+COND2_INC = $(INC)/Condition_dl.h
+COND2_SRC = $(SRC)/util/Condition_dl.cvl
+TID_INC = $(INC)/tid.h
+TID_SRC = $(SRC)/util/tid.cvl
 HASH_INC = $(INC)/hash.cvh
 HASH_SRC = $(SRC)/util/hash.cvl
 LOCK_INC = $(INC)/Lock.h
@@ -37,12 +47,24 @@ LOCK_SRC = $(SRC)/util/ReentrantLock.cvl
 FAIRLOCK_SRC = $(SRC)/util/FairReentrantLock.cvl
 ARRAYLIST_INC = $(INC)/ArrayList.h
 ARRAYLIST_SRC = $(SRC)/util/ArrayList.cvl
-DRIVER_INC = $(INC)/driver.h $(INC)/perm.h $(INC)/schedule.h $(INC)/types.h
-DRIVER_SRC = $(DRIVER_DIR)/driver_base.cvl $(DRIVER_DIR)/perm.c \
-     $(DRIVER_DIR)/schedule.cvl
-DRIVER_SET = $(DRIVER_DIR)/driver_set.cvl
-DRIVER_QUEUE = $(DRIVER_DIR)/driver_queue.cvl
-DRIVER_PQUEUE = $(DRIVER_DIR)/driver_pqueue.cvl
+NPD_INC = $(INC)/NPDetector.cvh
+NPD_SRC = $(SRC)/util/NPDetector.cvl
+DRIVER_INC = $(INC)/driver.h $(INC)/perm.h $(INC)/schedule.h $(INC)/types.h \
+  $(INC)/tid.h $(INC)/collection.h $(INC)/oracle.h
+DRIVER_SRC = $(DRIVER_DIR)/driver.cvl $(DRIVER_DIR)/perm.c \
+  $(DRIVER_DIR)/schedule.cvl $(SRC)/util/tid.cvl
+
+# Collection kinds: wrap any kind of collection into one interface
+SET_COL = $(DRIVER_DIR)/set_collection.cvl
+QUEUE_COL = $(DRIVER_DIR)/queue_collection.cvl
+PQUEUE_COL = $(DRIVER_DIR)/pqueue_collection.cvl
+
+# Oracles: specify expected behavior
+NBSET_OR = $(DRIVER_DIR)/nonblocking_set_oracle.cvl
+NBQUEUE_OR = $(DRIVER_DIR)/nonblocking_queue_oracle.cvl
+BQUEUE_OR = $(DRIVER_DIR)/bounded_queue_oracle.cvl
+SQUEUE_OR = $(DRIVER_DIR)/sync_queue_oracle.cvl
+NBPQUEUE_OR = $(DRIVER_DIR)/nonblocking_pqueue_oracle.cvl
 
 # Verification commands
 VERIFY = $(CIVL) verify -userIncludePath=$(INC)
@@ -51,10 +73,17 @@ JSRC=$(JROOT)/src/ampver/av
 MOD_PATH = $(JROOT)/bin:$(CIVL_ROOT)/mods/dev.civl.mc/bin:$(CIVL_ROOT)/mods/dev.civl.abc/bin:$(CIVL_ROOT)/mods/dev.civl.sarl/bin:$(CIVL_ROOT)/mods/dev.civl.gmc/bin:$(VSL_DEPS)/mods/antlr3:$(VSL_DEPS)/mods/antlr4
 MAIN_CLASS = $(JROOT)/bin/ampver/av/AMPVer.class
 AMPVER = $(JAVA) -p $(MOD_PATH) -m ampver/av.AMPVer -root=$(ROOT)
+SOURCES = $(JROOT)/src/ampver/module-info.java \
+  $(JSRC)/AMPVer.java \
+  $(JSRC)/Step.java \
+  $(JSRC)/Schedule.java \
+  $(JSRC)/SetScheduleIterator.java \
+  $(JSRC)/QueueScheduleIterator.java \
+  $(JSRC)/PQScheduleIterator.java \
+  $(JSRC)/AVUtil.java
 
 myall: all
 
-clean::
-	rm -rf CIVLREP AVREP_* *~ *.tmp a.out *.exec *.o
-
-.PHONY: myall clean
+$(MAIN_CLASS): $(SOURCES)
+	$(JAVAC) -d $(JROOT)/bin/ampver\
+  -p $(CIVL_ROOT)/mods/dev.civl.mc/bin $(SOURCES)

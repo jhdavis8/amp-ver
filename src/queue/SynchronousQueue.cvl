@@ -1,0 +1,256 @@
+/* CIVL model of SynchronousQueue class from "The Art of Multiprocessor
+ * Programming" 2nd ed, by Herlihy, Luchangco, Shavit, and Spear,
+ * Sec. 10.6.1 "A naive synchronous queue", and companion code
+ * ch10/Queue/src/queue/SynchronousQueue.java.
+ *
+ * This is a simple model of the SynchronousQueue class, which is a
+ * simple blocking synchronized queue with a single item field.
+ *
+ * Created : 2024-11-04
+ * Modified: 2024-12-13
+ * Authors : Josh Davis and Stephen F. Siegel
+ * Verified Software Laboratory, Dept. Computer & Info. Sciences,
+ * University of Delaware.
+ */
+#include "Condition_dl.h"
+#include "Lock.h"
+#include "Queue.h"
+#include "tid.h"
+#include "types.h"
+#include <stdbool.h>
+#include <stdlib.h>
+
+struct Queue {
+  T item;
+  bool enqueueing;
+  Lock lock;
+  Condition condition;
+};
+
+Queue Queue_create() {
+  Queue q = (Queue)malloc(sizeof(struct Queue));
+  q->item = -1;
+  q->enqueueing = false;
+  q->lock = Lock_create();
+  q->condition = Condition_create(q->lock);
+  return q;
+}
+
+// not in original code...
+void Queue_destroy(Queue q) {
+  Lock_destroy(q->lock);
+  Condition_destroy(q->condition);
+  free(q);
+}
+
+void Queue_initialize_context(void) {
+  Condition_init_context();
+}
+
+void Queue_finalize_context(void) {
+  Condition_finalize_context();
+}
+
+void Queue_initialize(Queue queue) {
+  Condition_initialize(queue->condition);
+}
+
+void Queue_finalize(Queue queue) {
+  Condition_finalize(queue->condition);
+}
+
+void Queue_terminate(int tid) {
+  Condition_terminate(tid);
+}
+
+bool Queue_stuck() {
+  return Condition_isDeadlocked();
+}
+
+T Queue_deq(Queue q) {
+  Lock_acquire(q->lock);
+  // try
+  while (q->item == -1) {
+    Condition_await(q->condition);
+    if (Condition_isDeadlocked()) {
+      Lock_release(q->lock);
+      return -1;
+    }
+  }
+  T t = q->item;
+  q->item = -1;
+  Condition_signalAll(q->condition);
+  // finally
+  Lock_release(q->lock);
+  return t;
+}
+
+void Queue_enq(Queue q, T value) {
+  Lock_acquire(q->lock);
+  // try
+  while (q->enqueueing) {
+    Condition_await(q->condition);
+    if (Condition_isDeadlocked()) {
+      Lock_release(q->lock);
+      return;
+    }
+  }
+  q->enqueueing = true;
+  q->item = value;
+  Condition_signalAll(q->condition);
+  while (q->item != -1) {
+    Condition_await(q->condition);
+    if (Condition_isDeadlocked()) {
+      Lock_release(q->lock);
+      return;
+    }
+  }
+  q->enqueueing = false;
+  Condition_signalAll(q->condition);
+  // finally
+  Lock_release(q->lock);
+}
+
+void Queue_print(Queue this) {
+  $print("{ ");
+  if (this->item >= 0)
+    $print(this->item, " ");
+  $print("}");
+}
+
+// Tests ...
+
+#ifdef _SYNC_QUEUE_MAIN
+
+static void startup(Queue q, int nproc) {
+  tid_init(nproc);
+  Queue_initialize_context();
+  Queue_initialize(q);
+}
+
+static void shutdown(Queue q) {
+  Queue_finalize(q);
+  Queue_finalize_context();
+  tid_finalize();
+}
+
+/* 2N threads: even ones enqueue, odd ones dequeue.  Should never get
+   stuck and should always result in an empty queue.  */
+void testBalanced(Queue q, int N) {
+  $assert(N>=1);
+  int nthread=2*N;
+  startup(q, nthread);
+  $parfor (int i: 0..nthread-1) {
+    tid_register(i);
+    if (i%2 == 0)
+      Queue_enq(q, i);
+    else {
+      int result = Queue_deq(q);
+      $assert(result >= 0);
+      $assert(result <= nthread-2 && result%2 == 0);
+    }
+    Queue_terminate(i);
+    tid_unregister();
+  }
+  $print("Done: ");
+  Queue_print(q);
+  $print("\n");
+  $assert(!Queue_stuck());
+  $assert(q->item == -1); // q is empty
+  shutdown(q);
+}
+
+/* All threads enqueue.  This should always get stuck. */
+void testEnqs(Queue q, int nthread) {
+  $assert(nthread >= 1);
+  startup(q, nthread);
+  $parfor (int i: 0..nthread-1) {
+    tid_register(i);
+    Queue_enq(q, i);
+    Queue_terminate(i);
+    tid_unregister();
+  }
+  $assert(Queue_stuck());
+  shutdown(q);
+}
+
+/* Three threads: one enqueues, the other two dequeue.  Should get
+   stuck. */
+void testEDD(Queue q) {
+  int nthread=3;
+  startup(q, nthread);
+  int ndeqdone = 0;
+  $parfor (int i: 0..nthread-1) {
+    tid_register(i);
+    if (i==0) {
+      Queue_enq(q, i);
+      $assert(!Queue_stuck());
+      Queue_terminate(i);
+    } else {
+      int x = Queue_deq(q);
+      if (!Queue_stuck()) {
+        ndeqdone++;
+        $assert(ndeqdone <= 1);
+        $assert(x >= 0);
+        Queue_terminate(i);
+      }
+    }
+    tid_unregister();
+  }
+  $assert(Queue_stuck());
+  shutdown(q);
+}
+
+void testEED(Queue q) {
+  int nthread=3;
+  startup(q, nthread);
+  int nenqdone = 0;
+  $parfor (int i: 0..nthread-1) {
+    tid_register(i);
+    if (i<=1) {
+      Queue_enq(q, i);
+      if (!Queue_stuck()) {
+        nenqdone++;
+        $assert(nenqdone <= 1);
+        Queue_terminate(i);
+      }
+    } else {
+      int x = Queue_deq(q);
+      $assert(x >= 0);
+      $assert(!Queue_stuck());
+      Queue_terminate(i);
+    }
+    tid_unregister();
+  }
+  $assert(Queue_stuck());
+  shutdown(q);
+}
+
+int main(void) {
+  Queue q = Queue_create();
+  int test = $choose_int(6);
+  switch (test) {
+  case 0:
+    testBalanced(q, 1);
+    break;
+  case 1:
+    testBalanced(q, 2);
+    break;
+  case 2:
+    testEnqs(q, 1);
+    break;
+  case 3:
+    testEnqs(q, 2);
+    break;
+  case 4:
+    testEDD(q);
+    break;
+  case 5:
+    testEED(q);
+    break;
+  default:
+    $assert(false);
+  }
+  Queue_destroy(q);
+}
+#endif

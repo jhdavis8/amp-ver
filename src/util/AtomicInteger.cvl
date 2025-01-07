@@ -1,0 +1,80 @@
+/*
+ * AtomicInteger.cvl: this implements a model of the Java class AtomicInteger
+ * Created 17-Jun-2024
+ * Josh Davis, Stephen Siegel
+ * Verified Software Lab, CIS Dept.
+ * University of Delaware
+ */
+#pragma CIVL ACSL
+
+#include <stdlib.h>
+#include "AtomicInteger.h"
+
+AtomicInteger AtomicInteger_create(int initialValue) {
+  AtomicInteger a = malloc(sizeof(struct AtomicInteger));
+  a->value = initialValue;
+  return a;
+}
+
+void AtomicInteger_destroy(AtomicInteger a) {
+  free(a);
+}
+
+/*@ depends_on \access(a); */
+$atomic_f _Bool AtomicInteger_compareAndSet(AtomicInteger a,
+                                            int expect, int update) {
+  if (a->value == expect) {
+    a->value = update;
+    return true;
+  } else {
+    return false;
+  }
+}
+
+/*@ depends_on \access(a); */
+$atomic_f int AtomicInteger_get(AtomicInteger a) {
+  return a->value;
+}
+
+/*@ depends_on \access(a); */
+$atomic_f void AtomicInteger_set(AtomicInteger a, int newValue) {
+  a->value = newValue;
+}
+
+/*@ depends_on \access(a); */
+$atomic_f int AtomicInteger_getAndSet(AtomicInteger a, int newValue) {
+  int oldValue = a->value;
+  a->value = newValue;
+  return oldValue;
+}
+
+/*@ depends_on \access(a); */
+$atomic_f int AtomicInteger_getAndIncrement(AtomicInteger a) {
+  return a->value++;
+}
+
+/*@ depends_on \access(a); */
+$atomic_f int AtomicInteger_getAndDecrement(AtomicInteger a) {
+  return a->value--;
+}
+
+#ifdef ATOMICINTEGER_MAIN
+#include <stdio.h>
+
+int main() {
+  int p = false, q = true, r = false;
+  AtomicInteger ai = AtomicInteger_create(p);
+  $parfor(int i : 1 .. 2) {
+    if (i == 1) {
+      AtomicInteger_compareAndSet(ai, p, q);
+    } if (i == 2) {
+      AtomicInteger_compareAndSet(ai, p, r);
+    }
+  }
+  int x = AtomicInteger_get(ai);
+  AtomicInteger_destroy(ai);
+  printf("%d\n", x);
+  $assert(p == false && q == true && r == false);
+  $assert(x == q || x == r);
+}
+#endif

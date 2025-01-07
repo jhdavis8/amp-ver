@@ -1,3 +1,19 @@
+/* Filename : driver_base.cvl
+   Author   : Stephen F. Siegel and Josh Davis
+   Created  :
+   Modified : 2024-12-02
+
+   Driver contains main function to be linked with a concurrent data
+   structure implementation, oracle, and schedule.  It executes the
+   schedule on the concurrent implementation and then checks there is
+   a matching sequential execution using the oracle.  Matching means
+   (1) the sequential execution is a linearization of the concurrent
+   schedule, and (2) if checking linearizabilty, a match also requires
+   the linearizabilty criterion: if e1 and e2 are calls in the
+   concurrent execution and e1 ends (returns) before e2 begins
+   (invokes), then e1 must occur before e2 in the sequential
+   execution.
+*/
 #pragma CIVL ACSL
 #include <stdio.h>
 #include <stdbool.h>
@@ -6,6 +22,7 @@
 #include "perm.h"
 #include "schedule.h"
 #include "driver.h"
+#include "tid.h"
 
 // Global Vars...
 schedule_t schedule;
@@ -139,6 +156,7 @@ static bool permseq(int * perm, void * oracle) {
  * structure upon which it will act.  The thread will execute the
  * sequence of steps specified in the schedule for the given ID. */
 static void thread(int tid, void * c) {
+  tid_register(tid);
   int num_steps_local = get_nsteps(tid);
   for (int s = 0; s < num_steps_local; s++) {
     step_t step = get_step(tid, s);
@@ -158,12 +176,14 @@ static void thread(int tid, void * c) {
     }
     set_result(tid, s, step.result);
   }
+  tid_unregister();
 }
 
 int main() {
   schedule = make_schedule();
   schedule_print(schedule);
   int nthread = schedule.nthread;
+  tid_init(nthread);
   int nstep = schedule.nstep;
   int num_perms = perm_calc_num(nthread, schedule.nsteps);
   int perm_id = 0;
@@ -171,15 +191,18 @@ int main() {
   void * oracle;
   bool found_match = false;
 
+  tid_register(0);
   for (int i=0; i<schedule.npreAdd; i++)
     collection_add(collection, schedule.preAdds[i].args[0],
                    schedule.preAdds[i].args[1]);
+  tid_unregister();
   printf("Collection initial state. ");
   collection_print(collection);
   printf("\n");
   $parfor (int tid : 0 .. nthread-1) {
     thread(tid, collection);
   }
+  tid_destroy();
   schedule_print(schedule);
   printf("Collection final state... ");
   collection_print(collection);
@@ -187,7 +210,7 @@ int main() {
 #ifdef NLINEAR
   int** perms = perm_compute(nthread, schedule.nsteps);
 #else
-  int** perms = perm_compute_linear(nstep, schedule);
+  int** perms = perm_compute_linear(schedule, schedule.nsteps);
 #endif
   for (perm_id = 0; perm_id < num_perms; perm_id++) {
     // check if this perm has been filtered out as non-linearizable
