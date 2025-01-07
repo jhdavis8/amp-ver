@@ -201,7 +201,8 @@ BucketList BucketList_getSentinel(BucketList this, int index) {
     } else {
       // splice in new entry
       Node entry = Node_create_sentinel(key);
-      AtomicMarkableReference_set(entry->next, AtomicMarkableReference_getReference(pred->next), false);
+      AtomicMarkableReference_set(entry->next,
+                                  AtomicMarkableReference_getReference(pred->next), false);
       splice = AtomicMarkableReference_compareAndSet(pred->next, curr, entry, false, false);
       if (splice)
         return BucketList_BucketList(BucketList_create(), entry);
@@ -327,6 +328,11 @@ int Set_getParent(Set this, int myBucket) {
   return parent;
 }
 
+
+// Rewrite this. Two problems:
+// - Calling Set_getBucketList() on a NULL BucketList creates a new BucketList,
+//     just read this->bucket directly instead and skip any NULLs found.
+// - Create and use BucketList_print() and Node_print() functions for readability.
 void Set_print(Set this) {
   for (int i = 0; i < AtomicInteger_get(this->bucketSize) - 1; i++) {
     BucketList b = Set_getBucketList(this, i);
