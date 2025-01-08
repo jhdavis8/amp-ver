@@ -50,6 +50,14 @@ void oracle_destroy(void * o) {
   free(o);
 }
 
+void * oracle_duplicate(void * obj) {
+  SimpleQueue this = (SimpleQueue)obj;
+  SimpleQueue that = malloc(sizeof(struct SimpleQueue));
+  that->data = this->data;
+  that->state = this->state;
+  return that;  
+}
+
 /* Enqueues a0.  a1 ignored.  If the queue is full, this will return
    false and set the stuck bit. */
 bool oracle_add(void * o, T a0, int a1) {
@@ -108,3 +116,25 @@ bool oracle_accepting(void * o, bool stuck) {
   int state = ((SimpleQueue)o)->state;
   return stuck ? state==1 || state==2 : state==0;
 }
+
+#ifdef _S_QUEUE_ORACLE_TEST
+#include "pointer.cvh"
+int main(void) {
+  void * this = oracle_create();
+  oracle_add(this, 1, 10);
+  oracle_print(this);
+  $print("\n");
+  void * that = oracle_duplicate(this);
+  oracle_print(that);
+  $print("\n");
+  $assert($equals(this, that));
+  oracle_add(this, 2, 30);
+  oracle_print(this);
+  $print("\n");
+  oracle_print(that);
+  $print("\n");
+  $assert(!$equals(this, that));
+  oracle_destroy(this);
+  oracle_destroy(that);
+}
+#endif
