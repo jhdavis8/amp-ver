@@ -35,6 +35,13 @@ void oracle_destroy(void * o) {
   free(o);
 }
 
+void * oracle_duplicate(void * obj) {
+  SimplePQ this = (SimplePQ)obj;
+  SimplePQ spq = malloc(sizeof(struct SimplePQ));
+  spq->data = this->data;
+  return spq;  
+}
+
 // insert into correct position based on score a1
 bool oracle_add(void * o, T a0, int a1) {
   SimplePQ spq = (SimplePQ)o;
@@ -83,7 +90,7 @@ void oracle_print(void * o) {
   int n = $seq_length(&spq->data);
   $print("{ ");
   for (int i=0; i<n; i++)
-    $print("(", spq->data[i].value, ",", spq->data[i].score, ")");
+    $print("(", spq->data[i].value, ",", spq->data[i].score, ") ");
   $print("}");
 }
 
@@ -96,3 +103,26 @@ bool oracle_trapped(void * o, bool stuck) {
 bool oracle_accepting(void * o, bool stuck) {
   return !stuck;
 }
+
+#ifdef _NB_PQUEUE_ORACLE_TEST
+#include "pointer.cvh"
+int main(void) {
+  void * this = oracle_create();
+  oracle_add(this, 1, 10);
+  oracle_add(this, 2, 20);
+  oracle_print(this);
+  $print("\n");
+  void * that = oracle_duplicate(this);
+  oracle_print(that);
+  $print("\n");
+  $assert($equals(this, that));
+  oracle_add(this, 3, 30);
+  oracle_print(this);
+  $print("\n");
+  oracle_print(that);
+  $print("\n");
+  $assert(!$equals(this, that));
+  oracle_destroy(this);
+  oracle_destroy(that);
+}
+#endif

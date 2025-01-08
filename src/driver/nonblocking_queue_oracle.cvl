@@ -25,6 +25,13 @@ void oracle_destroy(void * o) {
   free(o);
 }
 
+void * oracle_duplicate(void * obj) {
+  SimpleQueue this = (SimpleQueue)obj;
+  SimpleQueue that = malloc(sizeof(struct SimpleQueue));
+  that->data = this->data;
+  return that;  
+}
+
 // append a0 to end.  a1 ignored.
 bool oracle_add(void * o, T a0, int a1) {
   SimpleQueue sq = (SimpleQueue)o;
@@ -67,3 +74,26 @@ bool oracle_trapped(void * o, bool stuck) {
 bool oracle_accepting(void * o, bool stuck) {
   return !stuck;
 }
+
+#ifdef _NB_QUEUE_ORACLE_TEST
+#include "pointer.cvh"
+int main(void) {
+  void * this = oracle_create();
+  oracle_add(this, 1, 10);
+  oracle_add(this, 2, 20);
+  oracle_print(this);
+  $print("\n");
+  void * that = oracle_duplicate(this);
+  oracle_print(that);
+  $print("\n");
+  $assert($equals(this, that));
+  oracle_add(this, 3, 30);
+  oracle_print(this);
+  $print("\n");
+  oracle_print(that);
+  $print("\n");
+  $assert(!$equals(this, that));
+  oracle_destroy(this);
+  oracle_destroy(that);
+}
+#endif

@@ -1,0 +1,456 @@
+/*
+  Filename : driver_q.cvl
+  Author   : Stephen F. Siegel and Josh Davis
+  Created  : 2025-01-01
+  Modified : 2025-01-01
+
+  Driver for verifying quiescent consistency.
+ */
+#pragma CIVL ACSL
+#include "collection.h"
+#include "oracle.h"
+#include "perm.h"
+#include "schedule.h"
+#include "tid.h"
+#include "types.h"
+#include <stdbool.h>
+#include <stdlib.h>
+
+typedef struct Event {
+  int tid; // thread ID
+  int sid; // step ID
+} Event;
+
+/* Creates the schedule to be used by this driver.  May be
+ * deterministic or nondeterministic. */
+schedule_t make_schedule();
+
+/* split is an array of length nthread.  split[i] is the number
+   of steps to take from thread i. */
+static schedule_t make_schedule_1(schedule_t sched, int * split) {
+  schedule_t result;
+  result.kind = sched.kind;
+  result.num_ops = sched.num_ops;
+  result.nthread = sched.nthread;
+  result.npreAdd = sched.npreAdd;
+  result.preAdds = sched.preAdds; // shared array
+  int nstep=0;
+  for (int i=0; i<nthread; i++)
+    nstep += split[i];
+  result.nstep = nstep;
+  result.nsteps = split; // shared
+  result.steps = malloc(nthread * sizeof(int*));
+  for (int i=0; i<nthread; i++)
+    result.steps[i] = sched.steps[i]; // shared
+  return result;    
+}
+
+static void destroy_schedule_1(schedule_t sched) {
+  free(sched.steps);
+}
+
+static schedule_t make_schedule_2(schedule_t sched, int * split) {
+  schedule_t result;
+  result.kind = sched.kind;
+  result.num_ops = sched.num_ops;
+  result.nthread = sched.nthread;
+  result.npreAdd = 0;
+  result.preAdds = NULL;
+  int nstep=0, * nsteps = malloc(nthread * sizeof(int));
+  for (int i=0; i<nthread; i++) {
+    int m = sched.nsteps[i] - split[i];
+    nsteps[i] = m;
+    nstep += m;
+  }
+  result.nstep = nstep;
+  result.nsteps = nsteps;
+  result.steps = malloc(nthread * sizeof(int*));
+  for (int i=0; i<nthread; i++)
+    result.steps[i] = sched.steps[i] + split[i]; // shared
+  return result;    
+}
+
+static void destroy_schedule_2(schedule_t sched) {
+  free(sched.nsteps);
+  free(sched.steps);
+}
+
+static Event * make_events(schedule_t sched) {
+  int nstep = sched.nstep; // # steps excluding preAdds
+  int count = 0;
+  Event * events = malloc(nstep*sizeof(Event));
+  for (int i=0; i<nthread; i++) {
+    int m = sched.nsteps[i];
+    for (int j=0; j<m; j++) {
+      events[count] = (Event){i, j};
+      count++;
+    }
+  }
+  return events;
+}
+
+static void destroy_events(Event * events) {
+  free(events);
+}
+
+/*@ depends_on \nothing; */
+static $atomic_f int get_nsteps(schedule_t sched, int tid) {
+  return sched.nsteps[tid];
+}
+
+/*@ depends_on \nothing; */
+static $atomic_f step_t get_step(schedule_t sched, int tid, int s) {
+  return sched.steps[tid][s];
+}
+
+/*@ depends_on \nothing; */
+static $atomic_f void set_result(schedule_t * sched,
+                                 int tid, int s, int result) {
+  sched->steps[tid][s].result = result;
+}
+
+static void printMatchFail(void * collection) {
+  $print("[FAIL]\t No matching sequentialized execution");
+  $print(" found!\n");
+  $print("Collection final state... ");
+  collection_print(collection);
+  $print("\n");
+}
+
+static void printOpInfo(int tid, int op, int val, int score, int result) {
+  $print("  Thread ", tid, ": ");
+  $print((op==ADD?"ADD":(op==REMOVE?"REMOVE":"CONTAINS")));
+  if (val >= 0) {
+    $print("(", val);
+    if (score >= 0) $print(",", score, ")");
+    else $print(")");
+  }
+  $print(" -> ");
+  if (result != UNDEF) $print(result); else $print("STUCK");
+  $print("\n");
+}
+
+/* Prints information about the matching sequentialized execution
+   when a match is found for a concurrent execution.
+
+   sched: the schedule for the concurrent execution, which has
+   completed
+
+   events: the set of events from the schedule sched, in canonical
+   order.  These are pairs: threadID,stepID.  Array of length nstep.
+
+   eperm: permutation of 0..nstep-1.
+
+   oracle: the oracle, in its final state, to be printed
+ */
+static void printEquivSeqInfo(schedule_t sched, Event * events,
+                              int * eperm, void * oracle) {
+  int nstep = sched.nstep;
+  $print("[PASS]\t Linearized execution:\n");
+  for (int i = 0; i < nstep; i++) {
+    Event event = events[eperm[i]];
+    step_t step = sched.steps[event.tid][event.sid];
+    printOpInfo(tid, step.op, step.args[0], step.args[1], step.result);
+  }
+  $print("Oracle final state....... ");
+  oracle_print(oracle);
+  $print("\n\n");
+}
+
+/* Determines whether the sequentialization of the schedule specified
+   by perm matches the results of the concurrent execution.  The
+   results of the concurrent execution are recorded in the schedule
+   (before this function is called).  This function works only for
+   normal executions (in which every thread completes all of its steps
+   and terminates normally), not for stuck executions.
+   
+   sched: the schedule that has been executed
+
+   events: the events of the schedule sched in canonical order,
+   array of length nstep.
+
+   eperm: permutation of integers 0..nstep-1
+
+   oracle: the simple trusted sequential implementation of the data
+   structure.  The sequentialized execution will be executed on this
+   oracle.  Note that oracle may be in a non-initial state when
+   this function is called.
+ */
+static bool permseq(schedule_t sched, Event * events, int * eperm,
+                    void * oracle) {
+  if (oracle_trapped(oracle, false))
+    return false; // might already been trapped
+  for (int i = 0; i < nstep; i++) {
+    Event event = events[eperm[i]];
+    step_t step = schedule.steps[event.tid][event.sid];
+    $assert(step.result != UNDEF);
+    int op = step.op, a0 = step.args[0], a1 = step.args[1], result;
+    if (op == ADD)
+      result = (int)oracle_add(oracle, a0, a1);
+    else if (op == REMOVE)
+      // for a priority queue, you want to specify the value to
+      // remove, which is not the argument a0, but the result.
+      result = oracle_remove(oracle, a0, step.result);
+    else if (op == CONTAINS)
+      result = (int)oracle_contains(oracle, a0);
+    else
+      $assert(false);
+    if (result != step.result || oracle_trapped(oracle, false))
+      return false;
+  }
+  return oracle_accepting(oracle, false);
+}
+
+/* The code executed by one thread in the concurrent execution of
+   schedule sched.  tid is the thread's ID number; c is a pointer to
+   the concurrent data structure upon which it will act.  The thread
+   will execute the sequence of steps specified in the schedule for
+   the given ID. */
+static void thread(schedule_t sched, int tid, void * c) {
+  tid_register(tid);
+  int num_steps_local = get_nsteps(sched, tid);
+  for (int s = 0; s < num_steps_local; s++) {
+    step_t step = get_step(sched, tid, s);
+    int op = step.op, a0 = step.args[0], a1 = step.args[1];
+    if (op == ADD)
+      step.result = (int)collection_add(c, a0, a1);
+    else if (op == REMOVE)
+      step.result = collection_remove(c, a0);
+    else if (op == CONTAINS)
+      step.result = (int)collection_contains(c, a0);
+    else
+      $assert(false);
+    $assert(!collection_stuck());
+    set_result(tid, s, step.result);
+  }
+  collection_terminate(tid);
+  tid_unregister();
+}
+
+/* Creates a new oracle and initializes it by executing the given
+   schedule, permuted.  Contains actions are ignored since they do not
+   alter the state of the oracle.  Nothing is checked.
+
+   sched: the schedule containing the actions to execute (which may
+   include pre-adds)
+
+   events: the events of sched, in canonical order
+
+   eperm: a permuation of 0..nstep-1 specifying the order in which the
+   events of the schedule should be executed.
+ */
+static void * oracle_create_init(schedule_t sched, Event * events,
+                                 int * eperm) {
+  oracle = oracle_create();
+  for (int i=0; i<schedule.npreAdd; i++)
+    oracle_add(oracle, sched.preAdds[i].args[0],
+               sched.preAdds[i].args[1]);
+  int nstep = sched.nstep;
+  for (int i=0; i<nstep; i++) {
+    Event event = events[eperm[i]];
+    step_t step = sched.steps[event.tid][event.sid];
+    int op = step.op, a0 = step.args[0], a1 = step.args[1], result;
+    if (op == ADD)
+      oracle_add(oracle, a0, a1);
+    else if (op == REMOVE)
+       oracle_remove(oracle, a0, step.result);
+  }
+  return oracle;
+}
+
+static bool match1(schedule_t sched, Event * events,
+                   void * collection, int num_eperms, int ** eperms) {
+  void * oracle = NULL;
+  int perm_id = 0;
+  $print("numPerms=", num_eperms, "\n");
+  for (; perm_id < num_eperms; perm_id++) {
+    oracle = oracle_create();
+    for (int i=0; i<schedule.npreAdd; i++)
+      oracle_add(oracle, schedule.preAdds[i].args[0],
+                 schedule.preAdds[i].args[1]);
+    if (permseq(sched, events, eperms[perm_id], oracle))
+      break; // match found
+    oracle_destroy(oracle);
+    oracle = NULL;
+  }
+  if (oracle) { // match found
+    printEquivSeqInfo(sched, events, eperms[perm_id], oracle);
+    oracle_destroy(oracle);
+    return true;
+  } else { // no match found
+    printMatchFail(collection);
+    schedule_print(schedule);
+    perm_print_all(num_eperms, nstep, eperms);
+    $print("\n");
+    return false;
+  }
+}
+
+// why not provide a way to duplicate the state of an oracle
+// 
+
+static bool match2(schedule_t sched1, Event * events1,
+                   int
+                   void * collection, int num_eperms, int ** eperms) {
+  void * oracle = NULL;
+  int perm_id = 0;
+  $print("numPerms=", num_eperms, "\n");
+  for (; perm_id < num_eperms; perm_id++) {
+    oracle = oracle_create();
+    for (int i=0; i<schedule.npreAdd; i++)
+      oracle_add(oracle, schedule.preAdds[i].args[0],
+                 schedule.preAdds[i].args[1]);
+    if (permseq(sched, events, eperms[perm_id], oracle))
+      break; // match found
+    oracle_destroy(oracle);
+    oracle = NULL;
+  }
+  if (oracle) { // match found
+    printEquivSeqInfo(sched, events, eperms[perm_id], oracle);
+    oracle_destroy(oracle);
+    return true;
+  } else { // no match found
+    printMatchFail(collection);
+    schedule_print(schedule);
+    perm_print_all(num_eperms, nstep, eperms);
+    $print("\n");
+    return false;
+  }
+}
+
+// I just want the permutations of 0..n-1
+static int ** compute_eperms(int n) {
+  int a[] = (int[n])$lambda(int i) i;
+  return perm_compute(n, a);
+}
+
+static int fact(int n) {
+  int result = 1;
+  for (int i = 1; i <= n; i++)
+    result *= i;
+  return result;
+}
+
+static void find_match_normal(schedule_t sched, void * collection) {
+  int nstep = sched.nstep;
+  int num_eperms = fact(nstep);
+  int ** eperms = compute_eperms(nstep);
+  Event events[nstep];
+  int count = 0;
+  for (int i=0; i<nthread; i++) {
+    int m = sched.nsteps[i];
+    for (int j=0; j<m; j++) {
+      events[count] = (Event){i, j};
+      count++;
+    }
+  }
+  $assert(match(sched, events, collection, num_eperms, eperms));
+  for (int i = 0; i < num_perms; i++) free(perms[i]);
+  free(perms);
+}
+
+//@ depends_on(\nothing);
+$atomic_f static void startup(void * collection, int nthread) {
+  tid_init(nthread);
+  collection_initialize_context();
+  collection_initialize(collection);
+}
+
+//@ depends_on(\nothing);
+$atomic_f static void shutdown(void * collection) {
+  collection_finalize(collection);
+  collection_finalize_context();
+  tid_finalize();
+}
+
+// find all splits
+
+/* Returns true if split was incremented successfully.
+   Returns false if no more splits exist. */
+static bool inc_split(schedule * sched, int * split) {
+  // split is an array of length nthread. split[i] must be <=
+  // 0<=split[i]<=nsteps[i].   Increment split[0], but if that
+  // exceeds bound, set to 0 and increment split[1], etc.
+  for (int i=0; i<nthread; i++) {
+    if (split[i] < sched.nsteps[i]) {
+      split[i]++;
+      return true;
+    }
+    split[i] = 0;
+  }
+  return false;
+}
+
+int main() {
+  void * collection = collection_create();
+  schedule_t schedule = make_schedule();
+  $print("Whole schedule:\n");
+  schedule_print(schedule);
+  nthread = schedule.nthread;
+
+  // Perform pre-adds:
+  if (schedule.npreAdd > 0) {
+    startup(collection, 1);
+    tid_register(0);
+    for (int i=0; i<schedule.npreAdd; i++) {
+      collection_add(collection, schedule.preAdds[i].args[0],
+                     schedule.preAdds[i].args[1]);
+      $assert(!collection_stuck(), "Collection got stuck during pre-adds!\n");
+    }
+    collection_terminate(0);
+    tid_unregister();
+    shutdown(collection);
+  }
+  int split[nthread];
+  for (int i=0; i<nthread; i++)
+    split[i] = 0;
+  bool more = inc_split(schedule, split);
+  while (more) {
+    schedule_t sched1 = make_schedule_1(schedule, split);
+    $print("Phase 1 schedule:\n");
+    schedule_print(sched1);
+    startup(collection, nthread);
+    $parfor (int tid : 0 .. nthread-1) {
+      thread(sched1, tid, collection);
+    }
+    $assert(!collection_stuck(), "Collection got stuck in phase 1\n");
+    shutdown(collection);
+    find_match_normal(sched1, collection);
+    schedule_t sched2 = make_schedule_2(schedule, split);
+    startup(collection, nthread);
+    $parfor (int tid : 0 .. nthread-1) {
+      thread(sched2, tid, collection);
+    }
+    $assert(!collection_stuck(), "Collection got stuck in phase 1\n");
+    shutdown(collection);
+
+    // the oracle must start in its final state from the last phase...
+    
+    find_match_normal(sched2, collection);
+
+    more = inc_split(schedule, split);
+  }
+  
+  // iterate over splits
+
+  // make schedule_1 and run it. check it. then delete it.
+  // repeat for schedule_2.
+  
+  // run concurrent schedule with nthread threads:
+  $print("Collection initial state. ");
+  collection_print(collection);
+  $print("\n");
+  startup(collection, nthread);
+  $parfor (int tid : 0 .. nthread-1) {
+    thread(tid, collection);
+  }
+  bool deadlock = collection_stuck();
+  shutdown(collection);
+  schedule_print(schedule);
+  $print("Collection final state... ");
+  collection_print(collection);
+  $print("\n");
+  find_match_normal(collection);
+  collection_destroy(collection);
+  schedule_destroy(schedule);
+}

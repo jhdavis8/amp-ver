@@ -18,6 +18,9 @@ void * oracle_create();
 /* Destroys oracle */
 void oracle_destroy(void * o);
 
+/* Duplicates oracle */
+void * oracle_duplicate(void * o);
+
 /* Adds element to oracle */
 bool oracle_add(void * o, T a0, int a1);
 

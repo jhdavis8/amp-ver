@@ -26,6 +26,13 @@ void oracle_destroy(void * o) {
   free(o);
 }
 
+void * oracle_duplicate(void * obj) {
+  SimpleSet this = (SimpleSet)obj;
+  SimpleSet that = malloc(sizeof(struct SimpleSet));
+  that->data = this->data;
+  return that;  
+}
+
 /* inserts a0 in the right spot. a1 is ignored. */
 bool oracle_add(void * o, T a0, int a1) {
   SimpleSet oracle = (SimpleSet)o;
@@ -76,3 +83,26 @@ bool oracle_trapped(void * o, bool stuck) {
 bool oracle_accepting(void * o, bool stuck) {
   return !stuck;
 }
+
+#ifdef _NB_SET_ORACLE_TEST
+#include "pointer.cvh"
+int main(void) {
+  void * this = oracle_create();
+  oracle_add(this, 1, 10);
+  oracle_add(this, 2, 20);
+  oracle_print(this);
+  $print("\n");
+  void * that = oracle_duplicate(this);
+  oracle_print(that);
+  $print("\n");
+  $assert($equals(this, that));
+  oracle_add(this, 3, 30);
+  oracle_print(this);
+  $print("\n");
+  oracle_print(that);
+  $print("\n");
+  $assert(!$equals(this, that));
+  oracle_destroy(this);
+  oracle_destroy(that);
+}
+#endif

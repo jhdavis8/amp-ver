@@ -11,6 +11,7 @@ include $(ROOT)/common.mk
 all: test
 
 test:
+	$(MAKE) -C $(DRIVER_DIR)
 	$(MAKE) -C $(QUEUE_DIR)
 	$(MAKE) -C $(SET_DIR)
 	$(MAKE) -C $(LIST_DIR)
