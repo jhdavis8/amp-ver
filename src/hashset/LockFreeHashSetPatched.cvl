@@ -8,7 +8,8 @@
    "The LockFreeHashSet<T> class", and companion code
    ch13/src/hash/LockFreeHashSet.java. Also models the BucketList class, Sec.
    13.3.2 "The BucketList class", and companion code
-   ch13/src/hash/BucketList.java.
+   ch13/src/hash/BucketList.java. This version has been patched to correct a bug
+   in the BucketList_remove method.
  */
 #include <stdlib.h>
 #include <stdbool.h>
@@ -170,7 +171,8 @@ bool BucketList_remove(BucketList this, T x) {
       return false;
     } else {
       // snip out matching entry
-      snip = AtomicMarkableReference_attemptMark(pred->next, curr, true);
+      // patch is here, compareAndSet used instead of attemptMark
+      snip = AtomicMarkableReference_compareAndSet(pred->next, curr, curr, false, true);
       if (snip)
         return true;
       else

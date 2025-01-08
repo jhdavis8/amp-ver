@@ -159,3 +159,26 @@ $(LOCKFREE_OUT): out/LockFreeHashSet_%.out: $(MAIN_CLASS) $(LOCKFREE_DEP)
 out/LockFreeHashSet_S%.out: $(LOCKFREE_DEP) $(SET_SCHED_$*)
 	$(VERIFY) -fair -checkMemoryLeak=false -checkTermination=true \
   $(LOCKFREE_ALL) $(SET_SCHED_$*) >out/LockFreeHashSet_S$*.out
+
+## LockFreeHashSetPatched
+
+LOCKFREE = $(SET_DIR)/LockFreeHashSetPatched.cvl
+LOCKFREE_SRC = $(LOCKFREE) $(HASH_SRC) $(AMR_SRC) $(AI_SRC)
+LOCKFREE_ALL = $(SET_SRC) $(LOCKFREE_SRC) $(NBSET_OR)
+LOCKFREE_DEP = $(LOCKFREE_ALL) $(SET_INC) $(HASH_INC) $(AMR_INC) $(AI_INC)
+LOCKFREE_OUT = $(addprefix out/LockFreeHashSetPatched_,$(addsuffix .out,1 1ND 1.5ND 2 2ND 3 4))
+
+# Ex: make -f sets.mk out/LockFreeHashSetPatched_1.out
+$(LOCKFREE_OUT): out/LockFreeHashSetPatched_%.out: $(MAIN_CLASS) $(LOCKFREE_DEP)
+	rm -rf out/LockFreeHashSetPatched_$*.dir.tmp
+	-$(AMPVER) -fair -checkTermination -checkMemoryLeak=false $(HASH_LIMITS_$*) \
+  -spec=nonblocking -tmpDir=out/LockFreeHashSetPatched_$*.dir.tmp $(LOCKFREE_SRC) \
+  >out/LockFreeHashSetPatched_$*.out.tmp
+	rm -rf out/LockFreeHashSetPatched_$*.dir
+	mv out/LockFreeHashSetPatched_$*.out.tmp out/LockFreeHashSetPatched_$*.out
+	mv out/LockFreeHashSetPatched_$*.dir.tmp out/LockFreeHashSetPatched_$*.dir
+
+# Ex: make -f sets.mk out/LockFreeHashSetPatched_S1.out
+out/LockFreeHashSetPatched_S%.out: $(LOCKFREE_DEP) $(SET_SCHED_$*)
+	$(VERIFY) -fair -checkMemoryLeak=false -checkTermination=true \
+  $(LOCKFREE_ALL) $(SET_SCHED_$*) >out/LockFreeHashSetPatched_S$*.out
