@@ -89,6 +89,33 @@ out/CoarseHashSet_S%.out: $(COARSE_DEP) $(SET_SCHED_$*)
   $(COARSE_ALL) $(SET_SCHED_$*) >out/CoarseHashSet_S$*.out
 
 
+## CoarseHashSet quiescent consistency?
+
+# TODO: add -quiescent option to AmpVER
+
+SETQ_SRC = $(DRIVER_DIR)/driver_q.cvl $(DRIVER_DIR)/perm.c \
+  $(DRIVER_DIR)/schedule.cvl $(SRC)/util/tid.cvl $(SET_COL)
+SETQ_DEP = $(SET_INC) $(SETQ_SRC)
+COARSEQ_ALL =  $(SETQ_SRC) $(COARSE_SRC) $(NBSET_OR)
+COARSEQ_DEP = $(COARSEQ_ALL) $(SET_INC) $(HASH_INC) $(LOCK_INC) $(ARRAYLIST_INC)
+COARSEQ_OUT = $(addprefix out/CoarseHashSetQ_,$(addsuffix .out,1 1ND 1.5ND 2 2ND 3 4))
+
+$(COARSEQ_OUT): out/CoarseHashSetQ_%.out: $(MAIN_CLASS) $(COARSEQ_DEP)
+	rm -rf out/CoarseHashSetQ_$*.dir.tmp
+	$(AMPVER) $(HASH_LIMITS_$*) -spec=nonblocking -quiescent \
+  -tmpDir=out/CoarseHashSetQ_$*.dir.tmp $(COARSE_SRC) \
+  >out/CoarseHashSetQ_$*.out.tmp
+	rm -rf out/CoarseHashSetQ_$*.dir
+	mv out/CoarseHashSetQ_$*.out.tmp out/CoarseHashSetQ_$*.out
+	mv out/CoarseHashSetQ_$*.dir.tmp out/CoarseHashSetQ_$*.dir
+
+# Single schedules.
+# Ex: make -f sets.mk out/CoarseHashSetQ_S1.out
+out/CoarseHashSetQ_S%.out: $(COARSEQ_DEP) $(SET_SCHED_$*)
+	$(VERIFY) -checkMemoryLeak=false -checkTermination=true \
+  $(COARSEQ_ALL) $(SET_SCHED_$*) >out/CoarseHashSetQ_S$*.out
+
+
 ## StripedHashSet
 
 STRIPED = $(SET_DIR)/StripedHashSet.cvl
