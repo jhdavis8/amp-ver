@@ -13,9 +13,12 @@ PQUEUES = pqueue_1 pqueue_2 pqueue_3 pqueue_4
 
 all: $(PQUEUES) pqueue_schedules
 
-$(PQUEUES): pqueue_%: out/FineGrainedHeap_%.out \
-  out/FineGrainedHeapFair_%.out out/FineGrainedHeapNoCycles_%.out \
-  out/SkipQueue_%.out out/SkipQueuePatched_%.out
+$(PQUEUES): pqueue_%: out/SimpleLinear_%.out \
+  out/FineGrainedHeap_%.out \
+  out/FineGrainedHeapFair_%.out \
+  out/FineGrainedHeapNoCycles_%.out \
+  out/SkipQueue_%.out \
+  out/SkipQueuePatched_%.out
 
 pqueue_schedules: \
   $(addprefix out/FineGrainedHeap_S,$(addsuffix .out,1 2 3)) \
@@ -27,20 +30,34 @@ pqueue_schedules: \
 clean:
 	rm -rf out/FineGrainedHeap*.* out/SkipQueue*.*
 
+
+# For SimpleLinear, RANGE must be specified.  This must be at least 1
+# more than the maximum score that will be encountered. For all other
+# structures, RANGE is ignored.
+
+# For SimpleTree, LOGRANGE must be specified.  Then range is computed
+# to be 2^LOGRANGE.  RANGE is ignored.  For all other structures,
+# LOGRANGE is ignored.
+
 PQUEUE_LIMITS_1 = -kind=pqueue -genericVals -threadSym -nthread=1..2 \
-  -nstep=1..2 -npreAdd=0 -distinctPriorities -addsDominate -ncore=$(NCORE)
+  -nstep=1..2 -npreAdd=0 -distinctPriorities -addsDominate -ncore=$(NCORE) \
+  -DRANGE=2 -DLOGRANGE=1
 
 PQUEUE_LIMITS_2 = -kind=pqueue -genericVals -threadSym -nthread=1..3 \
-  -nstep=1..3 -npreAdd=0 -distinctPriorities -addsDominate -ncore=$(NCORE)
+  -nstep=1..3 -npreAdd=0 -distinctPriorities -addsDominate -ncore=$(NCORE) \
+  -DRANGE=3 -DLOGRANGE=2
 
 PQUEUE_LIMITS_3 = -kind=pqueue -genericVals -threadSym -nthread=1..3 \
-  -nstep=1..3 -npreAdd=1..3 -distinctPriorities -addsDominate -ncore=$(NCORE)
+  -nstep=1..3 -npreAdd=1..3 -distinctPriorities -addsDominate -ncore=$(NCORE) \
+  -DRANGE=6 -DLOGRANGE=3
 
 PQUEUE_LIMITS_4 = -kind=pqueue -genericVals -threadSym -nthread=3 \
-  -nstep=4 -npreAdd=0 -distinctPriorities -addsDominate -ncore=$(NCORE)
+  -nstep=4 -npreAdd=0 -distinctPriorities -addsDominate -ncore=$(NCORE) \
+  -DRANGE=4 -DLOGRANGE=2
 
 PQUEUE_LIMITS_5 = -kind=pqueue -genericVals -threadSym -nthread=3 \
-  -nstep=4 -npreAdd=1 -distinctPriorities -addsDominate -ncore=1 -dryrun
+  -nstep=4 -npreAdd=1 -distinctPriorities -addsDominate -ncore=1 -dryrun \
+  -DRANGE=5 -DLOGRANGE=3
 
 PQUEUE_INC = $(DRIVER_INC) $(PQUEUE_H) pqueues.mk
 PQUEUE_SRC = $(DRIVER_SRC) $(PQUEUE_COL)
@@ -48,6 +65,59 @@ PQUEUE_DEP = $(PQUEUE_INC) $(PQUEUE_SRC)
 PQUEUE_SCHED_1 = $(SCHEDULE_DIR)/sched_pqueue_1.cvl
 PQUEUE_SCHED_2 = $(SCHEDULE_DIR)/sched_pqueue_2.cvl
 PQUEUE_SCHED_3 = $(SCHEDULE_DIR)/sched_pqueue_3.cvl
+
+# for quiescent consistency...
+PQUEUEQ_SRC = $(DRIVERQ_SRC) $(PQUEUE_COL)
+PQUEUEQ_DEP = $(PQUEUE_INC) $(PQUEUEQ_SRC)
+
+## SimpleLinear
+
+SL = $(PQUEUE_DIR)/SimpleLinear.cvl
+SL_SRC = $(SL) $(ARRAYLIST_SRC) $(BIN_SRC)
+SL_ALL = $(PQUEUEQ_SRC) $(SL_SRC) $(NBPQUEUE_OR)
+SL_DEP = $(SL_ALL) $(PQUEUE_INC) $(ARRAYLIST_INC) $(BIN_INC)
+SL_OUT = $(addprefix out/SimpleLinear_,$(addsuffix .out,1 2 3 4))
+
+# Ex: make -f pqueues.mk out/SimpleLinear_1.out
+$(SL_OUT): out/SimpleLinear_%.out: $(MAIN_CLASS) $(SL_DEP)
+	rm -rf out/SimpleLinear_$*.dir.tmp
+	$(AMPVER) $(PQUEUE_LIMITS_$*) -property=quiescent \
+  -spec=nonblocking -checkTermination=true \
+  -tmpDir=out/SimpleLinear_$*.dir.tmp $(SL_SRC) \
+  >out/SimpleLinear_$*.out.tmp
+	rm -rf out/SimpleLinear_$*.dir
+	mv out/SimpleLinear_$*.out.tmp out/SimpleLinear_$*.out
+	mv out/SimpleLinear_$*.dir.tmp out/SimpleLinear_$*.dir
+
+# Ex: make -f pqeueues.mk out/SimpleLinear_S1.out
+out/SimpleLinear_S%.out: $(SL_DEP) $(PQUEUE_SCHED_$*)
+	$(VERIFY) -checkTermination=true \
+  $(SL_ALL) $(PQUEUE_SCHED_$*) >out/SimpleLinear_S$*.out
+
+
+## SimpleTree
+
+ST = $(PQUEUE_DIR)/SimpleTree.cvl
+ST_SRC = $(ST) $(AI_SRC) $(ARRAYLIST_SRC) $(BIN_SRC)
+ST_ALL = $(PQUEUEQ_SRC) $(ST_SRC) $(NBPQUEUE_OR)
+ST_DEP = $(ST_ALL) $(PQUEUE_INC) $(AI_INC) $(ARRAYLIST_INC) $(BIN_INC)
+ST_OUT = $(addprefix out/SimpleTree_,$(addsuffix .out,1 2 3 4))
+
+# Ex: make -f pqueues.mk out/SimpleTree_1.out
+$(ST_OUT): out/SimpleTree_%.out: $(MAIN_CLASS) $(ST_DEP)
+	rm -rf out/SimpleTree_$*.dir.tmp
+	$(AMPVER) $(PQUEUE_LIMITS_$*) -property=quiescent \
+  -spec=nonblocking -checkTermination=true \
+  -tmpDir=out/SimpleTree_$*.dir.tmp $(ST_SRC) \
+  >out/SimpleTree_$*.out.tmp
+	rm -rf out/SimpleTree_$*.dir
+	mv out/SimpleTree_$*.out.tmp out/SimpleTree_$*.out
+	mv out/SimpleTree_$*.dir.tmp out/SimpleTree_$*.dir
+
+# Ex: make -f pqeueues.mk out/SimpleTree_S1.out
+out/SimpleTree_S%.out: $(ST_DEP) $(PQUEUE_SCHED_$*)
+	$(VERIFY) -checkTermination=true \
+  $(ST_ALL) $(PQUEUE_SCHED_$*) >out/SimpleTree_S$*.out
 
 
 ## FineGrainedHeap

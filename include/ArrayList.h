@@ -20,6 +20,10 @@ void ArrayList_destroy(ArrayList a);
 // add
 void ArrayList_add(ArrayList a, T item);
 
+// also called add(idx, item), inserts a at position idx and shifts
+// subsequent elements to the right.  requires 0<=idx<=size(a)
+void ArrayList_insert(ArrayList a, int idx, T item);
+
 // remove_item
 bool ArrayList_remove_item(ArrayList a, T item);
 

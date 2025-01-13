@@ -1,0 +1,237 @@
+/* Filename : SimpleTree.cvl
+
+
+   Note: "A Counter (see Chapter 12) holds an integer value, and
+   supports getAndIncrement() and getAndDecrement() methods that
+   atomically increment and decrement the counter value and return the
+   counter's prior value. These methods may optionally be bounded,
+   meaning they do not advance the counter value beyond some specified
+   bound."
+ */
+#include "AtomicInteger.h"
+#include "Bin.h"
+#include "PQueue.h"
+#include "tid.h"
+#include "types.h"
+#include <seq.cvh>
+#include <stdbool.h>
+#include <stdlib.h>
+
+#ifndef LOGRANGE
+#define LOGRANGE 2
+#endif
+
+// Tree nodes...
+
+typedef struct TreeNode * TreeNode;
+
+struct TreeNode {
+  AtomicInteger counter;  // bounded counter
+  TreeNode parent;    // reference to parent
+  TreeNode right;     // right child
+  TreeNode left;      // left child
+  Bin bin;
+};
+
+static TreeNode TreeNode_create() {
+  TreeNode result = malloc(sizeof(struct TreeNode));
+  result->counter = NULL;
+  result->parent = result->right = result->left = NULL;
+  result->bin = NULL;
+  return result;
+}
+
+static void TreeNode_destroy(TreeNode node) {
+  free(node);
+}
+
+static void TreeNode_print(TreeNode node) {
+  int c = AtomicInteger_get(node->counter);
+  $print("Node[count=", c, ", bin=");
+  if (node->bin == NULL)
+    $print("NULL");
+  else 
+    Bin_print(node->bin);
+  $print("]");
+}
+
+// List of TreeNode ...
+
+typedef struct List {
+  TreeNode data[];
+} * List;
+
+static List List_create() {
+  List result = malloc(sizeof(struct List));
+  $seq_init(&result->data, 0, NULL);
+  return result;
+}
+
+static void List_destroy(List l) {
+  free(l);
+}
+
+static void List_insert(List l, int idx, TreeNode node) {
+  $seq_insert(&l->data, idx, &node, 1);
+}
+
+static TreeNode List_get(List l, int idx) {
+  return l->data[idx];
+}
+
+// PQueue ...
+
+struct PQueue {
+  int range;
+  List leaves; // array of tree leaves (TreeNode)
+  TreeNode root;
+};
+
+static TreeNode buildTree(PQueue pq, int height, int slot) {
+  TreeNode root = TreeNode_create();
+  root->counter = AtomicInteger_create(0);
+  if (height == 0) { // leaf node?
+    root->bin = Bin_create();
+    // the following requires 0<=slot<=size(pq->leaves). 
+    List_insert(pq->leaves, slot, root);
+  } else {
+    root->left = buildTree(pq, height - 1, 2 * slot);
+    root->right = buildTree(pq, height - 1, (2 * slot) + 1);
+    root->left->parent = root->right->parent = root;
+  }
+  return root;
+}
+
+static void unbuildTree(TreeNode node) {
+  AtomicInteger_destroy(node->counter);
+  if (node->right == NULL) { // leaf
+    Bin_destroy(node->bin);
+  } else {
+    unbuildTree(node->left);
+    unbuildTree(node->right);
+  }
+  TreeNode_destroy(node);
+}
+
+PQueue PQueue_create() {
+  PQueue pq = malloc(sizeof(struct PQueue));
+  pq->range = 1 << LOGRANGE;
+  pq->leaves = List_create(); // capacity of list is pq->range
+  pq->root = buildTree(pq, LOGRANGE, 0);
+  return pq;
+}
+
+void PQueue_destroy(PQueue pq) {
+  unbuildTree(pq->root);
+  List_destroy(pq->leaves);
+  free(pq);
+}
+
+void PQueue_initialize_context(void) {}
+void PQueue_finalize_context(void) {}
+void PQueue_initialize(PQueue pq) {}
+void PQueue_finalize(PQueue pq) {}
+void PQueue_terminate(int tid) {}
+
+bool PQueue_stuck(void) {
+  return false;
+}
+
+void PQueue_add(PQueue pq, T item, int priority) {
+  TreeNode node = List_get(pq->leaves, priority);
+  Bin_put(node->bin, item);
+  while(node != pq->root) {
+    TreeNode parent = node->parent;
+    if (node == parent->left) { // increment if ascending from left
+      AtomicInteger_getAndIncrement(parent->counter);
+    }
+    node = parent;
+  }
+}
+
+T PQueue_removeMin(PQueue pq) {
+  TreeNode node = pq->root;
+  while (node->right != NULL) {
+    // note: original companion code uses getAndDecrement
+    if (AtomicInteger_boundedGetAndDecrement(node->counter) > 0) {
+      node = node->left;
+    } else {
+      node = node->right;
+    }
+  }
+  return Bin_get(node->bin); // if null pqueue is empty
+}
+
+static void print_aux(int prelen, char * prefix, TreeNode node) {
+  if (node == NULL) return;
+  $print(prefix);
+  TreeNode_print(node);
+  $print("\n");
+  char newprefix[];
+  $seq_init(&newprefix, 0, NULL);
+  $seq_append(&newprefix, prefix, prelen);
+  char tmp[] = "| ";
+  $seq_append(&newprefix, tmp, 2);
+  int newprelen = prelen+2;
+  print_aux(newprelen, newprefix, node->left);
+  print_aux(newprelen, newprefix, node->right);
+}
+
+void PQueue_print(PQueue pq) {
+  $print("\n");
+  print_aux(0, "", pq->root);
+}
+
+#ifdef _SIMPLE_TREE
+
+static void startup(PQueue pq, int nproc) {
+  tid_init(nproc);
+  PQueue_initialize_context();
+  PQueue_initialize(pq);
+}
+
+static void shutdown(PQueue pq) {
+  PQueue_finalize(pq);
+  PQueue_finalize_context();
+  tid_finalize();
+}
+
+int main(void) {
+  PQueue pq = PQueue_create();
+  startup(pq, 3);
+  $parfor (int i: 0 .. 2) {
+    tid_register(i);
+    if (i<2)
+      PQueue_add(pq, 10, 0); // priority 0
+    else {
+      PQueue_add(pq, 11, 1); // priority 1
+      PQueue_add(pq, 12, 0); // priority 0
+    }
+    PQueue_terminate(i);
+    tid_unregister();
+  }
+  shutdown(pq);
+  $print("PQueue after adds: ");
+  PQueue_print(pq);
+  $print("\n");
+  startup(pq, 3);
+  $parfor (int i: 0 .. 2) {
+    tid_register(i);
+    int x = PQueue_removeMin(pq);
+    //$print("Removed: ", x, "\n");
+    $assert(x==10 || x==12);
+    PQueue_terminate(i);
+    tid_unregister();
+  }
+  shutdown(pq);
+  $print("PQueue after removes: ");
+  PQueue_print(pq);
+  $print("\n");
+  int y = PQueue_removeMin(pq);
+  //$print("Removed: ", y, "\n");
+  $assert(y == 11);
+  y = PQueue_removeMin(pq);
+  $assert(y == -1);
+  PQueue_destroy(pq);
+}
+#endif

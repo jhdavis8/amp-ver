@@ -29,6 +29,10 @@ void ArrayList_add(ArrayList a, T item) {
   $seq_append(&a->data, &item, 1);
 }
 
+void ArrayList_insert(ArrayList a, int idx, T item) {
+  $seq_insert(&a->data, idx, &item, 1);
+}
+
 bool ArrayList_remove_item(ArrayList a, T item) {
   int n = $seq_length(&a->data);
   for (int i = 0; i < n; i++) {

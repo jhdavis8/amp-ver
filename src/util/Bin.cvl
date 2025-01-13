@@ -1,0 +1,41 @@
+#pragma CIVL ACSL
+#include "Bin.h"
+#include "ArrayList.h"
+#include <stdlib.h>
+
+struct Bin {
+  ArrayList list;
+};
+
+Bin Bin_create(void) {
+  Bin bin = malloc(sizeof(struct Bin));
+  bin->list = ArrayList_create();
+  return bin;
+}
+
+void  Bin_destroy(Bin bin) {
+  ArrayList_destroy(bin->list);
+  free(bin);
+}
+
+//@ depends_on \access(bin);
+$atomic_f void Bin_put(Bin bin, T item) {
+  ArrayList_add(bin->list, item);
+}
+
+//@ depends_on \access(bin);
+$atomic_f T Bin_get(Bin bin) {
+  if (ArrayList_size(bin->list) == 0)
+    return -1;
+  else
+    return ArrayList_remove_index(bin->list, 0);
+}
+
+//@ depends_on \access(bin);
+$atomic_f bool Bin_isEmpty(Bin bin) {
+  return ArrayList_size(bin->list) == 0;
+}
+
+void Bin_print(Bin bin) {
+  ArrayList_print(bin->list);
+}

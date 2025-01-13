@@ -34,6 +34,8 @@ AB_INC = $(INC)/AtomicBoolean.cvh
 AB_SRC = $(SRC)/util/AtomicBoolean.cvl
 AI_INC = $(INC)/AtomicInteger.h
 AI_SRC = $(SRC)/util/AtomicInteger.cvl
+BIN_INC = $(INC)/Bin.h
+BIN_SRC = $(SRC)/util/Bin.cvl
 COND_INC = $(INC)/Condition.h
 COND_SRC = $(SRC)/util/Condition.cvl
 COND2_INC = $(INC)/Condition_dl.h
@@ -52,6 +54,8 @@ NPD_SRC = $(SRC)/util/NPDetector.cvl
 DRIVER_INC = $(INC)/driver.h $(INC)/perm.h $(INC)/schedule.h $(INC)/types.h \
   $(INC)/tid.h $(INC)/collection.h $(INC)/oracle.h
 DRIVER_SRC = $(DRIVER_DIR)/driver.cvl $(DRIVER_DIR)/perm.c \
+  $(DRIVER_DIR)/schedule.cvl $(SRC)/util/tid.cvl
+DRIVERQ_SRC = $(DRIVER_DIR)/driver_q.cvl $(DRIVER_DIR)/perm.c \
   $(DRIVER_DIR)/schedule.cvl $(SRC)/util/tid.cvl
 
 # Collection kinds: wrap any kind of collection into one interface

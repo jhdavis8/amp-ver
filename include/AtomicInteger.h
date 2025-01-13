@@ -33,4 +33,7 @@ int AtomicInteger_getAndIncrement(AtomicInteger i);
 
 int AtomicInteger_getAndDecrement(AtomicInteger i);
 
+/* Does not allow i to go below 0. */
+int AtomicInteger_boundedGetAndDecrement(AtomicInteger i);
+
 #endif

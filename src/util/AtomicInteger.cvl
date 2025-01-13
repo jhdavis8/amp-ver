@@ -58,6 +58,13 @@ $atomic_f int AtomicInteger_getAndDecrement(AtomicInteger a) {
   return a->value--;
 }
 
+/*@ depends_on \access(a); */
+$atomic_f int AtomicInteger_boundedGetAndDecrement(AtomicInteger a) {
+  if (a->value > 0)
+    return a->value--;
+  return 0;
+}
+
 #ifdef ATOMICINTEGER_MAIN
 #include <stdio.h>
 

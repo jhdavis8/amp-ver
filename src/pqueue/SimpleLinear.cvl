@@ -1,0 +1,126 @@
+/* Filename : SimpleLinear.cvl
+
+ */
+#include "Bin.h"
+#include "PQueue.h"
+#include "tid.h"
+#include "types.h"
+#include <stdbool.h>
+#include <stdlib.h>
+
+// one more than the maximum priority value
+#ifndef RANGE
+#define RANGE 3
+#endif
+
+struct PQueue {
+  int range;
+  Bin * pqueue;
+};
+
+PQueue PQueue_create() {
+  PQueue pq = malloc(sizeof(struct PQueue));
+  pq->range = RANGE;
+  pq->pqueue = malloc(RANGE * sizeof(Bin));
+  for (int i=0; i<RANGE; i++)
+    pq->pqueue[i] = Bin_create();
+  return pq;
+}
+
+void PQueue_destroy(PQueue pq) {
+  int nbin = pq->range;
+  for (int i=0; i<nbin; i++)
+    Bin_destroy(pq->pqueue[i]);
+  free(pq->pqueue);
+  free(pq);
+}
+
+void PQueue_initialize_context(void) {}
+void PQueue_finalize_context(void) {}
+void PQueue_initialize(PQueue pq) {}
+void PQueue_finalize(PQueue pq) {}
+void PQueue_terminate(int tid) {}
+
+bool PQueue_stuck(void) {
+  return false;
+}
+
+void PQueue_add(PQueue pq, T item, int priority) {
+  Bin_put(pq->pqueue[priority], item);
+}
+
+T PQueue_removeMin(PQueue pq) {
+  for (int i=0; i<pq->range; i++) {
+    T item = Bin_get(pq->pqueue[i]);
+    if (item != -1)
+      return item;
+  }
+  return -1;
+}
+
+void PQueue_print(PQueue pq) {
+  $print("{ ");
+  for (int i=0; i<pq->range; i++) {
+    Bin bin = pq->pqueue[i];
+    if (!Bin_isEmpty(bin)) {
+      $print("(");
+      Bin_print(bin);
+      $print(", ", i, ") ");
+    }
+  }
+  $print("}");
+}
+
+#ifdef _SIMPLE_LINEAR
+
+static void startup(PQueue pq, int nproc) {
+  tid_init(nproc);
+  PQueue_initialize_context();
+  PQueue_initialize(pq);
+}
+
+static void shutdown(PQueue pq) {
+  PQueue_finalize(pq);
+  PQueue_finalize_context();
+  tid_finalize();
+}
+
+int main(void) {
+  PQueue pq = PQueue_create();
+  startup(pq, 3);
+  $parfor (int i: 0 .. 2) {
+    tid_register(i);
+    if (i<2)
+      PQueue_add(pq, 10, 0); // priority 0
+    else {
+      PQueue_add(pq, 11, 1); // priority 1
+      PQueue_add(pq, 12, 0); // priority 0
+    }
+    PQueue_terminate(i);
+    tid_unregister();
+  }
+  shutdown(pq);
+  $print("PQueue after adds: ");
+  PQueue_print(pq);
+  $print("\n");
+  startup(pq, 3);
+  $parfor (int i: 0 .. 2) {
+    tid_register(i);
+    int x = PQueue_removeMin(pq);
+    $print("Removed: ", x, "\n");
+    $assert(x==10 || x==12);
+    PQueue_terminate(i);
+    tid_unregister();
+  }
+  shutdown(pq);
+  $print("PQueue after removes: ");
+  PQueue_print(pq);
+  $print("\n");
+  int y = PQueue_removeMin(pq);
+  $print("Removed: ", y, "\n");
+  $assert(y == 11);
+  y = PQueue_removeMin(pq);
+  $assert(y == -1);
+  PQueue_destroy(pq);
+}
+#endif

@@ -20,6 +20,12 @@ public class AMPVer {
 
   public final static PrintStream out = System.out;
 
+  public static enum Property {
+    SC, // sequential consistency
+    LINEAR, // linearizability
+    QUIESCENT // quiescent consistency
+  };
+
   /** start time (nanoseconds) */
   private long time0;
 
@@ -116,18 +122,6 @@ public class AMPVer {
    * unfair cycles will be ignored. */
   private boolean fair = false;
 
-  /** Check the linearizability property: for any concurrent execution,
-   * there exists some linearization of the actions satisfying: for each
-   * pair of actions A and B, if A ends before B begins in the concurrent
-   * execution that A occurs before B in the linearization.
-   *
-   * If linear is false then the weaker property is checked: for any
-   * concurrent execution, there exists some linearization.  Note that
-   * if a violation is found with linear=false, then it is also a
-   * violation for linear=true.
-   */
-  private boolean linear = true;
-
   /**
     The kind of specification to use for the concurrent data
     structure.  This string is also the prefix of the name of the
@@ -139,6 +133,8 @@ public class AMPVer {
     call to remove is made.
   */
   private String spec = "nonblocking";
+
+  private Property property = Property.LINEAR;
 
   /**
      If nonnegative, this is the capacity of the data structure,
@@ -173,7 +169,9 @@ public class AMPVer {
     File includeDir = new File(rootDir, "include");
     File srcDir = new File(rootDir, "src");
     File driverDir = new File(srcDir, "driver");
-    File driverSrc = new File(driverDir, "driver.cvl");
+    File driverSrc =
+      new File(driverDir,
+               (property == Property.QUIESCENT ? "driver_q.cvl" : "driver.cvl"));
     File colSrc = new File(driverDir, kindStr() + "_collection.cvl");
     File permsSrc = new File(driverDir, "perm.c");
     File scheduleSrc = new File(driverDir, "schedule.cvl");
@@ -187,8 +185,10 @@ public class AMPVer {
       coreCommands.add("-fair");
       coreCommands.add("-DFAIR");
     }
-    if (!linear) {
+    if (property == Property.SC) {
       coreCommands.add("-DNLINEAR");
+      // since SC and LINEAR share a common driver.
+      // QUIESCENT uses a different driver
     }
     coreCommands.add("-userIncludePath="+includeDir);
     if (hashND) {
@@ -355,8 +355,20 @@ public class AMPVer {
       case "fair":
         fair = bool(key, value);
         break;
-      case "linear":
-        linear = bool(key, value);
+      case "property":
+        switch(value) {
+        case "sc":
+          property = Property.SC;
+          break;
+        case "linear":
+          property = Property.LINEAR;
+          break;
+        case "quiescent":
+          property = Property.QUIESCENT;
+          break;
+        default:
+          err("-property expects one of sc, linear, quiescent");
+        }
         break;
       case "ncore":
         ncore = nat(key, value);

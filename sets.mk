@@ -62,6 +62,9 @@ SET_SCHED_1 = $(SCHEDULE_DIR)/sched_set_1.cvl
 SET_SCHED_2 = $(SCHEDULE_DIR)/sched_set_2.cvl
 SET_SCHED_3 = $(SCHEDULE_DIR)/sched_set_3.cvl
 
+# for quiescent consistency...
+SETQ_SRC = $(DRIVERQ_SRC) $(SET_COL)
+SETQ_DEP = $(SET_INC) $(SETQ_SRC)
 
 ## CoarseHashSet
 
@@ -89,20 +92,16 @@ out/CoarseHashSet_S%.out: $(COARSE_DEP) $(SET_SCHED_$*)
   $(COARSE_ALL) $(SET_SCHED_$*) >out/CoarseHashSet_S$*.out
 
 
-## CoarseHashSet quiescent consistency?
+## CoarseHashSet quiescent consistency
 
-# TODO: add -quiescent option to AmpVER
-
-SETQ_SRC = $(DRIVER_DIR)/driver_q.cvl $(DRIVER_DIR)/perm.c \
-  $(DRIVER_DIR)/schedule.cvl $(SRC)/util/tid.cvl $(SET_COL)
-SETQ_DEP = $(SET_INC) $(SETQ_SRC)
 COARSEQ_ALL =  $(SETQ_SRC) $(COARSE_SRC) $(NBSET_OR)
 COARSEQ_DEP = $(COARSEQ_ALL) $(SET_INC) $(HASH_INC) $(LOCK_INC) $(ARRAYLIST_INC)
 COARSEQ_OUT = $(addprefix out/CoarseHashSetQ_,$(addsuffix .out,1 1ND 1.5ND 2 2ND 3 4))
 
+# Ex: make -f sets.mk out/CoarseHashSetQ_1.out
 $(COARSEQ_OUT): out/CoarseHashSetQ_%.out: $(MAIN_CLASS) $(COARSEQ_DEP)
 	rm -rf out/CoarseHashSetQ_$*.dir.tmp
-	$(AMPVER) $(HASH_LIMITS_$*) -spec=nonblocking -quiescent \
+	$(AMPVER) $(HASH_LIMITS_$*) -spec=nonblocking -property=quiescent \
   -tmpDir=out/CoarseHashSetQ_$*.dir.tmp $(COARSE_SRC) \
   >out/CoarseHashSetQ_$*.out.tmp
 	rm -rf out/CoarseHashSetQ_$*.dir
