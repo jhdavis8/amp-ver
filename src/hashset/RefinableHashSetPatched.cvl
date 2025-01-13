@@ -1,0 +1,308 @@
+/* Filename : RefinableHashSet.cvl
+   Author   : Josh Davis
+   Created  : 2024-1-8
+   Modified : 2024-1-8
+
+   CIVL model of RefinableHashSet class from "The Art of Multiprocessor
+   Programming" 2nd ed, by Herlihy, Luchangco, Shavit, and Spear, Sec. 13.2.3 "A
+   refinable hash set", and companion code ch13/src/hash/RefinableHashSet.java.
+   This version is patched to use calloc to allocate initialized memory for the
+   locks array when resizing, and check for NULL pointers in the acquire method.
+ */
+#pragma CIVL ACSL
+#include "ArrayList.h"
+#include "Lock.h"
+#include "AtomicMarkableReference.cvh"
+#include "Set.h"
+#include "hash.cvh"
+#include "tid.h"
+#include "types.h"
+#include <stdbool.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define INITIAL_CAPACITY 1
+
+// Types...
+
+struct Set {
+  ArrayList* table;
+  int size;
+  int table_length;
+  int locks_length;
+  Lock* locks;
+  AtomicMarkableReference owner; // reference to Thread in Java version
+};
+
+// Functions...
+
+Set Set_create() {
+  Set this = malloc(sizeof(struct Set));
+  this->table_length = INITIAL_CAPACITY;
+  this->size = 0;
+  this->table = malloc(this->table_length * sizeof(ArrayList));
+  for (int i = 0; i < this->table_length; i++) {
+    this->table[i] = ArrayList_create();
+  }
+  this->locks_length = this->table_length;
+  this->locks = malloc(this->locks_length * sizeof(Lock));
+  for (int k = 0; k < this->locks_length; k++) {
+    this->locks[k] = Lock_create();
+  }
+  this->owner = AtomicMarkableReference_create(NULL, false);
+  return this;
+}
+
+void Set_destroy(Set this) {
+  for (int l = 0; l < this->table_length; l++) {
+    ArrayList_destroy(this->table[l]);
+  }
+  for (int l = 0; l < this->locks_length; l++) {
+    Lock_destroy(this->locks[l]);
+  }
+  free(this->table);
+  free(this->locks);
+  AtomicMarkableReference_destroy(this->owner);
+  free(this);
+}
+
+void Set_initialize_context(void) {}
+
+void Set_finalize_context(void) {}
+
+void Set_initialize(Set thiset) {}
+
+void Set_finalize(Set thiset) {}
+
+void Set_terminate(int tid) {}
+
+bool Set_stuck(void) {
+  return false;
+}
+
+static void resize(Set this);
+
+static void initializeFrom(Set this, ArrayList* oldTable, int oldCapacity);
+
+static void acquire(Set this, T x);
+
+static void release(Set this, T x);
+
+static bool policy(Set this);
+
+bool Set_contains(Set this, T x) {
+  acquire(this, x);
+  // try
+  int myBucket = hash_code_bound(x, this->table_length);
+  bool result = ArrayList_contains(this->table[myBucket], x);
+  release(this, x); // finally
+  return result;
+}
+
+bool Set_add(Set this, T x) {
+  bool result = false;
+  acquire(this, x);
+  // try
+  int myBucket = hash_code_bound(x, this->table_length);
+  // difference between 2nd ed. book text and companion code;
+  // we use the book's version
+  if (!ArrayList_contains(this->table[myBucket], x)) {
+    ArrayList_add(this->table[myBucket], x);
+    result = true;
+    this->size = result ? this->size + 1 : this->size;
+  }
+  release(this, x); // finally
+  if (policy(this))
+    resize(this);
+  return result;
+}
+
+bool Set_remove(Set this, T x) {
+  acquire(this, x);
+  // try
+  int myBucket = hash_code_bound(x, this->table_length);
+  bool result = ArrayList_remove_item(this->table[myBucket], x);
+  this->size = result ? this->size - 1 : this->size;
+  release(this, x); // finally
+  return result;
+}
+
+static void acquire(Set this, T x) {
+  bool mark[] = {true};
+  $proc me = $self;
+  $proc* who;
+  while (true) {
+    do { // wait until not resizing
+      who = AtomicMarkableReference_get(this->owner, mark);
+    } while (mark[0] && (!who || *who != me));
+    Lock* oldLocks = this->locks;
+    int oldLocks_length = this->locks_length;
+    int myBucket = hash_code_bound(x, oldLocks_length);
+    Lock oldLock = oldLocks[myBucket];
+    if (oldLocks)  // patch: check for null, continue if null
+      Lock_acquire(oldLock); // acquire lock
+    else
+      continue;
+    who = AtomicMarkableReference_get(this->owner, mark);
+    if ((!mark[0] || (who && *who == me)) && this->locks == oldLocks) { // recheck
+      return;
+    } else {  //  unlock & try again
+      Lock_release(oldLock);
+    }
+  }
+}
+
+static void release(Set this, T x) {
+  int myBucket = hash_code_bound(x, this->locks_length);
+  Lock_release(this->locks[myBucket]);
+}
+
+// Ensure that no thread is currently locking the set.
+void quiesce(Set this) {
+  for (int i = 0; i < this->locks_length; i++) {
+    while (Lock_isLocked(this->locks[i])) {}  // spin
+  }
+}
+
+$atomic_f Lock* atomic_calloc_Locks(size_t nmemb, size_t size) {
+  Lock* ptr = malloc(nmemb * size);
+  if (ptr) {
+    for (size_t i = 0; i < nmemb; i++)
+      ptr[i] = NULL;
+  }
+  $assert(ptr != NULL);
+  return ptr;
+}
+
+static void resize(Set this) {
+  int oldCapacity = this->table_length;
+  int newCapacity = 2 * oldCapacity;
+  $proc* me = malloc(sizeof($proc));
+  *me = $self;
+  if (AtomicMarkableReference_compareAndSet(this->owner, NULL, me, false, true)) {
+    // try
+    if (this->table_length != oldCapacity)  // someone else resized first
+      goto FINALLY;
+    quiesce(this);
+    ArrayList* oldTable = this->table;
+    this->table = malloc(newCapacity * sizeof(ArrayList));
+    for (int i = 0; i < newCapacity; i++)
+      this->table[i] = ArrayList_create();
+    this->table_length = newCapacity;
+    this->locks = atomic_calloc_Locks(newCapacity, sizeof(Lock));  // patch: calloc atomically
+    for (int k = 0; k < newCapacity; k++)
+      this->locks[k] = Lock_create();
+    this->locks_length = newCapacity;
+    initializeFrom(this, oldTable, oldCapacity);
+    FINALLY:
+      AtomicMarkableReference_set(this->owner, NULL, false);  // restore prior state
+  }
+  //free(me);
+}
+
+static bool policy(Set this) {
+  return this->size / this->table_length > 2;
+}
+
+static void initializeFrom(Set this, ArrayList* oldTable, int oldCapacity) {
+  for (int i = 0; i < oldCapacity; i++) {
+    for (int j = 0; j < ArrayList_size(oldTable[i]); j++) {
+      T x = ArrayList_get(oldTable[i], j);
+      int myBucket = hash_code_bound(x, this->table_length);
+      ArrayList_add(this->table[myBucket], x);
+    }
+  }
+}
+
+void Set_print(Set this) {
+  $print("{ ");
+  for (int i = 0; i < this->table_length; i++) {
+    ArrayList_print(this->table[i]);
+    $print(" ");
+  }
+  $print("}");
+}
+
+#ifdef _REFINABLE_HASH_SET_MAIN
+
+static void test1(Set set, int nthread) {
+  tid_init(nthread);
+  Set_initialize_context();
+  Set_initialize(set);
+  $parfor (int i : 0 .. nthread-1) {
+    tid_register(i);
+    Set_add(set, 2*i);
+    Set_add(set, 2*i+1);
+    Set_terminate(i);
+    tid_unregister();
+  }
+  $print("Set after adds: ");
+  Set_print(set);
+  $print("\n");
+  $assert(!Set_stuck());
+  Set_finalize(set);
+  Set_finalize_context();
+  tid_finalize();
+
+  for (int i=0; i<nthread; i++)
+    $print("hash(", i, ")=", hash_code(i), " ");
+  $print("\n");
+  $for (int i : 0 .. nthread-1)
+    $assert(Set_contains(set, i));
+
+  tid_init(nthread);
+  Set_initialize_context();
+  Set_initialize(set);
+  $parfor (int i : 0 .. nthread-1) {
+    tid_register(i);
+    Set_remove(set, 2*i);
+    Set_remove(set, 2*i+1);
+    Set_terminate(i);
+    tid_unregister();
+  }
+  $print("Set after removes: ");
+  Set_print(set);
+  $print("\n");
+  $assert(!Set_stuck());
+  Set_finalize(set);
+  Set_finalize_context();
+  tid_finalize();
+  $for (int i : 0 .. 2*nthread-1)
+    $assert(!Set_contains(set, i));
+}
+
+static void test2(Set set, int nthread) {
+  tid_init(nthread);
+  Set_initialize_context();
+  Set_initialize(set);
+  $parfor (int i: 0 .. nthread-1) {
+    tid_register(i);
+    Set_add(set, 2*i);
+    Set_add(set, 2*i+1);
+    Set_remove(set, 2*i);
+    Set_remove(set, 2*i+1);
+    Set_terminate(i);
+    tid_unregister();
+  }
+  $for (int i : 0 .. 2*nthread-1)
+    $assert(!Set_contains(set, i));
+  Set_finalize(set);
+  Set_finalize_context();
+  tid_finalize();
+}
+
+int main(void) {
+  Set set = Set_create();
+  $print("Initial set: ");
+  Set_print(set);
+  $print("\n");
+  int test = 1+$choose_int(2);
+  $print("\n*** Starting test ", test, " ***\n");
+  if (test == 1)
+    test1(set, 3);
+  else
+    test2(set, 2);
+  Set_destroy(set);
+  $print("Test ", test, " complete.\n");
+}
+#endif
