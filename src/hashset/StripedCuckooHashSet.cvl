@@ -1,12 +1,12 @@
 /* CIVL model of StripedCuckooHashSet class from "The Art of Multiprocessor
- * Programming" 2nd ed, by Herlihy, Luchangco, Shavit, and Spear,
- * Sec. 13.4.3 "Striped concurrent cuckoo hashing", and companion code
+ * Programming" 2nd ed, by Herlihy, Luchangco, Shavit, and Spear, Sec. 13.4.3
+ * "Striped concurrent cuckoo hashing", and companion code
  * ch13/src/hash/StripedCuckooHashSet.java.
  *
  * This is a concurrent cuckoo hashset using lock striping and phasing
  *
  * Created : 2018-04-26
- * Modified: 2024-12-30
+ * Modified: 2025-1-8
  * Authors : Josh Davis and Stephen F. Siegel
  * Verified Software Laboratory, Dept. Computer & Info. Sciences,
  * University of Delaware.

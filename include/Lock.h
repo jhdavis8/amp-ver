@@ -20,6 +20,8 @@ void Lock_release(Lock l);
 
 _Bool Lock_isHeldByCurrentThread(Lock l);
 
+#ifdef _LOCK_TEST
 _Bool Lock_isLocked(Lock l);
+#endif
 
 #endif

@@ -52,7 +52,7 @@ void Lock_acquire(Lock l) {
   lock_increment(l);
 }
 
-#ifdef FAIR
+#if defined(FAIR) || defined(_LOCK_TEST)
 /*@ depends_on \access(l); */
 #else
 /*@ depends_on \nothing; */
@@ -63,6 +63,8 @@ $atomic_f void Lock_release(Lock l) {
   if (l->count == 0) l->owner = $proc_null;
 }
 
+#ifdef _LOCK_TEST
 _Bool Lock_isLocked(Lock l) {
   return l->owner != $proc_null;
 }
+#endif

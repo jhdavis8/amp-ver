@@ -1,0 +1,413 @@
+/* Filename : RefinableHashSet.cvl
+   Author   : Josh Davis and Stephen F. Siegel
+   Created  : 2018-04-26
+   Modified : 2025-1-8
+
+   CIVL model of StripedCuckooHashSet class from "The Art of Multiprocessor
+   Programming" 2nd ed, by Herlihy, Luchangco, Shavit, and Spear,
+   Sec. 13.4.3 "Striped concurrent cuckoo hashing", and companion code
+   ch13/src/hash/StripedCuckooHashSet.java.
+ */
+#include "ArrayList.h"
+#include "Lock.h"
+#include "Set.h"
+#include "AtomicMarkableReference.cvh"
+#include "hash.cvh"
+#include "tid.h"
+#include "types.h"
+#include <stdbool.h>
+#include <stdlib.h>
+
+#define LIMIT 8
+#define PROBE_SIZE 2
+#define THRESHOLD (PROBE_SIZE / 2)
+#define INITIAL_CAPACITY 1
+// need this because our interface doesn't have a constructor
+// that takes an initial size
+
+// Types...
+
+struct Set {
+  int capacity;
+  Lock* lock[2];
+  ArrayList* table[2];
+  AtomicMarkableReference owner;  // ref to Thread
+};
+
+// Functions...
+
+Set Set_create() {
+  // PhasedCuckooHashSet constructor
+  Set this = malloc(sizeof(struct Set));
+  this->capacity = INITIAL_CAPACITY;
+  for (int i = 0; i < 2; i++) {
+    this->table[i] = malloc(this->capacity*sizeof(ArrayList));
+    for (int j = 0; j < this->capacity; j++) {
+      this->table[i][j] = ArrayList_create();
+    }
+  }
+  // RefinableCuckooHashSet constructor
+  for (int i = 0; i < 2; i++) {
+    this->lock[i] = malloc(this->capacity*sizeof(Lock));
+    for (int j = 0; j < this->capacity; j++) {
+      this->lock[i][j] = Lock_create();
+    }
+  }
+  this->owner = AtomicMarkableReference_create(NULL, false);
+  return this;
+}
+
+void Set_destroy(Set this) {
+  for (int i = 0; i < 2; i++) {
+    for (int j = 0; j < this->capacity; j++) {
+      ArrayList_destroy(this->table[i][j]);
+    }
+    for (int j = 0; j < INITIAL_CAPACITY; j++) {
+      Lock_destroy(this->lock[i][j]);
+    }
+    free(this->table[i]);
+    free(this->lock[i]);
+  }
+  AtomicMarkableReference_destroy(this->owner);
+  free(this);
+}
+
+void Set_initialize_context(void) {}
+
+void Set_finalize_context(void) {}
+
+void Set_initialize(Set set) {}
+
+void Set_finalize(Set set) {}
+
+void Set_terminate(int tid) {}
+
+bool Set_stuck(void) {
+  return false;
+}
+
+// hash0 provided by hash.cvh
+static int hash0(Set this, T x) {
+  return hash_code_dual(x, 0);
+}
+
+// hash1 provided by hash.cvh
+static int hash1(Set this, T x) {
+  return hash_code_dual(x, 1);
+}
+
+static void acquire(Set this, T x) {
+  bool mark[] = {true};
+  $proc me = $self;
+  $proc* who;
+  while (true) {
+    do { // wait until not resizing
+      who = AtomicMarkableReference_get(this->owner, mark);
+    } while (mark[0] && (!who || *who != me));
+    Lock** oldLock = this->lock;
+    int old_length = this->capacity;
+    Lock oldLock0 = oldLock[0][hash0(this, x) % old_length];
+    Lock oldLock1 = oldLock[1][hash1(this, x) % old_length];
+    Lock_acquire(oldLock0);  // acquire locks
+    Lock_acquire(oldLock1);
+    who = AtomicMarkableReference_get(this->owner, mark);
+    if ((!mark[0] || (who && *who == me)) && this->lock == oldLock) { // recheck
+      return;
+    } else {  //  unlock & try again
+      Lock_release(oldLock0);
+      Lock_release(oldLock1);
+    }
+  }
+}
+
+static void release(Set this, T x) {
+  Lock lock0 = this->lock[0][hash0(this, x) % INITIAL_CAPACITY];
+  Lock lock1 = this->lock[1][hash1(this, x) % INITIAL_CAPACITY];
+  Lock_release(lock0);
+  Lock_release(lock1);
+}
+
+bool Set_contains(Set this, T x) {
+  acquire(this, x);
+  // try
+  int h0 = hash0(this, x) % this->capacity;
+  if (ArrayList_contains(this->table[0][h0], x)) {
+    release(this, x); // finally
+    return true;
+  } else {
+    int h1 = hash1(this, x) % this->capacity;
+    if (ArrayList_contains(this->table[1][h1], x)) {
+      release(this, x); // finally
+      return true;
+    }
+  }
+  release(this, x); // finally
+  return false;
+}
+
+bool Set_remove(Set this, T x) {
+  acquire(this, x);
+  // try
+  ArrayList set0 = this->table[0][hash0(this, x) % this->capacity];
+  if (ArrayList_contains(set0, x)) {
+    ArrayList_remove_item(set0, x);
+    release(this, x); // finally
+    return true;
+  } else {
+    ArrayList set1 = this->table[1][hash1(this, x) % this->capacity];
+    if (ArrayList_contains(set1, x)) {
+      ArrayList_remove_item(set1, x);
+      release(this, x); // finally
+      return true;
+    }
+  }
+  release(this, x); // finally
+  return false;
+}
+
+// Unsynchronized version of contains()
+static bool present(Set this, T x) {
+  int h0 = hash0(this, x) % this->capacity;
+  if (ArrayList_contains(this->table[0][h0], x)) {
+    return true;
+  } else {
+    int h1 = hash1(this, x) % this->capacity;
+    if (ArrayList_contains(this->table[1][h1], x)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+// Forward declaration needed for Set_add
+static bool relocate(Set this, T i, int hi);
+
+// Forward declaration needed for Set_add
+static void resize(Set this);
+
+bool Set_add(Set this, T x) {
+  T y = -1; // null
+  acquire(this, x);
+  int h0 = hash0(this, x) % this->capacity;
+  int h1 = hash1(this, x) % this->capacity;
+  int i = -1, h = -1;
+  bool mustResize = false;
+  // try
+  if (present(this, x)) {
+    release(this, x); // finally
+    return false;
+  }
+  ArrayList set0 = this->table[0][hash0(this, x) % this->capacity];
+  ArrayList set1 = this->table[1][hash1(this, x) % this->capacity];
+  if (ArrayList_size(set0) < THRESHOLD) {
+    ArrayList_add(set0, x);
+    release(this, x); // finally
+    return true;
+  } else if (ArrayList_size(set1) < THRESHOLD) {
+    ArrayList_add(set1, x);
+    release(this, x); // finally
+    return true;
+  } else if (ArrayList_size(set0) < PROBE_SIZE) {
+    ArrayList_add(set0, x);
+    i = 0; h = h0;
+  } else if (ArrayList_size(set1) < PROBE_SIZE) {
+    ArrayList_add(set1, x);
+    i = 1; h = h1;
+  } else {
+    mustResize = true;
+  }
+  release(this, x); // finally
+  if (mustResize) {
+    resize(this);
+    Set_add(this, x);
+  } else if (!relocate(this, i, h)) {
+    resize(this);
+  }
+  return true; // x must have been present
+}
+
+// Ensure that no thread is currently locking the set.
+void quiesce(Set this) {
+  for (int i = 0; i < this->capacity; i++) {
+    while (Lock_isLocked(this->lock[0][i])) {}  // spin
+  }
+}
+
+static void resize(Set this) {
+  int oldCapacity = this->capacity;
+  $proc* me = malloc(sizeof($proc));
+  *me = $self;
+  if (AtomicMarkableReference_compareAndSet(this->owner, NULL, me, false, true)) {
+    // try
+    if (this->capacity != oldCapacity)  // someone else resized first
+      goto FINALLY;
+    quiesce(this);
+    this->capacity = 2 * oldCapacity;
+    ArrayList* oldTable[2] = {this->table[0], this->table[1]};
+    for (int i = 0; i < 2; i++) {
+      this->lock[i] = malloc(this->capacity*sizeof(Lock));
+      for (int j = 0; j < this->capacity; j++) {
+        this->lock[i][j] = Lock_create();
+      }
+    }
+    for (int i = 0; i < 2; i++) {
+      this->table[i] = malloc(this->capacity*sizeof(ArrayList));
+      for (int j = 0; j < this->capacity; j++) {
+        this->table[i][j] = ArrayList_create();
+      }
+    }
+    for (int i = 0; i < 2; i++) {
+      for (int j = 0; j < oldCapacity; j++) {
+        int size = ArrayList_size(oldTable[i][j]);
+        for (int k = 0; k < size; k++) {
+          T x = ArrayList_get(oldTable[i][j], k);
+          Set_add(this, x);
+        }
+      }
+    }
+    FINALLY:
+      AtomicMarkableReference_set(this->owner, NULL, false);  // restore prior state
+  }
+}
+
+static bool relocate(Set this, int i, int hi) {
+  int hj = 0;
+  int j = 1 - i;
+  for (int round = 0; round < LIMIT; round++) {
+    ArrayList iSet = this->table[i][hi];
+    T y = ArrayList_get(iSet, 0);
+    switch (i) {
+      case 0: hj = hash1(this, y) % this->capacity; break;
+      case 1: hj = hash0(this, y) % this->capacity; break;
+    }
+    acquire(this, y);
+    ArrayList jSet = this->table[j][hj];
+    // try
+    if (ArrayList_remove_item(iSet, y)) {
+      if (ArrayList_size(jSet) < THRESHOLD) {
+        ArrayList_add(jSet, y);
+        release(this, y); // finally
+        return true;
+      } else if (ArrayList_size(jSet) < PROBE_SIZE) {
+        ArrayList_add(jSet, y);
+        i = 1 - i;
+        hi = hj;
+        j = 1 - j;
+      } else {
+        ArrayList_add(iSet, y);
+        release(this, y); // finally
+        return false;
+      }
+    } else if (ArrayList_size(iSet) >= THRESHOLD) {
+      release(this, y); // finally
+      continue;
+    } else {
+      release(this, y); // finally
+      return true;
+    }
+    release(this, y); // finally
+  }
+  return false;
+}
+
+void Set_print(Set this) {
+  $print("{ ");
+  for (int i = 0; i < 2; i++) {
+    for (int j = 0; j < this->capacity; j++) {
+      int size = ArrayList_size(this->table[i][j]);
+      for (int k = 0; k < size; k++) {
+        $print(ArrayList_get(this->table[i][j], k), " ");
+      }
+    }
+  }
+  $print("}");
+}
+
+#ifdef _REFINABLE_CUCKOO_HASH_SET_MAIN
+
+int main() {
+  Set s = Set_create();
+  int nthread = 5;
+  tid_init(nthread);
+  Set_initialize_context();
+  Set_initialize(s);
+  $parfor (int i : 0 .. nthread-1) {
+    tid_register(i);
+    Set_add(s, i);
+    Set_terminate(i);
+    tid_unregister();
+  }
+  Set_finalize(s);
+  Set_finalize_context();
+  tid_finalize();
+  
+  $print("Set after adding 0..", nthread-1, ": ");
+  Set_print(s);
+  $print("\n");
+
+  tid_init(1);
+  Set_initialize_context();
+  Set_initialize(s);
+  tid_register(0);
+  $for (int i : 0 .. nthread-1)
+    $assert(Set_contains(s, i));
+  Set_terminate(0);
+  tid_unregister();
+  Set_finalize(s);
+  Set_finalize_context();
+  tid_finalize();
+
+  tid_init(nthread);
+  Set_initialize_context();
+  Set_initialize(s);
+  $parfor (int i : 1 .. 2) {
+    tid_register(i);
+    Set_remove(s, i);
+    Set_terminate(i);
+    tid_unregister();
+  }
+  Set_finalize(s);
+  Set_finalize_context();
+  tid_finalize();
+  
+  $print("Set after removing 1..2: ");
+  Set_print(s);
+  $print("\n");
+
+  $for (int i : 0 .. nthread-1) {
+    if (i == 1 || i == 2)
+      $assert(!Set_contains(s, i));
+    else 
+      $assert(Set_contains(s, i));
+  }
+  
+  tid_init(nthread);
+  Set_initialize_context();
+  Set_initialize(s);
+  $parfor (int i : 0 .. nthread-1) {
+    tid_register(i);
+    if (i == 2)
+      Set_add(s, i);
+    else 
+      Set_remove(s, i);
+    Set_terminate(i);
+    tid_unregister();
+  }
+  Set_finalize(s);
+  Set_finalize_context();
+  tid_finalize();
+  
+  $print("Set after adding 2 and removing everything else: ");
+  Set_print(s);
+  $print("\n");
+
+  $for (int i : 0 .. nthread-1) {
+    if (i == 2)
+      $assert(Set_contains(s, i));
+    else
+      $assert(!Set_contains(s, i));
+  }
+
+  Set_destroy(s);
+}
+#endif

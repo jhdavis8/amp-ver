@@ -1,12 +1,11 @@
 /* Filename : RefinableHashSet.cvl
    Author   : Josh Davis
-   Created  : 2024-1-6
-   Modified : 2024-1-6
+   Created  : 2025-1-6
+   Modified : 2025-1-8
 
    CIVL model of RefinableHashSet class from "The Art of Multiprocessor
-   Programming" 2nd ed, by Herlihy, Luchangco, Shavit, and Spear,
-   Sec. 13.2.3 "A refinable hash set", and companion code
-   ch13/src/hash/RefinableHashSet.java.
+   Programming" 2nd ed, by Herlihy, Luchangco, Shavit, and Spear, Sec. 13.2.3 "A
+   refinable hash set", and companion code ch13/src/hash/RefinableHashSet.java.
  */
 #pragma CIVL ACSL
 #include "ArrayList.h"
@@ -209,7 +208,7 @@ void Set_print(Set this) {
   $print("}");
 }
 
-#ifdef _STRIPED_HASH_SET_MAIN
+#ifdef _REFINABLE_HASH_SET_MAIN
 
 static void test1(Set set, int nthread) {
   tid_init(nthread);
