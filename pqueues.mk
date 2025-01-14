@@ -97,6 +97,12 @@ out/SimpleLinear_S%.out: $(SL_DEP) $(PQUEUE_SCHED_$*)
 
 ## SimpleTree
 
+# bug in group 3 schedule 1830:
+# Schedule[kind=PQUEUE, nthread=2, npreAdd=1, nstep=3]:
+#   Preadds : [ ADD(0,1) ]
+#   Thread 0: [ REMOVE REMOVE ]
+#   Thread 1: [ ADD(1,0) ]
+
 ST = $(PQUEUE_DIR)/SimpleTree.cvl
 ST_SRC = $(ST) $(AI_SRC) $(ARRAYLIST_SRC) $(BIN_SRC)
 ST_ALL = $(PQUEUEQ_SRC) $(ST_SRC) $(NBPQUEUE_OR)

@@ -140,10 +140,14 @@ bool PQueue_stuck(void) {
 void PQueue_add(PQueue pq, T item, int priority) {
   TreeNode node = List_get(pq->leaves, priority);
   Bin_put(node->bin, item);
+  $print("add: put ", item, " in bin ", priority, "\n");
   while(node != pq->root) {
     TreeNode parent = node->parent;
     if (node == parent->left) { // increment if ascending from left
       AtomicInteger_getAndIncrement(parent->counter);
+      $print("add: incremented parent and moving up\n");
+    } else {
+      $print("add: moving up\n");
     }
     node = parent;
   }
@@ -154,12 +158,16 @@ T PQueue_removeMin(PQueue pq) {
   while (node->right != NULL) {
     // note: original companion code uses getAndDecrement
     if (AtomicInteger_boundedGetAndDecrement(node->counter) > 0) {
+      $print("removeMin: decremented and going left\n");
       node = node->left;
     } else {
+      $print("removeMin: going right\n");
       node = node->right;
     }
   }
-  return Bin_get(node->bin); // if null pqueue is empty
+  int result = Bin_get(node->bin); // if null pqueue is empty
+  $print("removeMin: returning ", result, "\n");
+  return result;
 }
 
 static void print_aux(int prelen, char * prefix, TreeNode node) {
@@ -235,3 +243,42 @@ int main(void) {
   PQueue_destroy(pq);
 }
 #endif
+
+/*
+  Bug:
+  First, add(0,1).  This puts 0 in bin 1.  Quiesce.  The tree is now:
+
+       1
+    0     0
+ {} {0} {} {}
+
+  Second do add(1,0), but stop before incrementing root.  Tree:
+
+       1
+    1      0
+ {1} {0} {} {}
+
+  Third: removeMin calls and completes and returns 1 (score 0):
+
+       0
+    0      0
+ {}  {0} {} {}
+
+  Fourth: second call to removeMin traverses right edge, (erroneously)
+  returns null, no change in the tree.
+
+  Fifth: add(1,0) now finishes by incrementing root:
+
+       1
+    0      0
+ {}  {0} {} {}
+
+  Summary: After add(0,1) there is quiescence and then 3 events:
+  1. add(1,0)
+  2. removeMin->1
+  3. removeMin->NULL
+  No permutation of these 3 events is a valid sequential execution.
+  You cannot have removeMin->NULL unless the structure is empty, which
+  means there is some previous removeMin->0.
+  
+ */
