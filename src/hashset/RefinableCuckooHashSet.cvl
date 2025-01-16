@@ -29,7 +29,8 @@
 
 struct Set {
   int capacity;
-  Lock* lock[2];
+  Lock* locks[2];
+  int locks_length[2];
   ArrayList* table[2];
   AtomicMarkableReference owner;  // ref to Thread
 };
@@ -48,9 +49,10 @@ Set Set_create() {
   }
   // RefinableCuckooHashSet constructor
   for (int i = 0; i < 2; i++) {
-    this->lock[i] = malloc(this->capacity*sizeof(Lock));
+    this->locks[i] = malloc(this->capacity*sizeof(Lock));
+    this->locks_length[i] = this->capacity;
     for (int j = 0; j < this->capacity; j++) {
-      this->lock[i][j] = Lock_create();
+      this->locks[i][j] = Lock_create();
     }
   }
   this->owner = AtomicMarkableReference_create(NULL, false);
@@ -62,11 +64,11 @@ void Set_destroy(Set this) {
     for (int j = 0; j < this->capacity; j++) {
       ArrayList_destroy(this->table[i][j]);
     }
-    for (int j = 0; j < INITIAL_CAPACITY; j++) {
-      Lock_destroy(this->lock[i][j]);
+    for (int j = 0; j < this->locks_length[i]; j++) {
+      Lock_destroy(this->locks[i][j]);
     }
     free(this->table[i]);
-    free(this->lock[i]);
+    free(this->locks[i]);
   }
   AtomicMarkableReference_destroy(this->owner);
   free(this);
@@ -104,14 +106,14 @@ static void acquire(Set this, T x) {
     do { // wait until not resizing
       who = AtomicMarkableReference_get(this->owner, mark);
     } while (mark[0] && (!who || *who != me));
-    Lock** oldLock = this->lock;
-    int old_length = this->capacity;
-    Lock oldLock0 = oldLock[0][hash0(this, x) % old_length];
-    Lock oldLock1 = oldLock[1][hash1(this, x) % old_length];
+    Lock** oldLock = this->locks;
+    int oldLocks_length[2] = {this->locks_length[0], this->locks_length[1]};
+    Lock oldLock0 = oldLock[0][hash0(this, x) % oldLocks_length[0]];
+    Lock oldLock1 = oldLock[1][hash1(this, x) % oldLocks_length[1]];
     Lock_acquire(oldLock0);  // acquire locks
     Lock_acquire(oldLock1);
     who = AtomicMarkableReference_get(this->owner, mark);
-    if ((!mark[0] || (who && *who == me)) && this->lock == oldLock) { // recheck
+    if ((!mark[0] || (who && *who == me)) && this->locks == oldLock) { // recheck
       return;
     } else {  //  unlock & try again
       Lock_release(oldLock0);
@@ -121,8 +123,8 @@ static void acquire(Set this, T x) {
 }
 
 static void release(Set this, T x) {
-  Lock lock0 = this->lock[0][hash0(this, x) % INITIAL_CAPACITY];
-  Lock lock1 = this->lock[1][hash1(this, x) % INITIAL_CAPACITY];
+  Lock lock0 = this->locks[0][hash0(this, x) % this->locks_length[0]];
+  Lock lock1 = this->locks[1][hash1(this, x) % this->locks_length[1]];
   Lock_release(lock0);
   Lock_release(lock1);
 }
@@ -229,7 +231,7 @@ bool Set_add(Set this, T x) {
 // Ensure that no thread is currently locking the set.
 void quiesce(Set this) {
   for (int i = 0; i < this->capacity; i++) {
-    while (Lock_isLocked(this->lock[0][i])) {}  // spin
+    while (Lock_isLocked(this->locks[0][i])) {}  // spin
   }
 }
 
@@ -245,9 +247,10 @@ static void resize(Set this) {
     this->capacity = 2 * oldCapacity;
     ArrayList* oldTable[2] = {this->table[0], this->table[1]};
     for (int i = 0; i < 2; i++) {
-      this->lock[i] = malloc(this->capacity*sizeof(Lock));
+      this->locks[i] = malloc(this->capacity*sizeof(Lock));
+      this->locks_length[i] = this->capacity;
       for (int j = 0; j < this->capacity; j++) {
-        this->lock[i][j] = Lock_create();
+        this->locks[i][j] = Lock_create();
       }
     }
     for (int i = 0; i < 2; i++) {

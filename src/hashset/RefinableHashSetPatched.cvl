@@ -8,6 +8,8 @@
    refinable hash set", and companion code ch13/src/hash/RefinableHashSet.java.
    This version is patched to use calloc to allocate initialized memory for the
    locks array when resizing, and check for NULL pointers in the acquire method.
+
+   PATCH DOES NOT WORK.
  */
 #pragma CIVL ACSL
 #include "ArrayList.h"

@@ -5,6 +5,8 @@
  *
  * This is a concurrent cuckoo hashset using lock striping and phasing
  *
+ * PATCH DOES NOT WORK.
+ *
  * Created : 2018-04-26
  * Modified: 2024-12-30
  *
