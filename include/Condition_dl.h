@@ -2,7 +2,7 @@
 #define _CONDITION_DL_H
 /* Filename : Condition_dl.h
    Created  : 2024-10-23
-   Modified : 2024-12-28
+   Modified : 2025-01-17
    Author   : Stephen F. Siegel
 
    Extension to the standard Condition.h interface, adding functions
@@ -24,6 +24,9 @@
       threads, goto step 2.
    9. Call Condition_destroy(cond) on each Condition object cond.
 
+   Verified Software Lab
+   Department of Computer & Information Sciences
+   University of Delaware
 */
 #include "Condition.h"
 

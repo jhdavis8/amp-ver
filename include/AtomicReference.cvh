@@ -1,25 +1,36 @@
 #ifndef _ATOMICREFERENCE_H
 #define _ATOMICREFERENCE_H
-/*
- * AtomicReference.cvh: Header file for AtomicReference.cvl
- * Created 21-Dec-2023
- * Josh Davis, Stephen Siegel
- * Verified Software Lab, CIS Dept.
- * University of Delaware
- */
+/* Filename : AtomicReference.cvh
+   Authors  : Josh Davis, Stephen F. Siegel
+   Created  : 2023-12-21
+   Modified : 2025-01-17
 
+   CIVL-C model of Java's java.util.concurrent.atomic.AtomicReference.
+   An AtomicReference wraps a pointer value (type void*) and provides
+   methods to access it atomically.
+
+   This is a partial implementation, containing only the methods
+   required for this project.
+
+   Verified Software Lab
+   Department of Computer & Information Sciences
+   University of Delaware
+*/
 #include <stdbool.h>
 
 typedef struct AtomicReference * AtomicReference;
 
+/* Creates new AtomicReference with given pointer value. */
 AtomicReference AtomicReference_create(void* initial_value);
 
+/* Deallocates the ref. */
 void AtomicReference_destroy(AtomicReference ref);
 
-
-bool AtomicReference_compare_and_set(AtomicReference ref,
-                                     void* expect, void* update);
-
+/* Atomically sets the value to update if the current value ==
+   expected. */
+bool AtomicReference_compareAndSet(AtomicReference ref,
+                                   void* expect, void* update);
+/* Returns the current value. */
 void* AtomicReference_get(AtomicReference ref);
 
 #endif

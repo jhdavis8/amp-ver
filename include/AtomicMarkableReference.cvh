@@ -1,39 +1,58 @@
 #ifndef _ATOMICMARKABLEREF_H
 #define _ATOMICMARKABLEREF_H
-/*
- * AtomicMarkableReference implementation
- * Josh Davis, Aamir Majeed
- * Apr-2018
- * VIP-HPC, Univ. of Delaware
+/* Filename : AtomicMarkableReference.cvh
+   Authors  : Josh Davis, Aamir Majeed
+   Created  : 2018-04-01
+   Modified : 2025-01-17
+
+   Model of java.util.concurrent.atomic.AtomicMarkableReference.
+
+   Verified Software Lab
+   Department of Computer & Information Sciences
+   University of Delaware
  */
 #include <stdbool.h>
 
 typedef struct AtomicMarkableReference * AtomicMarkableReference;
 
+/* Creates new AtomicMarkableReference object with given reference
+   and mark. */
 AtomicMarkableReference
 AtomicMarkableReference_create(void* ref, bool m);
 
+/* Deallocates the given ref. */
 void
 AtomicMarkableReference_destroy(AtomicMarkableReference ref);
 
+/*  Atomically sets the value of both the reference and mark to the
+    given update values if the current reference is == to the expected
+    reference and the current mark is equal to the expected mark.
+    Returns true if the change took place, else false. */
 bool
 AtomicMarkableReference_compareAndSet(AtomicMarkableReference ref,
-                    void* exp_ref, void* new_ref,
-                    bool exp_mark, bool new_mark);
+                                      void* exp_ref, void* new_ref,
+                                      bool exp_mark, bool new_mark);
 
+/* Atomically sets the value of the mark to the given update value if
+   the current reference is == to the expected reference.  Returns true
+   if the change was made, else false. */
 bool
 AtomicMarkableReference_attemptMark(AtomicMarkableReference ref,
                  void* exp_ref, bool new_mark);
 
+/* Unconditionally sets the value of both the reference and mark. */
 void
 AtomicMarkableReference_set(AtomicMarkableReference ref, void* r, bool m);
 
+/* Returns the current values of both the reference and the mark. */
 void*
 AtomicMarkableReference_get(AtomicMarkableReference amr, bool* mark_out);
 
+/* Returns the current value of the reference. */
 void*
 AtomicMarkableReference_getReference(AtomicMarkableReference amr);
 
+/* Returns the current value of the mark. */
 bool
 AtomicMarkableReference_isMarked(AtomicMarkableReference amr);
 

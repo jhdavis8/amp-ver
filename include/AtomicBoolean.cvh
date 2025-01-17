@@ -1,24 +1,33 @@
 #ifndef _ATOMICBOOLEAN_H
 #define _ATOMICBOOLEAN_H
-/*
- * AtomicBoolean.cvh: Header file for AtomicBoolean.cvl
- * Created 13-Jan-2024
- * Josh Davis, Stephen Siegel
- * Verified Software Lab, CIS Dept.
- * University of Delaware
- */
+/* Filename : AtomicBoolean.cvh
+   Authors  : Josh Davis, Stephen F. Siegel
+   Created  : 2024-01-13
+   Modified : 2025-01-17
 
+   Model of java.util.concurrent.atomic.AtomicBoolean.
+
+   Verified Software Lab
+   Department of Computer & Information Sciences
+   University of Delaware
+*/
 #include <stdbool.h>
 
 typedef struct AtomicBoolean * AtomicBoolean;
 
+/* Creates new AtomicBoolean with given initial boolean value. */
 AtomicBoolean AtomicBoolean_create(bool initialValue);
 
+/* Deallocates the AtomicBoolean object b */
 void AtomicBoolean_destroy(AtomicBoolean b);
 
+/* If the current value of b is expect, change it to update in one
+   atomic step, and return true.  Otherwise do nothing and return
+   false. */
 bool AtomicBoolean_compareAndSet(AtomicBoolean b,
                                  bool expect, bool update);
 
+/* Gets the boolean value wrapped by this object. */
 bool AtomicBoolean_get(AtomicBoolean b);
 
 #endif

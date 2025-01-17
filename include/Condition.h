@@ -2,10 +2,15 @@
 #define _CONDITION_H
 /* Filename : Condition.h
    Created  : 2024-02-26
-   Modified : 2024-10-23
+   Modified : 2025-01-17
    Author   : Stephen F. Siegel and Joshua H. Davis
 
-   Model of Java Condition interface (condition variable).
+   Model of Java Condition interface (condition variable):
+   java.util.concurrent.locks.Condition.
+
+   Verified Software Lab
+   Department of Computer & Information Sciences
+   University of Delaware
  */
 #include "Lock.h"
 

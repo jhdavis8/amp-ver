@@ -4,7 +4,9 @@
    Modified : 2025-01-17
 
    Implements Bin.h, a collection supporting put and get without
-   equality.
+   equality.  This Bin is implemented like a FIFO queue: items
+   are "put" at the end of a list and "get" removes an item at
+   the front of the list.
 
    Verified Software Lab
    Department of Computer & Information Sciences
