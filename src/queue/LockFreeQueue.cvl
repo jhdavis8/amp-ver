@@ -1,24 +1,29 @@
-/* CIVL model of LockFreeQueue from "The Art of Multiprocessor
- * Programming" 2nd ed, by Herlihy, Luchangco, Shavit, and Spear,
- * Sec. 10.5 "A lock-free unbounded queue", and companion code
- * ch10/Queue/src/queue/LockFreeQueue.java.
- *
- * This is an unbounded queue implementation using lazy
- * synchronization and no locks.  Where they differ, we follow the
- * code from the book text, not the companion code.  This means no use
- * of multiCompareAndSet.
- *
- * The original Java code relies on the garbage collector to reclaim
- * memory.  CIVL-C, like C, requires manual memory management.
- * Protocols for manually managing memory for this data structure are
- * complicated and are described in Section 10.6 of the text.  We do
- * not implement those here. Hence this CIVL model does leak memory.
- *
- * Created  : 2021-01-19
- * Modified : 2024-12-13
- * Authors  : Josh Davis and Stephen F. Siegel
- * Verified Software Laboratory, Dept. Computer & Info. Sciences,
- * University of Delaware.
+/* Filename : LockFreeQueue.cvl
+   Authors  : Josh Davis and Stephen F. Siegel
+   Created  : 2021-01-19
+   Modified : 2025-01-17
+
+   CIVL model of LockFreeQueue from "The Art of Multiprocessor
+   Programming" 2nd ed, by Herlihy, Luchangco, Shavit, and Spear,
+   Sec. 10.5 "A lock-free unbounded queue", and companion code
+   ch10/Queue/src/queue/LockFreeQueue.java.
+  
+   This is an unbounded queue implementation using lazy
+   synchronization and no locks.  Where they differ, we follow the
+   code from the book text, not the companion code.  This means no use
+   of multiCompareAndSet.
+  
+   The original Java code relies on the garbage collector to reclaim
+   memory.  By default, CIVL-C, like C, requires manual memory
+   management.  Protocols for manually managing memory for this data
+   structure are complicated and are described in Section 10.6 of the
+   text.  We do not implement those here. Hence this CIVL model does
+   leak memory.  Run CIVL in garbage collection model
+   (-checkMemoryLeak=false) to ignore this issue.
+  
+   Verified Software Lab
+   Department of Computer & Information Sciences
+   University of Delaware
  */
 #include "AtomicReference.cvh"
 #include "Queue.h"

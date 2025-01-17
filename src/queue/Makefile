@@ -1,7 +1,24 @@
+# Filename : Makefile (src/queue)
+# Author   : Josh Davis, Stephen F. Siegel
+# Created  : 2024-01-25
+# Modified : 2025-01-17
+
+# This Makefile will perform a simple test for each data structure.
+# There are two versions of the SynchronousDualQueue.  The first one
+# is simple but does not have any way to recover from a "stuck"
+# execution (one which livelocks with each non-terminated thread
+# looping forever without changing the state).  That version is
+# appropriate for checking schedules which should result in a normal
+# execution in which every thread terminates.  The second version is
+# more general and will detect and break out when livelock is
+# detected; this version is more expensive (has bigger state space)
+# but can be used to check correct behavior on any schedule, including
+# those that should get stuck.
+
 ROOT = ../..
 include $(ROOT)/common.mk
 
-all: UnboundedQueue LockFreeQueue SynchronousQueue SynchronousDualQueue
+all: UnboundedQueue LockFreeQueue BoundedQueue SynchronousQueue SynchronousDualQueue
 
 UnboundedQueue: UnboundedQueue.cvl $(LOCK_INC) $(LOCK_SRC) \
   $(TID_INC) $(TID_SRC)

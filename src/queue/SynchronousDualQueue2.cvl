@@ -1,15 +1,15 @@
 /* Filename : SynchronousDualQueue2.cvl
    Author   : Stephen F. Siegel
    Created  : 2024-12-21
-   Modified : 2024-12-31
+   Modified : 2025-01-17
 
    Synchronous dual queue, based on SynchronousDualQueue class,
-   section 10.7 of Herlihy, et al., Art of Multiprocessor Programming,
-   2nd ed.  This version has been extended with a mechanism to detect
-   and recover when control gets "stuck" (in a non-progress cycle).
-   Hence every call should return.  After returning, the client can
-   invoke Queue_stuck() to determine whether the execution got stuck
-   or terminated normally.
+   section 10.7 of "The Art of Multiprocessor Programming" 2nd ed, by
+   Herlihy, Luchangco, Shavit, and Spear.  This version has been
+   extended with a mechanism to detect and recover when control gets
+   "stuck" (in a non-progress cycle).  Hence every call should return.
+   After returning, the client can invoke Queue_stuck() to determine
+   whether the execution got stuck or terminated normally.
  */
 #pragma CIVL ACSL
 #include "AtomicInteger.h"

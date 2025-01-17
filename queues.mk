@@ -1,7 +1,7 @@
 # Filename : queues.mk
 # Author   : Josh Davis, Stephen F. Siegel
 # Created  : 2024-11-25
-# Modified : 2024-12-31
+# Modified : 2025-01-17
 # Makefile for queue experiments.
 ROOT = .
 include $(ROOT)/common.mk
@@ -184,6 +184,7 @@ $(SDQUEUE_OUT): out/SynchronousDualQueue2_%.out: $(MAIN_CLASS) $(SDQUEUE_DEP)
 	mv out/SynchronousDualQueue2_$*.out.tmp out/SynchronousDualQueue2_$*.out
 	mv out/SynchronousDualQueue2_$*.dir.tmp out/SynchronousDualQueue2_$*.dir
 
+# using preemptionBound ...
 
 SDQUEUE1 = $(QUEUE_DIR)/SynchronousDualQueue1.cvl
 SDQUEUE1_SRC = $(SDQUEUE1) $(AI_SRC) $(AR_SRC)
@@ -194,14 +195,3 @@ out/SynchronousDualQueue1_S%.out: $(SDQUEUE1_DEP) $(QUEUE_SCHED_$*)
 	$(VERIFY) -fair -checkMemoryLeak=false -checkTermination=true \
   -preemptionBound=4 \
   $(SDQUEUE1_ALL) $(QUEUE_SCHED_$*) >out/SynchronousDualQueue1_S$*.out
-
-
-SDQUEUE3 = $(QUEUE_DIR)/SynchronousDualQueue3.cvl
-SDQUEUE3_SRC = $(SDQUEUE3) $(AI_SRC) $(AR_SRC)
-SDQUEUE3_ALL = $(QUEUE_SRC) $(SDQUEUE3_SRC) $(SQUEUE_OR)
-SDQUEUE3_DEP = $(SDQUEUE3_ALL) $(QUEUE_INC) $(AI_INC) $(AR_INC)
-# Example: make -f queues.mk
-out/SynchronousDualQueue3_S%.out: $(SDQUEUE3_DEP) $(QUEUE_SCHED_$*)
-	$(VERIFY) -fair -checkMemoryLeak=false -checkTermination=true \
-  -preemptionBound=4 \
-  $(SDQUEUE3_ALL) $(QUEUE_SCHED_$*) >out/SynchronousDualQueue3_S$*.out
