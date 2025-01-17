@@ -1,17 +1,20 @@
-/* CIVL model of SkipQueue class from "The Art of Multiprocessor
- * Programming" 2nd ed, by Herlihy, Luchangco, Shavit, and Spear,
- * Sec. 15.5 "A skiplist-based unbounded priority queue",
- * and companion code ch15/priority/src/priority/SkipQueue.java.
- *
- * This is a lock-free priority queue implemented with a
- * PrioritySkipList.
- *
- * Authors : Josh Davis and Stephen F. Siegel
- * Created : 2021-03-02
- * Modified: 2024-12-31
- *
- * Verified Software Lab, Dept. Computer & Info. Sci.,
- * University of Delaware
+/* Filename : SkipQueue.cvl
+   Authors  : Josh Davis and Stephen F. Siegel
+   Created  : 2021-03-02
+   Modified : 2025-01-16
+
+   CIVL model of SkipQueue class from "The Art of Multiprocessor
+   Programming" 2nd ed, by Herlihy, Luchangco, Shavit, and Spear,
+   Sec. 15.5 "A skiplist-based unbounded priority queue",
+   and companion code ch15/priority/src/priority/SkipQueue.java.
+ 
+   This is a lock-free priority queue implemented with a
+   PrioritySkipList.  This model contains an optional patch to fix a
+   bug; the patched version is obtained using -D_PATCH_SKIPQUEUE.
+ 
+   Verified Software Lab
+   Department of Computer & Information Sciences
+   University of Delaware
  */
 #include "AtomicBoolean.cvh"
 #include "AtomicMarkableReference.cvh"

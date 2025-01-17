@@ -1,6 +1,6 @@
 # Filename : queues.mk
-# Author   : Josh Davis
-# Created  :
+# Author   : Josh Davis, Stephen F. Siegel
+# Created  : 2024-11-25
 # Modified : 2024-12-31
 # Makefile for queue experiments.
 ROOT = .

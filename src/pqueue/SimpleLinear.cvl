@@ -1,5 +1,16 @@
 /* Filename : SimpleLinear.cvl
+   Author   : Stephen F. Siegel
+   Created  : 2025-01-12
+   Modified : 2024-01-16
 
+   CICL-C model of SimpleLinear implementation of concurrent Priority
+   Queue,  from "The Art of Multiprocessor Programming" 2nd ed, by
+   Herlihy, Luchangco, Shavit, and Spear, Sec. 15.2.  Some parts were
+   taken from the companion code.
+
+   Verified Software Lab
+   Department of Computer & Information Sciences
+   University of Delaware
  */
 #include "Bin.h"
 #include "PQueue.h"
@@ -40,10 +51,7 @@ void PQueue_finalize_context(void) {}
 void PQueue_initialize(PQueue pq) {}
 void PQueue_finalize(PQueue pq) {}
 void PQueue_terminate(int tid) {}
-
-bool PQueue_stuck(void) {
-  return false;
-}
+bool PQueue_stuck(void) { return false; }
 
 void PQueue_add(PQueue pq, T item, int priority) {
   Bin_put(pq->pqueue[priority], item);

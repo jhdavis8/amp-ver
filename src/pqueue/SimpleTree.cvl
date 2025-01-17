@@ -1,5 +1,12 @@
 /* Filename : SimpleTree.cvl
+   Author   : Stephen F. Siegel
+   Created  : 2025-01-13
+   Modified : 2025-01-16
 
+   CIVL-C model of SimpleTree implementation of a concurrent Priority
+   Queue, from "The Art of Multiprocessor Programming" 2nd ed, by
+   Herlihy, Luchangco, Shavit, and Spear, Sec. 15.3.  Some parts were
+   taken from the companion code.
 
    Note: "A Counter (see Chapter 12) holds an integer value, and
    supports getAndIncrement() and getAndDecrement() methods that
@@ -7,6 +14,10 @@
    counter's prior value. These methods may optionally be bounded,
    meaning they do not advance the counter value beyond some specified
    bound."
+
+   Verified Software Lab
+   Department of Computer & Information Sciences
+   University of Delaware
  */
 #include "AtomicInteger.h"
 #include "Bin.h"
@@ -17,6 +28,8 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
+/* Log (base 2) of number of possible priorities.  The acceptable
+   priorites are in 0 .. 2^LOGRANGE - 1. */
 #ifndef LOGRANGE
 #define LOGRANGE 2
 #endif
@@ -25,14 +38,21 @@
 
 typedef struct TreeNode * TreeNode;
 
+/* A node in the complete binary tree used to hold items.  Each leaf
+   node corresponds to a unique priority.  The leaf node has a
+   non-null bin to hold items of that priority.  Non leaf nodes do not
+   use the bin field but have a counter specifying the total number of
+   items in the left branch.  The leaf nodes are ordered from left (0)
+   to right (2^LOGRANGE-1). */
 struct TreeNode {
   AtomicInteger counter;  // bounded counter
   TreeNode parent;    // reference to parent
   TreeNode right;     // right child
   TreeNode left;      // left child
-  Bin bin;
+  Bin bin; // used on leaves only to hold items
 };
 
+/* Creates new tree node with all null fields */
 static TreeNode TreeNode_create() {
   TreeNode result = malloc(sizeof(struct TreeNode));
   result->counter = NULL;
@@ -41,10 +61,12 @@ static TreeNode TreeNode_create() {
   return result;
 }
 
+/* Destroys tree node, undoing TreeNode_create(). */
 static void TreeNode_destroy(TreeNode node) {
   free(node);
 }
 
+/* Prints tree node in human-readable format */
 static void TreeNode_print(TreeNode node) {
   int c = AtomicInteger_get(node->counter);
   $print("Node[count=", c, ", bin=");
@@ -57,36 +79,51 @@ static void TreeNode_print(TreeNode node) {
 
 // List of TreeNode ...
 
+/* A list (really, vector) of TreeNode. */
 typedef struct List {
-  TreeNode data[];
+  TreeNode data[]; // vector of TreeNode
 } * List;
 
+/* Creates empty list of TreeNode. */
 static List List_create() {
   List result = malloc(sizeof(struct List));
   $seq_init(&result->data, 0, NULL);
   return result;
 }
 
+/* Destroys list.  The TreeNodes are not touched.  */
 static void List_destroy(List l) {
   free(l);
 }
 
+/* Inserts a node into list l at given index, incrementing length of l
+   by 1.  Precondition: 0<=idx<=n, where n is the length of l in the
+   pre-state.  If idx<n, items at idx and above are all shifted up by
+   one index. */
 static void List_insert(List l, int idx, TreeNode node) {
   $seq_insert(&l->data, idx, &node, 1);
 }
 
+/* Returns the TreeNode at position idx in l. */
 static TreeNode List_get(List l, int idx) {
   return l->data[idx];
 }
 
 // PQueue ...
 
+/* The "SimpleTree" priority queue. */
 struct PQueue {
-  int range;
+  int range; // 2^LOGRANGE
   List leaves; // array of tree leaves (TreeNode)
-  TreeNode root;
+  TreeNode root; // root of tree
 };
 
+/* Recursive function to construct a tree of the given height.  If
+   height==0, a leaf node is created and inserted into pq->leaves at
+   position slot; an empty Bin is also created andn assigned to the
+   leaf node.  If height>=1, a new node is created with a left branch
+   created (recursively) at slot 2*slot and a right branch is created
+   with slot 2*slot+1. */
 static TreeNode buildTree(PQueue pq, int height, int slot) {
   TreeNode root = TreeNode_create();
   root->counter = AtomicInteger_create(0);
@@ -132,22 +169,19 @@ void PQueue_finalize_context(void) {}
 void PQueue_initialize(PQueue pq) {}
 void PQueue_finalize(PQueue pq) {}
 void PQueue_terminate(int tid) {}
-
-bool PQueue_stuck(void) {
-  return false;
-}
+bool PQueue_stuck(void) { return false; }
 
 void PQueue_add(PQueue pq, T item, int priority) {
   TreeNode node = List_get(pq->leaves, priority);
   Bin_put(node->bin, item);
-  $print("add: put ", item, " in bin ", priority, "\n");
+  //$print("add: put ", item, " in bin ", priority, "\n");
   while(node != pq->root) {
     TreeNode parent = node->parent;
     if (node == parent->left) { // increment if ascending from left
       AtomicInteger_getAndIncrement(parent->counter);
-      $print("add: incremented parent and moving up\n");
+      //$print("add: incremented parent and moving up\n");
     } else {
-      $print("add: moving up\n");
+      //$print("add: moving up\n");
     }
     node = parent;
   }
@@ -158,15 +192,15 @@ T PQueue_removeMin(PQueue pq) {
   while (node->right != NULL) {
     // note: original companion code uses getAndDecrement
     if (AtomicInteger_boundedGetAndDecrement(node->counter) > 0) {
-      $print("removeMin: decremented and going left\n");
+      //$print("removeMin: decremented and going left\n");
       node = node->left;
     } else {
-      $print("removeMin: going right\n");
+      //$print("removeMin: going right\n");
       node = node->right;
     }
   }
   int result = Bin_get(node->bin); // if null pqueue is empty
-  $print("removeMin: returning ", result, "\n");
+  //$print("removeMin: returning ", result, "\n");
   return result;
 }
 
@@ -245,8 +279,7 @@ int main(void) {
 #endif
 
 /*
-  Bug:
-  First, add(0,1).  This puts 0 in bin 1.  Quiesce.  The tree is now:
+  Bug: First, add(0,1).  This puts 0 in bin 1.  Quiesce.  The tree is now:
 
        1
     0     0
@@ -280,5 +313,4 @@ int main(void) {
   No permutation of these 3 events is a valid sequential execution.
   You cannot have removeMin->NULL unless the structure is empty, which
   means there is some previous removeMin->0.
-  
  */

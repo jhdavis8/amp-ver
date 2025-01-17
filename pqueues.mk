@@ -1,7 +1,7 @@
 # Filename : pqueues.mk
-# Author   : Josh Davis
-# Created  :
-# Modified : 2024-12-23
+# Author   : Josh Davis, Stephen F. Siegel
+# Created  : 2024-11-25
+# Modified : 2025-01-16
 # Makefile for priority queues experiments.
 ROOT = .
 include $(ROOT)/common.mk
@@ -70,7 +70,8 @@ PQUEUE_SCHED_3 = $(SCHEDULE_DIR)/sched_pqueue_3.cvl
 PQUEUEQ_SRC = $(DRIVERQ_SRC) $(PQUEUE_COL)
 PQUEUEQ_DEP = $(PQUEUE_INC) $(PQUEUEQ_SRC)
 
-## SimpleLinear
+
+## SimpleLinear.  Everything passes.
 
 SL = $(PQUEUE_DIR)/SimpleLinear.cvl
 SL_SRC = $(SL) $(ARRAYLIST_SRC) $(BIN_SRC)
@@ -95,9 +96,7 @@ out/SimpleLinear_S%.out: $(SL_DEP) $(PQUEUE_SCHED_$*)
   $(SL_ALL) $(PQUEUE_SCHED_$*) >out/SimpleLinear_S$*.out
 
 
-## SimpleTree
-
-# bug in group 3 schedule 1830:
+## SimpleTree.   There is a bug revealed in group 3 schedule 1830:
 # Schedule[kind=PQUEUE, nthread=2, npreAdd=1, nstep=3]:
 #   Preadds : [ ADD(0,1) ]
 #   Thread 0: [ REMOVE REMOVE ]
@@ -180,7 +179,6 @@ out/FineGrainedHeapNoCycles_S%.out: $(FGH_DEP) $(PQUEUE_SCHED_$*)
   $(FGH_ALL) $(PQUEUE_SCHED_$*) >out/FineGrainedHeap_S$*.out
 
 
-
 # Version 3
 # Using fairness and fair locks.  Note -fair in AMPVer causes use of fairness
 # and fair locks.
@@ -209,7 +207,13 @@ out/FineGrainedHeapFair_S%.out: $(FGHFL_DEP) $(PQUEUE_SCHED_$*)
 
 ## SkipQueue
 
-# Version 1: original, with defect
+# Version 1: original, with defect.  There is a cycle in the state space,
+# i.e., nontermination.  Found with a schedule ...
+# begin schedule[id=1702 kind=PQUEUE]
+#   presteps  = {ADD(0,1), ADD(1,0)}
+#   thread[0] = {REMOVE()}
+#   thread[1] = {REMOVE()}
+# end schedule
 
 SKIPQ = $(PQUEUE_DIR)/SkipQueue.cvl
 SKIPQ_SRC = $(SKIPQ) $(AMR_SRC) $(AB_SRC)
@@ -217,43 +221,76 @@ SKIPQ_ALL = $(PQUEUE_SRC) $(SKIPQ_SRC) $(NBPQUEUE_OR)
 SKIPQ_DEP = $(SKIPQ_ALL) $(PQUEUE_INC) $(AMR_INC) $(AB_INC)
 SKIPQ_OUT = $(addprefix out/SkipQueue_,$(addsuffix .out,1 2 3 4))
 
-# Ex: make -f pqueues.mk out/SkipQueue_1.out
+# Check quiescent consistency (the property is really irrelevant).
+# Ex: make -f pqueues.mk out/SkipQueue_3.out
+# should reveal nontermination
 $(SKIPQ_OUT): out/SkipQueue_%.out: $(MAIN_CLASS) $(SKIPQ_DEP)
 	rm -rf out/SkipQueue_$*.dir.tmp
 	-$(AMPVER) $(PQUEUE_LIMITS_$*) -spec=nonblocking \
-  -checkTermination -linear=false -checkMemoryLeak=false \
+  -checkTermination -property=quiescent -checkMemoryLeak=false \
   -tmpDir=out/SkipQueue_$*.dir.tmp $(SKIPQ_SRC) \
   >out/SkipQueue_$*.out.tmp
 	rm -rf out/SkipQueue_$*.dir
 	mv out/SkipQueue_$*.out.tmp out/SkipQueue_$*.out
 	mv out/SkipQueue_$*.dir.tmp out/SkipQueue_$*.dir
 
+# Check sequential consistency
 # Ex: make -f pqueues.mk out/SkipQueue_S1.out
 out/SkipQueue_S%.out: $(SKIPQ_DEP) $(PQUEUE_SCHED_$*)
 	-$(VERIFY) -checkMemoryLeak=false -checkTermination=true -DNLINEAR \
   $(SKIPQ_ALL) $(PQUEUE_SCHED_$*) >out/SkipQueue_S$*.out
 
 
-# Version 2: patched, correcting the defect
+# Version 2: the corrected version.  The correction appears in the
+# errata.  This should satisfy quiescent consistency, but not
+# sequential consistency or linearizability.  A violation to SC is
+# found using schedule sched_pqueue_1.cvl: 3 threads, a pre-add
+# (add(0,1)), thread 0 does 2 adds (add(1,0) and add(2,2)), threads 1
+# and 2 each do one remove.
 
-SKIPQP = $(PQUEUE_DIR)/SkipQueuePatched.cvl
-SKIPQP_SRC = $(SKIPQP) $(AMR_SRC) $(AB_SRC)
-SKIPQP_ALL = $(PQUEUE_SRC) $(SKIPQP_SRC) $(NBPQUEUE_OR)
-SKIPQP_DEP = $(SKIPQP_ALL) $(PQUEUE_INC) $(AMR_INC) $(AB_INC)
-SKIPQP_OUT = $(addprefix out/SkipQueuePatched_,$(addsuffix .out,1 2 3 4 5))
+SKIPQ2SC_OUT = $(addprefix out/SkipQueue2SC_,$(addsuffix .out,1 2 3 4 5))
 
-# Ex: make -f pqueues.mk out/SkipQueuePatched_1.out
-$(SKIPQP_OUT): out/SkipQueuePatched_%.out: $(MAIN_CLASS) $(SKIPQP_DEP)
-	rm -rf out/SkipQueuePatched_$*.dir.tmp
-	$(AMPVER) $(PQUEUE_LIMITS_$*) -spec=nonblocking \
-  -checkTermination -linear=false -checkMemoryLeak=false \
-  -tmpDir=out/SkipQueuePatched_$*.dir.tmp $(SKIPQP_SRC) \
-  >out/SkipQueuePatched_$*.out.tmp
-	rm -rf out/SkipQueuePatched_$*.dir
-	mv out/SkipQueuePatched_$*.out.tmp out/SkipQueuePatched_$*.out
-	mv out/SkipQueuePatched_$*.dir.tmp out/SkipQueuePatched_$*.dir
+# Ex: make -f pqueues.mk out/SkipQueue2SC_1.out
+$(SKIPQ2SC_OUT): out/SkipQueue2SC_%.out: $(MAIN_CLASS) $(SKIPQ_DEP)
+	rm -rf out/SkipQueue2SC_$*.dir.tmp
+	$(AMPVER) $(PQUEUE_LIMITS_$*) -D_PATCH_SKIPQUEUE \
+  -spec=nonblocking -checkTermination -property=sc \
+  -checkMemoryLeak=false \
+  -tmpDir=out/SkipQueue2SC_$*.dir.tmp $(SKIPQ_SRC) \
+  >out/SkipQueue2SC_$*.out.tmp
+	rm -rf out/SkipQueue2SC_$*.dir
+	mv out/SkipQueue2SC_$*.out.tmp out/SkipQueue2SC_$*.out
+	mv out/SkipQueue2SC_$*.dir.tmp out/SkipQueue2SC_$*.dir
 
-# Ex: make -f pqueues.mk out/SkipQueuePatched_S1.out
-out/SkipQueuePatched_S%.out: $(SKIPQP_DEP) $(PQUEUE_SCHED_$*)
-	$(VERIFY) -checkMemoryLeak=false -checkTermination=true -DNLINEAR \
-  $(SKIPQP_ALL) $(PQUEUE_SCHED_$*) >out/SkipQueuePatched_S$*.out
+# make -f pqueues.mk out/SkipQueue2SC_S1.out
+# should reveal SC violation, but may take a long time and a lot of
+# memory (e.g., 2587s, 15GB on a MacBook Pro)
+out/SkipQueue2SC_S%.out: $(SKIPQ_DEP) $(PQUEUE_SCHED_$*)
+	$(VERIFY) -checkMemoryLeak=false -checkTermination=true \
+  -D_PATCH_SKIPQUEUE -DNLINEAR \
+  $(SKIPQ_ALL) $(PQUEUE_SCHED_$*) >out/SkipQueue2SC_S$*.out
+
+# Same as above, but checking quiescent consistency.  All of these
+# should pass (or run out of memory)...
+
+SKIPQ2QC_OUT = $(addprefix out/SkipQueue2QC_,$(addsuffix .out,1 2 3 4 5))
+SKIPQQ_ALL = $(PQUEUEQ_SRC) $(SKIPQ_SRC) $(NBPQUEUE_OR)
+SKIPQQ_DEP = $(SKIPQQ_ALL) $(PQUEUE_INC) $(AMR_INC) $(AB_INC)
+
+# Ex: make -f pqueues.mk out/SkipQueue2QC_1.out
+$(SKIPQ2QC_OUT): out/SkipQueue2QC_%.out: $(MAIN_CLASS) $(SKIPQQ_DEP)
+	rm -rf out/SkipQueue2QC_$*.dir.tmp
+	$(AMPVER) $(PQUEUE_LIMITS_$*) -D_PATCH_SKIPQUEUE \
+  -spec=nonblocking -checkTermination -property=quiescent \
+  -checkMemoryLeak=false \
+  -tmpDir=out/SkipQueue2QC_$*.dir.tmp $(SKIPQ_SRC) \
+  >out/SkipQueue2QC_$*.out.tmp
+	rm -rf out/SkipQueue2QC_$*.dir
+	mv out/SkipQueue2QC_$*.out.tmp out/SkipQueue2QC_$*.out
+	mv out/SkipQueue2QC_$*.dir.tmp out/SkipQueue2QC_$*.dir
+
+# Ex: make -f pqueues.mk out/SkipQueue2QC_S1.out
+out/SkipQueue2QC_S%.out: $(SKIPQQ_DEP) $(PQUEUE_SCHED_$*)
+	$(VERIFY) -checkMemoryLeak=false -checkTermination=true \
+  -D_PATCH_SKIPQUEUE $(SKIPQQ_ALL) $(PQUEUE_SCHED_$*) \
+  >out/SkipQueue2QC_S$*.out

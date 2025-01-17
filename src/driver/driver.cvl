@@ -1,8 +1,8 @@
 /*
   Filename : driver.cvl
   Author   : Stephen F. Siegel and Josh Davis
-  Created  : 
-  Modified : 2024-12-30
+  Created  : 2024-12-13
+  Modified : 2025-01-16
 
   Driver contains main function to be linked with a concurrent data
   structure implementation, oracle, and schedule.  It executes the
@@ -17,6 +17,10 @@
   By default, this driver will require linearizability for a
   concurrent execution to match a sequential one.  To drop this
   requirement, verify using -DNLINEAR.
+
+  Verified Software Lab
+  Department of Computer & Information Sciences
+  University of Delaware
  */
 #pragma CIVL ACSL
 #include "collection.h"

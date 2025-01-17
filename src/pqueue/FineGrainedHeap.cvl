@@ -1,17 +1,21 @@
-/* CIVL model of FineGrainedHeap class from "The Art of Multiprocessor
- * Programming" 2nd ed, by Herlihy, Luchangco, Shavit, and Spear,
- * Sec. 15.4.2 "A concurrent heap", and companion code
- * ch15/priority/src/priority/FineGrainedHeap.java.
- *
- * This is an unbounded priority queue implementation using fine-grained
- * lock synchronization over a heap represented as an array of HeapNodes.
- *
- * Authors : Josh Davis and Stephen F. Siegel
- * Created : 2021-03-02
- * Modified: 2024-12-31
- *
- * Verified Software Lab, Dept. Computer & Info. Sci.,
- * University of Delaware
+/*
+  Filename : FineGrainedHeap.cvl
+  Authors  : Josh Davis and Stephen F. Siegel
+  Created  : 2021-03-02
+  Modified : 2025-01-16
+
+  CIVL model of FineGrainedHeap class from "The Art of Multiprocessor
+  Programming" 2nd ed, by Herlihy, Luchangco, Shavit, and Spear,
+  Sec. 15.4.2 "A concurrent heap", and companion code
+  ch15/priority/src/priority/FineGrainedHeap.java.
+  
+  This is an unbounded priority queue implementation using
+  fine-grained lock synchronization over a heap represented as an
+  array of HeapNodes.
+  
+  Verified Software Lab
+  Department of Computer & Information Sciences
+  University of Delaware
  */
 #include "Lock.h"
 #include "PQueue.h"
