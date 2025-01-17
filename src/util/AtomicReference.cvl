@@ -1,14 +1,18 @@
-/*
- * AtomicReference.cvl: this implements a model of the Java class AtomicReference
- * Created 21-Dec-2023
- * Josh Davis, Stephen Siegel
- * Verified Software Lab, CIS Dept.
- * University of Delaware
+/* Filename : AtomicReference.cvl
+   Authors  : Josh Davis, Stephen F. Siegel
+   Created  : 2023-12-21
+   Modified : 2025-01-17
+
+   Implements AtomicReference.cvh, a model of the Java class
+   AtomicReference.
+
+   Verified Software Lab
+   Department of Computer & Information Sciences
+   University of Delaware
  */
 #pragma CIVL ACSL
-
-#include <stdlib.h>
 #include "AtomicReference.cvh"
+#include <stdlib.h>
 
 struct AtomicReference {
   void* value;

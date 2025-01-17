@@ -1,6 +1,17 @@
-#include "tid.h"
+/* Filename : ConditionTest.cvl
+   Author   : Stephen F. Siegel
+   Created  : 2024-06-03
+   Modified : 2025-01-17
+
+   A simple test of Condition variables.
+
+   Verified Software Lab
+   Department of Computer & Information Sciences
+   University of Delaware
+ */
 #include "Condition.h"
 #include "Lock.h"
+#include "tid.h"
 #include <stdio.h>
 $input int BOUND = 5, NITER=5;
 int c = BOUND/2;
@@ -50,5 +61,5 @@ int main(void) {
   Condition_destroy(cond);
   Lock_destroy(lock);
   $assert(c == BOUND/2);
-  tid_destroy();
+  tid_finalize();
 }

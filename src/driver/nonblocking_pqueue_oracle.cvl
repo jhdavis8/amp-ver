@@ -1,12 +1,16 @@
 /* Filename : nonblocking_pqueue_oracle.cvl
    Author   : Josh Davis and Stephen F. Siegel
    Created  : 2024-12-12
-   Modified : 2024-12-13
+   Modified : 2025-01-17
 
    Implementation of oracle.h for a nonblocking priority queue.  This
    priority queue can hold multiple entries with the same value-score
    pair.  It can also hold entries with the same value but different
    scores.  None of the methods block.
+
+   Verified Software Lab
+   Department of Computer & Information Sciences
+   University of Delaware
 */
 #include "PQueue.h"
 #include "oracle.h"

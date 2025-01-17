@@ -1,11 +1,15 @@
 /* Filename : queue_collection.cvl
    Author   : Stephen F. Siegel
    Created  : 2024-12-12
-   Modified : 2024-12-30
+   Modified : 2025-01-17
 
    Implementation of collection.h for a queue.  This module should be
    linked with an implementation of Queue.h For the most part this
    module just wraps calls to the Queue.h interface.
+
+   Verified Software Lab
+   Department of Computer & Information Sciences
+   University of Delaware
 */
 #include "Queue.h"
 #include "collection.h"

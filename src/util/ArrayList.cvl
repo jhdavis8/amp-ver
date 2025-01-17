@@ -1,13 +1,17 @@
-/* ArrayList.cvl: this implements a model of Java's ArrayList class
- * Created 14-Dec-2023
- * Josh Davis, Stephen Siegel
- * Verified Software lab, CIS Dept.
- * University of Delaware
- */
+/* Filename : ArrayList.cvl
+   Authors  : Josh Davis, Stephen F. Siegel
+   Created  : 2023-12-14
+   Modified : 2025-01-17
 
-#include <stdio.h>
-#include <seq.cvh>
+   Implements ArrayList.h, a model of Java's ArrayList class.
+
+   Verified Software Lab
+   Department of Computer & Information Sciences
+   University of Delaware
+*/
 #include "ArrayList.h"
+#include <seq.cvh>
+#include <stdio.h>
 
 struct ArrayList {
   T data[];

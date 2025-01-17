@@ -1,16 +1,18 @@
-/* CIVL model of class FineList, from "The Art of Multiprocessor
- * Programming", 2nd ed, by Herlihy, Luchangco, Shavit, and Spear,
- * Sec. 9.5 "Fine-Grained Synchronization" and companion code
- * ch9/src/lists/FineList.java.
- *
- * This is a concurrent fine grained list using one lock per node.
- *
- * Authors : Wenhao Wu, Eric Kurtz, Josh Davis, Stephen F. Siegel
- * Created : 2018-05-01
- * Modified: 2024-12-30
- *
- * Verified Software Lab, Dept. Computer & Info. Sci., 
- * University of Delaware
+/* Filename : FineList.cvl
+   Authors  : Wenhao Wu, Eric Kurtz, Josh Davis, Stephen F. Siegel
+   Created  : 2018-05-01
+   Modified : 2025-01-17
+
+   CIVL model of class FineList, from "The Art of Multiprocessor
+   Programming", 2nd ed, by Herlihy, Luchangco, Shavit, and Spear,
+   Sec. 9.5 "Fine-Grained Synchronization" and companion code
+   ch9/src/lists/FineList.java.
+  
+   This is a concurrent fine grained list using one lock per node.
+  
+   Verified Software Lab
+   Department of Computer & Information Sciences
+   University of Delaware
  */
 #include "Lock.h"
 #include "Set.h"

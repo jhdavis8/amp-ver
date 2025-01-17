@@ -1,18 +1,21 @@
-/* CIVL model of class LockFreeList from "The Art of Multiprocessor
- * Programming" 2nd ed, by Herlihy, Luchangco, Shavit, and Spear,
- * Sec. 9.8, "Nonblocking synchronization", and companion code
- * ch9/src/lists/LockFreeList.java.
- *
- * This is a concurrent list-based set using lock-free
- * synchronization.  It leaks memory (the original code relies on the
- * Java garbage collector).
- *
- * Authors : Josh Davis and Stpehen F. Siegel
- * Created : 2021-06-30
- * Modified: 2024-12-30
- *
- * Verified Software Lab, Dept. Computer & Info. Sci.,
- * University of Delaware
+/* Filename : LockFreeList.cvl
+   Authors  : Josh Davis and Stpehen F. Siegel
+   Created  : 2021-06-30
+   Modified : 2025-01-17
+
+   CIVL model of class LockFreeList from "The Art of Multiprocessor
+   Programming" 2nd ed, by Herlihy, Luchangco, Shavit, and Spear,
+   Sec. 9.8, "Nonblocking synchronization", and companion code
+   ch9/src/lists/LockFreeList.java.
+  
+   This is a concurrent list-based set using lock-free
+   synchronization.  It leaks memory (the original code relies on the
+   Java garbage collector), so should be verified in garbage
+   collection mode (-checkMemoryLeak=false).
+  
+   Verified Software Lab
+   Department of Computer & Information Sciences
+   University of Delaware
  */
 #include "AtomicMarkableReference.cvh"
 #include "Set.h"

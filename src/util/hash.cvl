@@ -1,19 +1,25 @@
-/* hash.cvl: model of Java hashCode for data structure implementations
- * Currently two options:
- *   default: hash function is identity
- *   HASH_ND: hash function is chosen nondeterminsitically.  Client
- *            must specify two parameters: VAL_B and HASH_B.  The first
- *            is a strict upper bound on the inputs to the hash function.
- *            The second is a strict upper bound on the output.
- * This module also provides a dual hash function which is required for
- * certain data structures.   The dual has function takes a second argument
- * which is 0 or 1.
+/* Filename : hash.cvl
+   Authors  : Josh Davis, Stephen F. Siegel
+   Created  : 2021-08-06
+   Modified : 2025-01-17
 
- * Created 6-Aug-2021
- * Modified 27-Dec-2023
- * Josh Davis, Stephen Siegel
- * Verified Software Lab, CIS Dept.
- * University of Delaware
+   Implements hash.cvh, utility functions for hash code verification.
+
+   Currently two options:
+
+     default: hash function is identity
+     HASH_ND: hash function is chosen nondeterminsitically.  Client
+              must specify two parameters: VAL_B and HASH_B.  The first
+              is a strict upper bound on the inputs to the hash function.
+              The second is a strict upper bound on the output.
+ 
+   This module also provides a dual hash function which is required
+   for certain data structures.  The dual has function takes a second
+   argument which is 0 or 1.
+
+   Verified Software Lab
+   Department of Computer & Information Sciences
+   University of Delaware
  */
 #pragma CIVL ACSL
 #include <limits.h>
@@ -28,6 +34,7 @@ $input int HASH_B=3; // strict upper bound on hash values (range of hash)
 bool hash_init = false;
 int hash_vals[2][VAL_B];
 
+// nondeterministic choice of hash function...
 #ifdef HASH_ND
 /*@ depends_on \nothing; */
 static $atomic_f void init_hash() {

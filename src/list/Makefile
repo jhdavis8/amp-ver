@@ -1,3 +1,11 @@
+# Filename : Makefile (src/list)
+# Author   : Josh Davis, Stephen F. Siegel
+# Created  : 2024-01-25
+# Modified : 2025-01-17
+
+# Makefile will perform simple tests on the list-based set
+# implementations in this directory.
+
 ROOT = ../..
 include $(ROOT)/common.mk
 

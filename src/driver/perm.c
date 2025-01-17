@@ -1,16 +1,23 @@
-/* Sequential schedule generation for driver.cvl
- * Created Dec-5-2017, last modified Jul-24-2021
- * Wenhao Wu, Josh Davis, Stephen Siegel
- * Verified Software Lab, CIS Dept.,
- * University of Delaware
+/* Filename : perm.c
+   Authors  : Wenhao Wu, Josh Davis, Stephen F. Siegel
+   Created  : 2017-12-05
+   Moified  : 2025-01-17
+
+   Utility functions for creation and manipulation of permuations,
+   and some functions specialized for analyzing schedules.
+
+   Verified Software Lab
+   Department of Computer & Information Sciences
+   University of Delaware
  */
+#include "perm.h"
+#include "schedule.h"
 #include <assert.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
-#include "schedule.h"
-#include "perm.h"
 
+/* Prints one permutation from a perm-set. */
 void perm_print(int idx_perms, int size_perm, int** perms) {
   printf("Perm[%d]:\t", idx_perms);
   for (int j = 0; j < size_perm; j++)
@@ -18,6 +25,7 @@ void perm_print(int idx_perms, int size_perm, int** perms) {
   printf("\n");
 }
 
+/* Prints all permutations in a perm-set. */
 void perm_print_all(int num_perms, int size_perm, int** perms) {
   for (int i = 0; i < num_perms; i++) {
     printf("Perm[%d]:\t", i);

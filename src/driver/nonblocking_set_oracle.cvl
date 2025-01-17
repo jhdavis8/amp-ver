@@ -1,10 +1,14 @@
 /* Filename : nonblocking_set_oracle.cvl
    Author   : Stephen F. Siegel
    Created  : 2024-12-12
-   Modified : 2024-12-13
+   Modified : 2025-01-17
 
    Implementation of oracle.h using standard nonblocking set
    semantics.  None of the functions can block, so it never deadlocks.
+
+   Verified Software Lab
+   Department of Computer & Information Sciences
+   University of Delaware
 */
 #include "oracle.h"
 #include <seq.cvh>

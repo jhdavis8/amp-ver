@@ -1,7 +1,7 @@
 /* Filename : bounded_queue_oracle.cvl
    Author   : Josh Davis and Stephen F. Siegel
    Created  : 2024-12-12
-   Modified : 2024-12-13
+   Modified : 2025-01-17
 
    Implementation of oracle.h using a bounded FIFO queue semantics.
    The enqueue operation will block until the queue becomes not full.
@@ -9,6 +9,10 @@
 
    The capacity of the queue can be specified by setting the
    preprocessor object macro CAPACITY.  The default capacity is 2.
+
+   Verified Software Lab
+   Department of Computer & Information Sciences
+   University of Delaware
 */
 #include "oracle.h"
 #include <seq.cvh>

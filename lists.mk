@@ -1,9 +1,11 @@
 # Filename : sets.mk
 # Author   : Josh Davis
-# Created  :
-# Modified : 2024-12-23
+# Created  : 2024-11-25
+# Modified : 2025-01-17
+
 # Makefile for lists experiments.  Lists are used to implement the
 # set interface.
+
 ROOT = .
 include $(ROOT)/common.mk
 

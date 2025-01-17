@@ -1,15 +1,22 @@
-/* FairRentrantLock.cvl: model of Java ReentrantLock for data structure
- * verification with fairness enabled
- * Created 7-Apr-2023
- * Josh Davis, Stephen Siegel
- * Verified Software Lab, CIS Dept.
- * University of Delaware
+/* Filename : FairRentrantLock.cvl
+   Authors  : Josh Davis, Stephen F. Siegel
+   Created  : 2023-04-07
+   Modified : 2025-01-17
+
+   Implementation of Lock.h that models Java's ReentrantLock with
+   fairness.  A thread trying to obtain a lock will be placed in a
+   FIFO queue so that if the lock is repeatedly released and
+   re-obtained, the thread will eventually get it.
+
+   Verified Software Lab
+   Department of Computer & Information Sciences
+   University of Delaware
  */
 #pragma CIVL ACSL
-#include <stdlib.h>
-#include <stdbool.h>
-#include <seq.cvh>
 #include "Lock.h"
+#include <seq.cvh>
+#include <stdbool.h>
+#include <stdlib.h>
 
 struct Lock {
   $proc owner;

@@ -1,11 +1,14 @@
-/*
-  Filename : driver_q.cvl
-  Author   : Stephen F. Siegel and Josh Davis
-  Created  : 2025-01-01
-  Modified : 2025-01-01
+/* Filename : driver_q.cvl
+   Author   : Stephen F. Siegel and Josh Davis
+   Created  : 2025-01-01
+   Modified : 2025-01-17
 
-  Driver for verifying quiescent consistency.
- */
+   Driver for verifying quiescent consistency.
+
+   Verified Software Lab
+   Department of Computer & Information Sciences
+   University of Delaware
+*/
 #pragma CIVL ACSL
 #include "collection.h"
 #include "oracle.h"

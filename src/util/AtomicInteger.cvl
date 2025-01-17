@@ -1,14 +1,17 @@
-/*
- * AtomicInteger.cvl: this implements a model of the Java class AtomicInteger
- * Created 17-Jun-2024
- * Josh Davis, Stephen Siegel
- * Verified Software Lab, CIS Dept.
- * University of Delaware
+/* Filename : AtomicInteger.cvl
+   Authors  : Josh Davis, Stephen F. Siegel
+   Created  : 2024-06-17
+   Modified : 2025-01-17
+
+   Implements AtomicInteger.h, a model of the Java class AtomicInteger.
+
+   Verified Software Lab
+   Department of Computer & Information Sciences
+   University of Delaware
  */
 #pragma CIVL ACSL
-
-#include <stdlib.h>
 #include "AtomicInteger.h"
+#include <stdlib.h>
 
 AtomicInteger AtomicInteger_create(int initialValue) {
   AtomicInteger a = malloc(sizeof(struct AtomicInteger));

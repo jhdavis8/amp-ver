@@ -1,14 +1,18 @@
-/*
- * AtomicBoolean.cvl: this implements a model of the Java class AtomicBoolean
- * Created 21-Dec-2023
- * Josh Davis, Stephen Siegel
- * Verified Software Lab, CIS Dept.
- * University of Delaware
+/* Filename : AtomicBoolean.cvl
+   Authors  : Josh Davis, Stephen F. Siegel
+   Created  : 2023-12-21
+   Modified : 2025-01-17
+   
+   Implements AtomicBoolean.h, a model of the Java class
+   AtomicBoolean.
+
+   Verified Software Lab
+   Department of Computer & Information Sciences
+   University of Delaware
  */
 #pragma CIVL ACSL
-
-#include <stdlib.h>
 #include "AtomicBoolean.cvh"
+#include <stdlib.h>
 
 struct AtomicBoolean {
   bool value;

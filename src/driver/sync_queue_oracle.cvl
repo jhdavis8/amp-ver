@@ -1,7 +1,7 @@
 /* Filename : sync_queue_oracle.cvl
    Author   : Stephen F. Siegel
    Created  : 2024-12-12
-   Modified : 2024-12-13
+   Modified : 2025-01-17
 
    Implementation of oracle.h using a synchronous FIFO queue semantics.
    To be acceptable, all of the following must hold:
@@ -28,6 +28,10 @@
      deq: 2->3
      enq: 3->3
      deq: 3->3
+
+   Verified Software Lab
+   Department of Computer & Information Sciences
+   University of Delaware
 */
 #include "oracle.h"
 #include <stdbool.h>
