@@ -13,7 +13,6 @@
    Department of Computer & Information Sciences
    University of Delaware
  */
-#pragma CIVL ACSL
 #include "AtomicInteger.h"
 #include "AtomicReference.cvh"
 #include "Queue.h"

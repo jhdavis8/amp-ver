@@ -10,8 +10,11 @@
    "stuck" (in a non-progress cycle).  Hence every call should return.
    After returning, the client can invoke Queue_stuck() to determine
    whether the execution got stuck or terminated normally.
+
+   Verified Software Lab
+   Department of Computer & Information Sciences
+   University of Delaware
  */
-#pragma CIVL ACSL
 #include "AtomicInteger.h"
 #include "AtomicReference.cvh"
 #include "NPDetector.cvh"

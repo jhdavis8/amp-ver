@@ -1,7 +1,7 @@
-# Filename : sets.mk
+# Filename : hashsets.mk
 # Author   : Josh Davis
-# Created  :
-# Modified : 2024-12-23
+# Created  : 2024-11-25
+# Modified : 2025-01-17
 # Makefile for hash sets experiments.
 ROOT = .
 include $(ROOT)/common.mk
@@ -15,16 +15,17 @@ HASHSETS = hashset_1 hashset_2 hashset_3 hashset_4 hashset_1ND \
 all: $(HASHSETS) hashset_schedules
 
 $(HASHSETS): hashset_%: out/CoarseHashSet_%.out out/StripedHashSet_%.out \
-  out/StripedCuckooHashSet_%.out
+  out/StripedCuckooHashSet_%.out out/LockFreeHashSet_%.out
 
 hashset_schedules: \
   $(addprefix out/CoarseHashSet_S,$(addsuffix .out,1 2 3)) \
   $(addprefix out/StripedHashSet_S,$(addsuffix .out,1 2 3)) \
-  $(addprefix out/StripedCuckooHashSet_S,$(addsuffix .out,1 2 3))
+  $(addprefix out/StripedCuckooHashSet_S,$(addsuffix .out,1 2 3)) \
+  $(addprefix out/LockFreeHashSet_S,$(addsuffix .out,1 2 3))
 
 clean:
 	rm -rf out/CoarseHashSet*.* out/StripedHashSet*.* \
-  out/StripedCuckooHashSet*.*
+  out/StripedCuckooHashSet*.* out/LockFreeHashSet*.*
 
 .PHONY: clean all myall $(HASHSETS) hashset_schedules
 
