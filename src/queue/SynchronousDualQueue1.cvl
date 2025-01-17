@@ -99,13 +99,13 @@ void Queue_enq(Queue this, T e) {
       Node n = AtomicReference_get(t->next);
       if (t == AtomicReference_get(this->tail)) {
         if (n != NULL) {
-          AtomicReference_compare_and_set(this->tail, t, n);
-        } else if (AtomicReference_compare_and_set(t->next, n, offer)) {
-          AtomicReference_compare_and_set(this->tail, t, offer);
+          AtomicReference_compareAndSet(this->tail, t, n);
+        } else if (AtomicReference_compareAndSet(t->next, n, offer)) {
+          AtomicReference_compareAndSet(this->tail, t, offer);
           $when(offer->item->value != e);
           h = AtomicReference_get(this->head);
           if (offer == AtomicReference_get(h->next))
-            AtomicReference_compare_and_set(this->head, h, offer);
+            AtomicReference_compareAndSet(this->head, h, offer);
           return;
         }
       }
@@ -117,7 +117,7 @@ void Queue_enq(Queue this, T e) {
         continue;
       }
       bool success = AtomicInteger_compareAndSet(n->item, -1, e);
-      AtomicReference_compare_and_set(this->head, h, n);
+      AtomicReference_compareAndSet(this->head, h, n);
       if (success)
         return;
     }
@@ -133,13 +133,13 @@ T Queue_deq(Queue this) {
       Node n = AtomicReference_get(t->next);
       if (t == AtomicReference_get(this->tail)) {
         if (n != NULL) {
-          AtomicReference_compare_and_set(this->tail, t, n);
-        } else if (AtomicReference_compare_and_set(t->next, n, offer)) {
-          AtomicReference_compare_and_set(this->tail, t, offer);
+          AtomicReference_compareAndSet(this->tail, t, n);
+        } else if (AtomicReference_compareAndSet(t->next, n, offer)) {
+          AtomicReference_compareAndSet(this->tail, t, offer);
           $when(offer->item->value != -1);
           h = AtomicReference_get(this->head);
           if (offer == AtomicReference_get(h->next))
-            AtomicReference_compare_and_set(this->head, h, offer);
+            AtomicReference_compareAndSet(this->head, h, offer);
           return AtomicInteger_get(offer->item);
         }
       }
@@ -154,7 +154,7 @@ T Queue_deq(Queue this) {
       // added by Josh to correct defect...
       if (item == -1) continue;
       bool success = AtomicInteger_compareAndSet(n->item, item, -1);
-      AtomicReference_compare_and_set(this->head, h, n);
+      AtomicReference_compareAndSet(this->head, h, n);
       if (success) {
         return item;
       }

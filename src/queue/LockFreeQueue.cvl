@@ -106,12 +106,12 @@ void Queue_enq(Queue this, T value) {
     // look at book Fig. 10.11, not companion code...
     if (last == AtomicReference_get(this->tail)) {
       if (next == NULL) {
-        if (AtomicReference_compare_and_set(last->next, next, node)) {
-          AtomicReference_compare_and_set(this->tail, last, node);
+        if (AtomicReference_compareAndSet(last->next, next, node)) {
+          AtomicReference_compareAndSet(this->tail, last, node);
           return;
         }
       } else {
-        AtomicReference_compare_and_set(this->tail, last, next);
+        AtomicReference_compareAndSet(this->tail, last, next);
       }
     }
   }
@@ -127,10 +127,10 @@ T Queue_deq(Queue this) {
         if (next == NULL) {
           return -1; // throw new EmptyException
         }
-        AtomicReference_compare_and_set(this->tail, last, next);
+        AtomicReference_compareAndSet(this->tail, last, next);
       } else {
         T value = next->value;
-        if (AtomicReference_compare_and_set(this->head, first, next)) {
+        if (AtomicReference_compareAndSet(this->head, first, next)) {
           return value;
         }
       }

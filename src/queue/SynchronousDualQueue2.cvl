@@ -101,7 +101,7 @@ bool Queue_stuck() {
 
 bool static ar_compareAndSet(AtomicReference ref, void * expect,
                              void * update) {
-  if (AtomicReference_compare_and_set(ref, expect, update)) {
+  if (AtomicReference_compareAndSet(ref, expect, update)) {
     npd_signalAll();
     return true;
   }

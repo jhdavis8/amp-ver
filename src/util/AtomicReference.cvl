@@ -29,7 +29,7 @@ void AtomicReference_destroy(AtomicReference ref) {
 }
 
 /*@ depends_on \access(ref); */
-$atomic_f bool AtomicReference_compare_and_set(AtomicReference ref,
+$atomic_f bool AtomicReference_compareAndSet(AtomicReference ref,
                                                 void* expect, void* update) {
   if (ref->value == expect) {
     ref->value = update;
@@ -51,9 +51,9 @@ int main() {
   AtomicReference ar = AtomicReference_create(&p);
   $parfor(int i : 1 .. 2) {
     if (i == 1) {
-      AtomicReference_compare_and_set(ar, &p, &q);
+      AtomicReference_compareAndSet(ar, &p, &q);
     } if (i == 2) {
-      AtomicReference_compare_and_set(ar, &p, &r);
+      AtomicReference_compareAndSet(ar, &p, &r);
     }
   }
   int* x = AtomicReference_get(ar);
