@@ -1,12 +1,21 @@
 #ifndef _PERM_H
 #define _PERM_H
-/* Utility functions for generating sets of sequential interleavings
+/* Filename : perm.h
+   Author   : Stephen F. Siegel
+   Created  : 2024-01-25
+   Modified : 2025-01-18
+
+   Utility functions for generating sets of sequential interleavings
    of schedules.  A "perm" is a sequence of thread IDs.  It specifies
    which thread executes at each point in time.  A perm is specified
    by a an int size (the number of thread IDs in the sequence) and an
    int* (pointing to the first element in the sequence).  A "perm-set"
    is an ordered set of perms.  It it represented as an int**.  All
    perms in a perm-set must have the same size.
+
+   Verified Software Lab
+   Department of Computer & Information Sciences
+   University of Delaware
  */
 #include "schedule.h"
 

@@ -1,8 +1,22 @@
 #ifndef _SCHEDULE_H
 #define _SCHEDULE_H
+/* Filename : schedule.h
+   Author   : Stephen F. Siegel
+   Created  : 2024-01-25
+   Modified : 2025-01-18
 
-/* schedule.h: interface for generation of schedules for testing concurrent
-   data structures.  */
+   Interface for generation of schedules for testing concurrent
+   collections.  The three kinds of collections are sets, queues, and
+   priority queues.  A schedule specifies a number of threads, and for
+   each thread, a sequence of method calls.  Each method call is one
+   of ADD, REMOVE, or CONTAINS, with corresponding arguments.  A
+   schedule also has slots to store the results from these calls once
+   the schedule is executed.
+
+   Verified Software Lab
+   Department of Computer & Information Sciences
+   University of Delaware
+*/
 
 // The 3 possible operations on a data structure. Sets supports all 3;
 // queues and pqueues (priority queues) support ADD and REMOVE.

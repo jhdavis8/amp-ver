@@ -2,22 +2,26 @@
 #define _SET_H
 /* Filanme : Set.h
    Author  : Josh Davis and Stephen F. Siegel
-   Created :
-   Modified: 2024-12-30
+   Created : 2024-01-25
+   Modified: 2025-01-17
 
    Interface for a set collection.  Note: in the actual concurrent
    executions we model, a method call may get "stuck", i.e., result in
    deadlock.  However, in our framework, the functions modeling these
    methods will always return.  Instead, a stuck flag will be set in
-   the implementation.  The flag can be checked using the isStuck()
+   the implementation.  The flag can be checked using the Set_stuck()
    function; if it is set (true), the return value of the previous
    function call should be ignored and no further calls should be made
-   on the collection.  In general, isStuck() should be called after
+   on the collection.  In general, Set_stuck() should be called after
    each function returns, unless you have some reason to be sure the
    method could not get stuck.
+
+   Verified Software Lab
+   Department of Computer & Information Sciences
+   University of Delaware
 */
-#include <stdbool.h>
 #include "types.h"
+#include <stdbool.h>
 
 typedef struct Set * Set;
 

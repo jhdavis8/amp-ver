@@ -2,13 +2,17 @@
 #define _PQUEUE_H
 /* Filename : PQueue.h
    Author   : Stephen F. Siegel
-   Created  :
-   Modified : 2024-12-31
+   Created  : 2024-01-25
+   Modified : 2025-01-17
 
    Interface for a priority queue.
+
+   Verified Software Lab
+   Department of Computer & Information Sciences
+   University of Delaware
 */
-#include <stdbool.h>
 #include "types.h"
+#include <stdbool.h>
 
 typedef struct PQueue * PQueue;
 
@@ -43,9 +47,9 @@ void PQueue_terminate(int tid);
 /* Did the concurrent execution get stuck (deadlock or livelock)? */
 bool PQueue_stuck(void);
 
-/* Adds an item with the given priority to the priority queue.
-   TODO: Can item occur more than once with same priorities?
-   different priorities?  Answer this please.  */
+/* Adds an item with the given priority to the priority queue.  Note:
+   an item may occur more than once with the same priorities or with
+   different priorities.  */
 void PQueue_add(PQueue pq, T item, int priority);
 
 /* Removes an entry with minimal score, returning its value.  If queue

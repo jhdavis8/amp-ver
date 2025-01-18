@@ -1,11 +1,15 @@
 #ifndef _QUEUE_H
 #define _QUEUE_H
 /* Filename : Queue.h
-   Author   : Stephen F. Siegel
-   Created  :
-   Modified : 2024-12-31
+   Author   : Josh Davis, Stephen F. Siegel
+   Created  : 2024-01-25
+   Modified : 2025-01-17
 
-   Interface for a queue.
+   Interface for a (FIFO) queue.
+
+   Verified Software Lab
+   Department of Computer & Information Sciences
+   University of Delaware
 */
 #include <stdbool.h>
 #include "types.h"

@@ -4,10 +4,14 @@
   Filename : oracle.h
   Author   : Stephen F. Siegel
   Created  : 2024-12-12
-  Modified : 2024-12-12
+  Modified : 2025-01-18
 
   Interface for a collection oracle.  The oracle specifies the
   intended behavior of a data structure.
+
+   Verified Software Lab
+   Department of Computer & Information Sciences
+   University of Delaware
  */
 #include "types.h"
 #include <stdbool.h>

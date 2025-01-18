@@ -1,17 +1,36 @@
 #ifndef _HASH_H
 #define _HASH_H
-/* hashCode.cvh: header for hashCode.cvl
- * Updated 26-Dec-2023
- * Josh Davis, Stephen Siegel
- * Verified Software Lab, CIS Dept.
- * University of Delaware
+/* Filename : hashCode.cvh
+   Authors  : Josh Davis, Stephen F. Siegel
+   Created  : 2023-12-26
+   Modified : 2025-01-18
+
+   This module specifies hash code functions that are needed by
+   concurrent hash sets.  An implementation may define these in
+   various ways: nondeterministic (with bounds), or specific concrete
+   choices.
+
+   For this projecct, all hash codes are assumed to be nonnegative.
+
+   Verified Software Lab
+   Department of Computer & Information Sciences
+   University of Delaware
  */
+
+/* Standard signature of hash code function on integers */
 $atomic_f int hash_code(int x);
 
+/* A dual hash code, which is equivalent to a pair of standard
+   hash code functions; which can be either 0 or 1. */
 $atomic_f int hash_code_dual(int x, int which);
 
+/* A hash code function which takes a second argument, bound.  The
+   hash code returned is guaranteed to be nonnegative and strictly
+   less than bound. */
 $atomic_f int hash_code_bound(int x, int bound);
 
+/* A hash code function which is both dual and bounded.  The bound
+   applies to both functions.  As usual, which can be 0 or 1. */
 $atomic_f int hash_code_dual_bound(int x, int bound, int which);
 
 #endif

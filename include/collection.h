@@ -3,13 +3,13 @@
 /* Filename : collection.h
    Author   : Stephen F. Siegel
    Created  : 2024-12-12
-   Modified : 2024-12-29
+   Modified : 2025-01-17
 
    Generic interface for a concurrent collection.  The collection
-   should implement functions create, destroy, add, remove, contains,
-   isStuck, and print.  An implementation may have various semantics,
-   including set, queue, priority queue, and variations on these such
-   as nonblocking, blocking, etc.
+   should implement functions including create, destroy, add, remove,
+   contains, stuck, and print.  An implementation may have various
+   semantics, including set, queue, priority queue, and variations on
+   these such as nonblocking, blocking, etc.
 
    The standard pattern for using these functions is as follows:
 
@@ -25,6 +25,9 @@
       different nthread.
   10. Call collection_destroy(c).
 
+   Verified Software Lab
+   Department of Computer & Information Sciences
+   University of Delaware
 */
 #include "types.h"
 #include <stdbool.h>

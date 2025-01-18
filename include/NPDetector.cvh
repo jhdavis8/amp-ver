@@ -1,25 +1,59 @@
 #ifndef _NP_DETECTOR_H
 #define _NP_DETECTOR_H
+/* Filename : NPDetector.cvh
+   Author   : Stephen F. Siegel
+   Created  : 2024-12-31
+   Modified : 2025-01-17
+
+   This module is used to detect non-progress cycles in the state
+   space of a concurrent (multithreaded) program.  Loops in the
+   program must be annotated with calls to the functions in this
+   interface.
+
+   Verified Software Lab
+   Department of Computer & Information Sciences
+   University of Delaware
+ */
 #include <stdbool.h>
 
+/* Call this once, before the threads are created, specifying the
+   number of threads that will run in the concurrent execution. */
 $atomic_f void npd_initialize(int nthread);
 
+/* Call this after all threads in the concurrent execution have
+   terminated. */
 $atomic_f void npd_finalize(void);
 
+/* Each thread should call this just before normal termination to
+   announce that it is termination normally.  The thread passes in its
+   own thread ID. */
 $atomic_f void npd_terminate(int tid);
 
+/* A thread causes this to announce that it has made a change to the
+   shared state, i.e., progress has occurred. */
 $atomic_f void npd_signalAll();
 
+/* A thread calls this just before entering a loop, passing its own
+   thread ID. */
 $atomic_f void npd_loop_enter(int tid);
 
+/* A thread calls this upon exiting a loop, passing its own thread
+   ID. */
 $atomic_f void npd_loop_exit(int tid);
 
+/* A thread calls this as the first statement in the loop body of a
+   loop. */
 $atomic_f void npd_loop_top(int tid);
 
+/* A thread calls this as the last statement in the loop body of a
+   loop. */
 $atomic_f bool npd_loop_bottom(int tid);
 
+/* This function determines whether the concurrent program is
+   currently in "stuck" state, i.e., in a non-progress cycle. */
 $atomic_f bool npd_stuck(void);
 
+/* Prints information about the current state of this detector. */
 void npd_print(void);
 
 #endif
