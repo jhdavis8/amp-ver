@@ -39,6 +39,18 @@ clean:
 # to be 2^LOGRANGE.  RANGE is ignored.  For all other structures,
 # LOGRANGE is ignored.
 
+# New priority queue bound settings
+PQUEUE_BOUND_A = -kind=pqueue -genericVals -distinctPriorities -addsDominate \
+  $(BOUND_A) -DRANGE=2 -DLOGRANGE=1
+PQUEUE_BOUND_B = -kind=pqueue -genericVals -distinctPriorities -addsDominate \
+	$(BOUND_B) -DRANGE=3 -DLOGRANGE=2
+PQUEUE_BOUND_C = -kind=pqueue -genericVals -distinctPriorities -addsDominate \
+	$(BOUND_C) -DRANGE=3 -DLOGRANGE=2
+PQUEUE_BOUND_D = -kind=pqueue -genericVals -distinctPriorities -addsDominate \
+	$(BOUND_D) -DRANGE=4 -DLOGRANGE=2
+PQUEUE_BOUND_E = -kind=pqueue -genericVals -distinctPriorities -addsDominate \
+	$(BOUND_E) -DRANGE=5 -DLOGRANGE=3
+
 PQUEUE_LIMITS_1 = -kind=pqueue -genericVals -threadSym -nthread=1..2 \
   -nstep=1..2 -npreAdd=0 -distinctPriorities -addsDominate -ncore=$(NCORE) \
   -DRANGE=2 -DLOGRANGE=1

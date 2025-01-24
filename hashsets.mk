@@ -29,6 +29,13 @@ clean:
 
 .PHONY: clean all myall $(HASHSETS) hashset_schedules
 
+# New hashset bound settings
+HASH_BOUND_A = -kind=set $(BOUND_A)
+HASH_BOUND_B = -kind=set $(BOUND_B)
+HASH_BOUND_C = -kind=set $(BOUND_C)
+HASH_BOUND_D = -kind=set $(BOUND_D)
+HASH_BOUND_E = -kind=set $(BOUND_E)
+
 # 63 schedules
 HASH_LIMITS_1 = -kind=set -hashKind=ident -valueBound=2 -nthread=1..2 \
   -nstep=1..2 -npreAdd=0 -threadSym -checkTermination -ncore=$(NCORE)

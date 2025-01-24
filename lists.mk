@@ -33,6 +33,13 @@ clean:
 
 .PHONY: clean all myall $(LISTS) list_schedules
 
+# New list bound settings
+LIST_BOUND_A = -kind=set $(BOUND_A)
+LIST_BOUND_B = -kind=set $(BOUND_B)
+LIST_BOUND_C = -kind=set $(BOUND_C)
+LIST_BOUND_D = -kind=set $(BOUND_D)
+LIST_BOUND_E = -kind=set $(BOUND_E)
+
 # 63 schedules
 LIST_LIMITS_1  = -kind=set -hashKind=ident -valueBound=2 -nthread=1..2 \
   -nstep=1..2 -npreAdd=0 -threadSym -checkTermination -ncore=$(NCORE)

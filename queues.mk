@@ -30,6 +30,13 @@ clean:
 
 .PHONY: clean all myall $(QUEUES) queue_schedules
 
+# New queue bound settings
+QUEUE_BOUND_A = -kind=queue -genericVals $(BOUND_A)
+QUEUE_BOUND_B = -kind=queue -genericVals $(BOUND_B)
+QUEUE_BOUND_C = -kind=queue -genericVals $(BOUND_C)
+QUEUE_BOUND_D = -kind=queue -genericVals $(BOUND_D)
+QUEUE_BOUND_E = -kind=queue -genericVals $(BOUND_E)
+
 # 25 schedules
 QUEUE_LIMITS_1  = -kind=queue -genericVals -threadSym -nthread=1..2 \
   -nstep=1..3 -npreAdd=0 -checkTermination -ncore=$(NCORE)
