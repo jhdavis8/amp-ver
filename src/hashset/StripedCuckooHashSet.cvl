@@ -7,11 +7,11 @@
    Programming" 2nd ed, by Herlihy, Luchangco, Shavit, and Spear,
    Sec. 13.4.3 "Striped concurrent cuckoo hashing", and companion code
    ch13/src/hash/StripedCuckooHashSet.java.
-  
+
    This is a concurrent cuckoo hashset using lock striping and
    phasing.  It has bugs, including a possible null pointer
    dereference and non-termination.
-  
+
    Verified Software Lab
    Department of Computer & Information Sciences
    University of Delaware
@@ -330,7 +330,7 @@ int main() {
   Set_finalize(s);
   Set_finalize_context();
   tid_finalize();
-  
+
   $print("Set after adding 0..", nthread-1, ": ");
   Set_print(s);
   $print("\n");
@@ -359,7 +359,7 @@ int main() {
   Set_finalize(s);
   Set_finalize_context();
   tid_finalize();
-  
+
   $print("Set after removing 1..2: ");
   Set_print(s);
   $print("\n");
@@ -367,10 +367,10 @@ int main() {
   $for (int i : 0 .. nthread-1) {
     if (i == 1 || i == 2)
       $assert(!Set_contains(s, i));
-    else 
+    else
       $assert(Set_contains(s, i));
   }
-  
+
   tid_init(nthread);
   Set_initialize_context();
   Set_initialize(s);
@@ -378,7 +378,7 @@ int main() {
     tid_register(i);
     if (i == 2)
       Set_add(s, i);
-    else 
+    else
       Set_remove(s, i);
     Set_terminate(i);
     tid_unregister();
@@ -386,7 +386,7 @@ int main() {
   Set_finalize(s);
   Set_finalize_context();
   tid_finalize();
-  
+
   $print("Set after adding 2 and removing everything else: ");
   Set_print(s);
   $print("\n");

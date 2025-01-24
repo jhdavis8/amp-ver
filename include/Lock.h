@@ -30,4 +30,8 @@ void Lock_release(Lock l);
 /* Is the thread calling this function holding lock l? */
 _Bool Lock_isHeldByCurrentThread(Lock l);
 
+#ifdef _LOCK_TEST
+_Bool Lock_isLocked(Lock l);
+#endif
+
 #endif

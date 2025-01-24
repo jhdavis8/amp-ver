@@ -1,28 +1,26 @@
 /* Filename : LockFreeHashSet.cvl
    Author   : Josh Davis
    Created  : 2024-12-12
-   Modified : 2025-01-17
+   Modified : 2025-1-7
 
    CIVL model of LockFreeHashSet class from "The Art of Multiprocessor
-   Programming" 2nd ed, by Herlihy, Luchangco, Shavit, and Spear,
-   Sec. 13.3.3 and companion code
-   ch13/src/hash/LockFreeHashSet.java. Also models the BucketList
-   class, Sec. 13.3.2 and companion code
-   ch13/src/hash/BucketList.java.
-
-   Verified Software Lab
-   Department of Computer & Information Sciences
-   University of Delaware
+   Programming" 2nd ed, by Herlihy, Luchangco, Shavit, and Spear, Sec. 13.3.3
+   "The LockFreeHashSet<T> class", and companion code
+   ch13/src/hash/LockFreeHashSet.java. Also models the BucketList class, Sec.
+   13.3.2 "The BucketList class", and companion code
+   ch13/src/hash/BucketList.java. This version has been patched to correct a bug
+   in the BucketList_remove method.
  */
-#include "AtomicInteger.h"
-#include "AtomicMarkableReference.cvh"
+#include <stdlib.h>
+#include <stdbool.h>
+#include <limits.h>
 #include "Set.h"
 #include "hash.cvh"
-#include "tid.h"
+#include "AtomicMarkableReference.cvh"
+#include "AtomicInteger.h"
 #include "types.h"
-#include <limits.h>
-#include <stdbool.h>
-#include <stdlib.h>
+#include "tid.h"
+
 
 #define WORD_SIZE 3
 #define LO_MASK 1
@@ -30,6 +28,7 @@
 #define MASK 7
 #define THRESHOLD 2
 #define CAPACITY 4
+
 
 // =============== Start Node class ===============
 
@@ -62,8 +61,7 @@ Node Node_getNext(Node this) {
   Node entry = AtomicMarkableReference_get(this->next, cMarked);
   while (cMarked[0]) {
     Node succ = AtomicMarkableReference_get(entry->next, sMarked);
-    AtomicMarkableReference_compareAndSet(this->next, entry, succ,
-                                          true, sMarked[0]);
+    AtomicMarkableReference_compareAndSet(this->next, entry, succ, true, sMarked[0]);
     entry = AtomicMarkableReference_get(this->next, cMarked);
   }
   return entry;
@@ -111,8 +109,7 @@ BucketList BucketList_create() {
   BucketList this = malloc(sizeof(struct BucketList));
   this->head = Node_create_sentinel(0);
   AtomicMarkableReference_destroy(this->head->next);
-  this->head->next =
-    AtomicMarkableReference_create(Node_create_sentinel(INT_MAX), false);
+  this->head->next = AtomicMarkableReference_create(Node_create_sentinel(INT_MAX), false);
   return this;
 }
 
@@ -152,8 +149,7 @@ bool BucketList_add(BucketList this, T x) {
       // splice in new entry
       Node entry = Node_create(key, x);
       AtomicMarkableReference_set(entry->next, curr, false);
-      splice = AtomicMarkableReference_compareAndSet
-        (pred->next, curr, entry, false, false);
+      splice = AtomicMarkableReference_compareAndSet(pred->next, curr, entry, false, false);
       if (splice)
         return true;
       else
@@ -175,7 +171,8 @@ bool BucketList_remove(BucketList this, T x) {
       return false;
     } else {
       // snip out matching entry
-      snip = AtomicMarkableReference_attemptMark(pred->next, curr, true);
+      // patch is here, compareAndSet used instead of attemptMark
+      snip = AtomicMarkableReference_compareAndSet(pred->next, curr, curr, false, true);
       if (snip)
         return true;
       else
@@ -206,10 +203,9 @@ BucketList BucketList_getSentinel(BucketList this, int index) {
     } else {
       // splice in new entry
       Node entry = Node_create_sentinel(key);
-      AtomicMarkableReference_set
-        (entry->next, AtomicMarkableReference_getReference(pred->next), false);
-      splice = AtomicMarkableReference_compareAndSet
-        (pred->next, curr, entry, false, false);
+      AtomicMarkableReference_set(entry->next,
+                                  AtomicMarkableReference_getReference(pred->next), false);
+      splice = AtomicMarkableReference_compareAndSet(pred->next, curr, entry, false, false);
       if (splice)
         return BucketList_BucketList(BucketList_create(), entry);
       else
@@ -291,8 +287,7 @@ bool Set_add(Set this, T x) {
   int setSizeNow = AtomicInteger_getAndIncrement(this->setSize);
   int bucketSizeNow = AtomicInteger_get(this->bucketSize);
   if (setSizeNow / (double)bucketSizeNow > THRESHOLD)
-    AtomicInteger_compareAndSet(this->bucketSize, bucketSizeNow,
-                                2 * bucketSizeNow);
+    AtomicInteger_compareAndSet(this->bucketSize, bucketSizeNow, 2 * bucketSizeNow);
   return true;
 }
 
@@ -355,8 +350,7 @@ void Set_print(Set this) {
       curr = Node_getNext(curr);
     }
   }
-  BucketList b = Set_getBucketList(this,
-                                   AtomicInteger_get(this->bucketSize) - 1);
+  BucketList b = Set_getBucketList(this, AtomicInteger_get(this->bucketSize) - 1);
   Node curr = b->head;
   $print("[", AtomicInteger_get(this->bucketSize) - 1, "] -> ");
   curr = Node_getNext(curr);
