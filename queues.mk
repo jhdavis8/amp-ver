@@ -9,7 +9,7 @@ include $(ROOT)/common.mk
 
 ## Common definitions
 
-QUEUES = queue_1 queue_2 queue_3
+QUEUES = queue_A queue_B queue_C queue_D queue_E
 
 all: $(QUEUES) queue_schedules
 
@@ -37,18 +37,6 @@ QUEUE_BOUND_C = -kind=queue -genericVals $(BOUND_C)
 QUEUE_BOUND_D = -kind=queue -genericVals $(BOUND_D)
 QUEUE_BOUND_E = -kind=queue -genericVals $(BOUND_E)
 
-# 25 schedules
-QUEUE_LIMITS_1  = -kind=queue -genericVals -threadSym -nthread=1..2 \
-  -nstep=1..3 -npreAdd=0 -checkTermination -ncore=$(NCORE)
-
-# 58 schedules
-QUEUE_LIMITS_2 = -kind=queue -genericVals -threadSym -nthread=1..3 \
-  -nstep=1..3 -npreAdd=0..1 -checkTermination -ncore=$(NCORE)
-
-# 249 schedules
-QUEUE_LIMITS_3  = -kind=queue -genericVals -threadSym -nthread=1..3 \
-  -nstep=1..4 -npreAdd=0..2 -checkTermination -ncore=$(NCORE)
-
 QUEUE_INC = $(DRIVER_INC) $(QUEUE_H) queues.mk
 QUEUE_SRC = $(DRIVER_SRC) $(QUEUE_COL)
 QUEUE_DEP = $(QUEUE_INC) $(QUEUE_SRC)
@@ -64,14 +52,14 @@ BQUEUE = $(QUEUE_DIR)/BoundedQueue.cvl
 BQUEUE_SRC = $(BQUEUE) $(LOCK_SRC) $(AI_SRC) $(COND2_SRC)
 BQUEUE_ALL = $(QUEUE_SRC) $(BQUEUE_SRC) $(BQUEUE_OR)
 BQUEUE_DEP = $(BQUEUE_ALL) $(QUEUE_INC) $(LOCK_INC) $(AI_INC) $(COND2_INC)
-BQUEUE_OUT = $(addprefix out/BoundedQueue_,$(addsuffix .out,1 2 3))
+BQUEUE_OUT = $(addprefix out/BoundedQueue_,$(addsuffix .out,A B C D E))
 
 # Multiple schedule analyses.
 # Example: make -f queues.mk out/BoundedQueue_1.out
 CAP=2 # queue capacity
 $(BQUEUE_OUT): out/BoundedQueue_%.out: $(MAIN_CLASS) $(BQUEUE_DEP)
 	rm -rf out/BoundedQueue_$*.dir.tmp
-	$(AMPVER) $(QUEUE_LIMITS_$*) -spec=bounded -capacity=$(CAP) \
+	$(AMPVER) $(QUEUE_BOUND_$*) -spec=bounded -capacity=$(CAP) \
   -checkMemoryLeak=false -tmpDir=out/BoundedQueue_$*.dir.tmp \
   $(BQUEUE_SRC) > out/BoundedQueue_$*.out.tmp
 	rm -rf out/BoundedQueue_$*.dir
@@ -91,12 +79,12 @@ UBQUEUE = $(QUEUE_DIR)/UnboundedQueue.cvl
 UBQUEUE_SRC = $(UBQUEUE) $(LOCK_SRC)
 UBQUEUE_ALL = $(QUEUE_SRC) $(UBQUEUE_SRC) $(NBQUEUE_OR)
 UBQUEUE_DEP = $(UBQUEUE_ALL) $(QUEUE_INC) $(LOCK_INC)
-UBQUEUE_OUT = $(addprefix out/UnboundedQueue_,$(addsuffix .out,1 2 3))
+UBQUEUE_OUT = $(addprefix out/UnboundedQueue_,$(addsuffix .out,A B C D E))
 
 # Example: make -f queues.mk out/UnboundedQueue_1.out
 $(UBQUEUE_OUT): out/UnboundedQueue_%.out: $(MAIN_CLASS) $(UBQUEUE_DEP)
 	rm -rf out/UnboundedQueue_$*.dir.tmp
-	$(AMPVER) $(QUEUE_LIMITS_$*) -spec=nonblocking \
+	$(AMPVER) $(QUEUE_BOUND_$*) -spec=nonblocking \
   -checkMemoryLeak=false -tmpDir=out/UnboundedQueue_$*.dir.tmp \
   $(UBQUEUE_SRC) >out/UnboundedQueue_$*.out.tmp
 	rm -rf out/UnboundedQueue_$*.dir
@@ -115,12 +103,12 @@ LFQUEUE = $(QUEUE_DIR)/LockFreeQueue.cvl
 LFQUEUE_SRC = $(LFQUEUE) $(AR_SRC)
 LFQUEUE_ALL = $(QUEUE_SRC) $(LFQUEUE_SRC) $(NBQUEUE_OR)
 LFQUEUE_DEP = $(LFQUEUE_ALL) $(QUEUE_INC) $(AR_INC)
-LFQUEUE_OUT =  $(addprefix out/LockFreeQueue_,$(addsuffix .out,1 2 3))
+LFQUEUE_OUT =  $(addprefix out/LockFreeQueue_,$(addsuffix .out,A B C D E))
 
 # Example: make -f queues.mk out/LockFreeQueue_1.out
 $(LFQUEUE_OUT): out/LockFreeQueue_%.out: $(MAIN_CLASS) $(LFQUEUE_DEP)
 	rm -rf out/LockFreeQueue_$*.dir.tmp
-	$(AMPVER) $(QUEUE_LIMITS_$*) -spec=nonblocking \
+	$(AMPVER) $(QUEUE_BOUND_$*) -spec=nonblocking \
   -checkMemoryLeak=false -tmpDir=out/LockFreeQueue_$*.dir.tmp \
   $(LFQUEUE_SRC) >out/LockFreeQueue_$*.out.tmp
 	rm -rf out/LockFreeQueue_$*.dir
@@ -139,14 +127,13 @@ SQUEUE = $(QUEUE_DIR)/SynchronousQueue.cvl
 SQUEUE_SRC = $(SQUEUE) $(LOCK_SRC) $(COND2_SRC)
 SQUEUE_ALL = $(QUEUE_SRC) $(SQUEUE_SRC) $(SQUEUE_OR)
 SQUEUE_DEP = $(SQUEUE_ALL) $(QUEUE_INC) $(LOCK_INC) $(COND2_INC)
-SQUEUE_OUT =  $(addprefix out/SynchronousQueue_,$(addsuffix .out,1 2 3))
+SQUEUE_OUT =  $(addprefix out/SynchronousQueue_,$(addsuffix .out,A B C D E))
 
 # Example: make -f queues.mk out/SynchronousQueue_1.out
 $(SQUEUE_OUT): out/SynchronousQueue_%.out: $(MAIN_CLASS) $(SQUEUE_DEP)
 	rm -rf out/SynchronousQueue_$*.dir.tmp
-	$(AMPVER) $(QUEUE_LIMITS_$*) -spec=sync \
-  -checkMemoryLeak=true -checkTermination=true \
-  -tmpDir=out/SynchronousQueue_$*.dir.tmp \
+	$(AMPVER) $(QUEUE_BOUND_$*) -spec=sync \
+  -checkMemoryLeak=true -tmpDir=out/SynchronousQueue_$*.dir.tmp \
   $(SQUEUE_SRC) >out/SynchronousQueue_$*.out.tmp
 	rm -rf out/SynchronousQueue_$*.dir
 	mv out/SynchronousQueue_$*.out.tmp out/SynchronousQueue_$*.out
@@ -163,28 +150,28 @@ out/SynchronousQueue_S%.out: $(SQUEUE_DEP) $(QUEUE_SCHED_$*)
 # This one uses the synchronous queue oracle.  No "pre-adds" are allowed,
 # they don't make sense for a synchronous queue.
 
-SQUEUE_LIMITS_1 = -kind=queue -fair -genericVals -threadSym -nthread=1..2 \
-  -nstep=1..3 -npreAdd=0 -checkTermination=true -ncore=$(NCORE)
-
-SQUEUE_LIMITS_2 = -kind=queue -fair -genericVals -threadSym -nthread=1..3 \
-  -nstep=1..3 -npreAdd=0 -checkTermination=true -ncore=1
-
-SQUEUE_LIMITS_3 = -kind=queue -fair -genericVals -threadSym -nthread=1..3 \
-  -nstep=1..4 -npreAdd=0 -checkTermination=true -ncore=1
-
-SQUEUE_LIMITS_4 = -kind=queue -fair -genericVals -threadSym -nthread=4 \
-  -nstep=4 -npreAdd=0 -checkTermination=true -ncore=1
+# New synchronous queue bound settings
+SQUEUE_BOUND_A = -kind=queue -fair -genericVals -threadSym -nthread=1..2 \
+	-nstep=1..2 -npreAdd=0 -checkTermination=true -ncore=$(NCORE)
+SQUEUE_BOUND_B = -kind=queue -fair -genericVals -threadSym -nthread=1..2 \
+	-nstep=1..3 -npreAdd=0 -checkTermination=true -ncore=$(NCORE)
+SQUEUE_BOUND_C = -kind=queue -fair -genericVals -threadSym -nthread=1..2 \
+	-nstep=1..3 -npreAdd=0 -checkTermination=true -ncore=$(NCORE)
+SQUEUE_BOUND_D = -kind=queue -fair -genericVals -threadSym -nthread=1..3 \
+	-nstep=1..4 -npreAdd=0 -checkTermination=true -ncore=$(NCORE)
+SQUEUE_BOUND_E = -kind=queue -fair -genericVals -threadSym -nthread=1..3 \
+	-nstep=1..5 -npreAdd=0 -checkTermination=true -ncore=$(NCORE)
 
 SDQUEUE = $(QUEUE_DIR)/SynchronousDualQueue2.cvl
 SDQUEUE_SRC = $(SDQUEUE) $(AI_SRC) $(AR_SRC) $(NPD_SRC)
 SDQUEUE_ALL = $(QUEUE_SRC) $(SDQUEUE_SRC) $(SQUEUE_OR)
 SDQUEUE_DEP = $(SDQUEUE_ALL) $(QUEUE_INC) $(AI_INC) $(AR_INC) $(NPD_INC)
-SDQUEUE_OUT = $(addprefix out/SynchronousDualQueue2_,$(addsuffix .out,1 2 3 4))
+SDQUEUE_OUT = $(addprefix out/SynchronousDualQueue2_,$(addsuffix .out,A B C D E))
 
 # Example: make -f queues.mk out/SynchronousDualQueue2_1.out
 $(SDQUEUE_OUT): out/SynchronousDualQueue2_%.out: $(MAIN_CLASS) $(SDQUEUE_DEP)
 	rm -rf out/SynchronousDualQueue2_$*.dir.tmp
-	$(AMPVER) $(SQUEUE_LIMITS_$*) -spec=sync \
+	$(AMPVER) $(SQUEUE_BOUND_$*) -spec=sync \
   -checkMemoryLeak=false -tmpDir=out/SynchronousDualQueue2_$*.dir.tmp \
   $(SDQUEUE_SRC) >out/SynchronousDualQueue2_$*.out.tmp
 	rm -rf out/SynchronousDualQueue2_$*.dir
