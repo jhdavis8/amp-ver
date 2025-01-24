@@ -15,7 +15,8 @@ HASHSETS = hashset_1 hashset_2 hashset_3 hashset_4 hashset_1ND \
 all: $(HASHSETS) hashset_schedules
 
 $(HASHSETS): hashset_%: out/CoarseHashSet_%.out out/StripedHashSet_%.out \
-  out/StripedCuckooHashSet_%.out out/LockFreeHashSet_%.out
+  out/RefinableHashSet_%.out out/StripedCuckooHashSet_%.out \
+  out/RefinableCuckooHashSet_%.out out/LockFreeHashSet_%.out
 
 hashset_schedules: \
   $(addprefix out/CoarseHashSet_S,$(addsuffix .out,1 2 3)) \
