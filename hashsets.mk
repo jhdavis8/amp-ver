@@ -140,6 +140,29 @@ out/StripedHashSet_S%.out: $(STRIPED_DEP) $(SET_SCHED_$*)
   $(STRIPED_ALL) $(SET_SCHED_$*) >out/StripedHashSet_S$*.out
 
 
+## RefinableHashSet
+
+REFINABLE = $(SET_DIR)/RefinableHashSet.cvl
+REFINABLE_SRC = $(REFINABLE) $(HASH_SRC) $(LOCK_SRC) $(ARRAYLIST_SRC)
+REFINABLE_ALL = $(SET_SRC) $(REFINABLE_SRC) $(NBSET_OR)
+REFINABLE_DEP = $(REFINABLE_ALL) $(SET_INC) $(HASH_INC) $(LOCK_INC) $(ARRAYLIST_INC)
+REFINABLE_OUT = $(addprefix out/RefinableHashSet_,$(addsuffix .out,1 1ND 1.5ND 2 2ND 3 4))
+
+# Ex: make -f sets.mk out/RefinableHashSet_1.out
+$(REFINABLE_OUT): out/RefinableHashSet_%.out: $(MAIN_CLASS) $(REFINABLE_DEP)
+	rm -rf out/RefinableHashSet_$*.dir.tmp
+	$(AMPVER) $(HASH_LIMITS_$*) -spec=nonblocking \
+  -tmpDir=out/RefinableHashSet_$*.dir.tmp $(REFINABLE_SRC) \
+  >out/RefinableHashSet_$*.out.tmp
+	rm -rf out/RefinableHashSet_$*.dir
+	mv out/RefinableHashSet_$*.out.tmp out/RefinableHashSet_$*.out
+	mv out/RefinableHashSet_$*.dir.tmp out/RefinableHashSet_$*.dir
+
+# Ex: make -f sets.mk out/RefinableHashSet_S1.out
+out/RefinableHashSet_S%.out: $(REFINABLE_DEP) $(SET_SCHED_$*)
+	$(VERIFY) -checkMemoryLeak=false -checkTermination=true \
+  $(REFINABLE_ALL) $(SET_SCHED_$*) >out/RefinableHashSet_S$*.out
+
 ## StripedCuckooHashSet
 
 SCUCKOO = $(SET_DIR)/StripedCuckooHashSet.cvl
@@ -164,6 +187,32 @@ out/StripedCuckooHashSet_S%.out: $(SCUCKOO_DEP) $(SET_SCHED_$*)
 	$(VERIFY) -checkMemoryLeak=false -checkTermination=true \
   $(SCUCKOO_ALL) $(SET_SCHED_$*) >out/StripedCuckooHashSet_S$*.out
 
+
+## RefinableCuckooHashSet
+
+RCUCKOO = $(SET_DIR)/RefinableCuckooHashSet.cvl
+RCUCKOO_SRC = $(RCUCKOO) $(HASH_SRC) $(LOCK_SRC) $(ARRAYLIST_SRC)
+RCUCKOO_ALL = $(SET_SRC) $(RCUCKOO_SRC) $(NBSET_OR)
+RCUCKOO_DEP = $(RCUCKOO_ALL) $(SET_INC) $(HASH_INC) $(LOCK_INC) $(ARRAYLIST_INC)
+RCUCKOO_OUT = $(addprefix out/RefinableCuckooHashSet_,$(addsuffix .out,1 1ND 1.5ND 2 2ND 3 4))
+
+# Ex: make -f sets.mk out/RefinableCuckooHashSet_1.out
+# some bugs are revealed: config 3 schedule_3366
+$(RCUCKOO_OUT): out/RefinableCuckooHashSet_%.out: $(MAIN_CLASS) $(RCUCKOO_DEP)
+	rm -rf out/RefinableCuckooHashSet_$*.dir.tmp
+	-$(AMPVER) $(HASH_LIMITS_$*) -spec=nonblocking \
+  -tmpDir=out/RefinableCuckooHashSet_$*.dir.tmp $(RCUCKOO_SRC) \
+  >out/RefinableCuckooHashSet_$*.out.tmp
+	rm -rf out/RefinableCuckooHashSet_$*.dir
+	mv out/RefinableCuckooHashSet_$*.out.tmp out/RefinableCuckooHashSet_$*.out
+	mv out/RefinableCuckooHashSet_$*.dir.tmp out/RefinableCuckooHashSet_$*.dir
+
+# Ex: make -f sets.mk out/RefinableCuckooHashSet_S1.out
+out/RefinableCuckooHashSet_S%.out: $(RCUCKOO_DEP) $(SET_SCHED_$*)
+	$(VERIFY) -checkMemoryLeak=false -checkTermination=true \
+  $(RCUCKOO_ALL) $(SET_SCHED_$*) >out/RefinableCuckooHashSet_S$*.out
+
+
 ## LockFreeHashSet
 
 LOCKFREE = $(SET_DIR)/LockFreeHashSet.cvl
@@ -186,6 +235,7 @@ $(LOCKFREE_OUT): out/LockFreeHashSet_%.out: $(MAIN_CLASS) $(LOCKFREE_DEP)
 out/LockFreeHashSet_S%.out: $(LOCKFREE_DEP) $(SET_SCHED_$*)
 	$(VERIFY) -fair -checkMemoryLeak=false -checkTermination=true \
   $(LOCKFREE_ALL) $(SET_SCHED_$*) >out/LockFreeHashSet_S$*.out
+
 
 ## LockFreeHashSetPatched
 
