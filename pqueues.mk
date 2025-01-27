@@ -39,17 +39,23 @@ clean:
 # to be 2^LOGRANGE.  RANGE is ignored.  For all other structures,
 # LOGRANGE is ignored.
 
+DRY ?= FALSE
+DRYFLAG =
+ifneq ($(DRY),FALSE)
+	DRYFLAG = -dryrun
+endif
+
 # New priority queue bound settings
 PQUEUE_BOUND_A = -kind=pqueue -genericVals -distinctPriorities -addsDominate \
-  $(BOUND_A) -DRANGE=2 -DLOGRANGE=1
+  $(BOUND_A) -DRANGE=2 -DLOGRANGE=1 $(DRYFLAG)
 PQUEUE_BOUND_B = -kind=pqueue -genericVals -distinctPriorities -addsDominate \
-	$(BOUND_B) -DRANGE=3 -DLOGRANGE=2
+	$(BOUND_B) -DRANGE=3 -DLOGRANGE=2 $(DRYFLAG)
 PQUEUE_BOUND_C = -kind=pqueue -genericVals -distinctPriorities -addsDominate \
-	$(BOUND_C) -DRANGE=3 -DLOGRANGE=2
+	$(BOUND_C) -DRANGE=3 -DLOGRANGE=2 $(DRYFLAG)
 PQUEUE_BOUND_D = -kind=pqueue -genericVals -distinctPriorities -addsDominate \
-	$(BOUND_D) -DRANGE=4 -DLOGRANGE=2
+	$(BOUND_D) -DRANGE=4 -DLOGRANGE=2 $(DRYFLAG)
 PQUEUE_BOUND_E = -kind=pqueue -genericVals -distinctPriorities -addsDominate \
-	$(BOUND_E) -DRANGE=5 -DLOGRANGE=3
+	$(BOUND_E) -DRANGE=5 -DLOGRANGE=3 $(DRYFLAG)
 
 PQUEUE_INC = $(DRIVER_INC) $(PQUEUE_H) pqueues.mk
 PQUEUE_SRC = $(DRIVER_SRC) $(PQUEUE_COL)

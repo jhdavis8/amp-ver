@@ -30,12 +30,18 @@ clean:
 
 .PHONY: clean all myall $(QUEUES) queue_schedules
 
+DRY ?= FALSE
+DRYFLAG =
+ifneq ($(DRY),FALSE)
+	DRYFLAG = -dryrun
+endif
+
 # New queue bound settings
-QUEUE_BOUND_A = -kind=queue -genericVals $(BOUND_A)
-QUEUE_BOUND_B = -kind=queue -genericVals $(BOUND_B)
-QUEUE_BOUND_C = -kind=queue -genericVals $(BOUND_C)
-QUEUE_BOUND_D = -kind=queue -genericVals $(BOUND_D)
-QUEUE_BOUND_E = -kind=queue -genericVals $(BOUND_E)
+QUEUE_BOUND_A = -kind=queue -genericVals $(BOUND_A) $(DRYFLAG)
+QUEUE_BOUND_B = -kind=queue -genericVals $(BOUND_B) $(DRYFLAG)
+QUEUE_BOUND_C = -kind=queue -genericVals $(BOUND_C) $(DRYFLAG)
+QUEUE_BOUND_D = -kind=queue -genericVals $(BOUND_D) $(DRYFLAG)
+QUEUE_BOUND_E = -kind=queue -genericVals $(BOUND_E) $(DRYFLAG)
 
 QUEUE_INC = $(DRIVER_INC) $(QUEUE_H) queues.mk
 QUEUE_SRC = $(DRIVER_SRC) $(QUEUE_COL)
@@ -152,15 +158,15 @@ out/SynchronousQueue_S%.out: $(SQUEUE_DEP) $(QUEUE_SCHED_$*)
 
 # New synchronous queue bound settings
 SQUEUE_BOUND_A = -kind=queue -fair -genericVals -threadSym -nthread=1..2 \
-	-nstep=1..2 -npreAdd=0 -checkTermination=true -ncore=$(NCORE)
+	-nstep=1..2 -npreAdd=0 -checkTermination=true -ncore=$(NCORE) $(DRYFLAG)
 SQUEUE_BOUND_B = -kind=queue -fair -genericVals -threadSym -nthread=1..2 \
-	-nstep=1..3 -npreAdd=0 -checkTermination=true -ncore=$(NCORE)
+	-nstep=1..3 -npreAdd=0 -checkTermination=true -ncore=$(NCORE) $(DRYFLAG)
 SQUEUE_BOUND_C = -kind=queue -fair -genericVals -threadSym -nthread=1..2 \
-	-nstep=1..3 -npreAdd=0 -checkTermination=true -ncore=$(NCORE)
+	-nstep=1..3 -npreAdd=0 -checkTermination=true -ncore=$(NCORE) $(DRYFLAG)
 SQUEUE_BOUND_D = -kind=queue -fair -genericVals -threadSym -nthread=1..3 \
-	-nstep=1..4 -npreAdd=0 -checkTermination=true -ncore=$(NCORE)
+	-nstep=1..4 -npreAdd=0 -checkTermination=true -ncore=$(NCORE) $(DRYFLAG)
 SQUEUE_BOUND_E = -kind=queue -fair -genericVals -threadSym -nthread=1..3 \
-	-nstep=1..5 -npreAdd=0 -checkTermination=true -ncore=$(NCORE)
+	-nstep=1..5 -npreAdd=0 -checkTermination=true -ncore=$(NCORE) $(DRYFLAG)
 
 SDQUEUE = $(QUEUE_DIR)/SynchronousDualQueue2.cvl
 SDQUEUE_SRC = $(SDQUEUE) $(AI_SRC) $(AR_SRC) $(NPD_SRC)

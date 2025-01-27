@@ -33,12 +33,18 @@ clean:
 
 .PHONY: clean all myall $(LISTS) list_schedules
 
+DRY ?= FALSE
+DRYFLAG =
+ifneq ($(DRY),FALSE)
+	DRYFLAG = -dryrun
+endif
+
 # New list bound settings
-LIST_BOUND_A = -kind=set $(BOUND_A)
-LIST_BOUND_B = -kind=set $(BOUND_B)
-LIST_BOUND_C = -kind=set $(BOUND_C)
-LIST_BOUND_D = -kind=set $(BOUND_D)
-LIST_BOUND_E = -kind=set $(BOUND_E)
+LIST_BOUND_A = -kind=set $(BOUND_A) $(DRYFLAG)
+LIST_BOUND_B = -kind=set $(BOUND_B) $(DRYFLAG)
+LIST_BOUND_C = -kind=set $(BOUND_C) $(DRYFLAG)
+LIST_BOUND_D = -kind=set $(BOUND_D) $(DRYFLAG)
+LIST_BOUND_E = -kind=set $(BOUND_E) $(DRYFLAG)
 
 LIST_INC = $(DRIVER_INC) $(LIST_H) lists.mk
 LIST_SRC = $(DRIVER_SRC) $(SET_COL)

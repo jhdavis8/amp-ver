@@ -98,6 +98,11 @@ BOUND_D = -hashKind=ident -valueBound=4 -nthread=1..3 -nstep=1..3 -npreAdd=0..1 
 BOUND_E = -hashKind=ident -valueBound=5 -nthread=1..3 -nstep=1..4 -npreAdd=0..1 \
   -checkTermination -ncore=$(NCORE)
 
+# Notes on the above bounds:
+# BOUND_A:
+#   -
+
+
 myall: all
 
 $(MAIN_CLASS): $(SOURCES)
