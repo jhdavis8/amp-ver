@@ -103,6 +103,10 @@ public class AMPVer {
    * them. */
   private boolean dryrun = false;
 
+  /** If true, immediately clean up .out and .cvl files for a schedule
+      after it has been verified unless it fails. */
+  private boolean tidy = false;
+
   /** By default, the hash function is the identity.  For nondeterministic
    * hashing, choose ND. */
   private boolean hashND = false;
@@ -337,6 +341,9 @@ public class AMPVer {
       case "dryrun":
         dryrun = bool(key, value);
         break;
+      case "tidy":
+        tidy = bool(key, value);
+        break;
       case "hashKind":
         if (value.equals("nd"))
           hashND=true;
@@ -444,7 +451,7 @@ public class AMPVer {
                 "addsDominate="+addsDominate+" "+
                 "threadSym="+threadSym+" "+
                 "noAllAdd="+noAllAdd);
-    out.println("dryrun="+dryrun+" ncore="+ncore);
+    out.println("dryrun="+dryrun+" tidy="+tidy+" ncore="+ncore);
     out.println();
   }
 
@@ -588,7 +595,12 @@ public class AMPVer {
                     ".  Exiting.");
         printTime();
         System.exit(2);
+      } else if (tidy) {
+        sfile.delete();
+        outFile.delete();
       }
+    } else if (tidy) {
+      sfile.delete();
     }
   }
 

@@ -41,7 +41,7 @@ HASH_BOUND_A = -kind=set $(BOUND_A) $(DRYFLAG)
 HASH_BOUND_B = -kind=set $(BOUND_B) $(DRYFLAG)
 HASH_BOUND_C = -kind=set $(BOUND_C) $(DRYFLAG)
 HASH_BOUND_D = -kind=set $(BOUND_D) $(DRYFLAG)
-HASH_BOUND_E = -kind=set $(BOUND_E) $(DRYFLAG)
+HASH_BOUND_E = -kind=set $(BOUND_E) $(DRYFLAG) -tidy
 
 SET_INC = $(DRIVER_INC) $(SET_H)
 SET_SRC = $(DRIVER_SRC) $(SET_COL)
