@@ -159,6 +159,8 @@ public class AMPVer {
 
   private void err(String msg) {
     System.err.println(msg);
+    System.err.flush();
+    out.flush();
     System.exit(1);
   }
 
@@ -573,6 +575,8 @@ public class AMPVer {
       sout = new PrintStream(sfile);
     } catch (FileNotFoundException e) {
       System.err.println(e);
+      System.err.flush();
+      out.flush();
       System.exit(1);
     }
     writeSchedule(sout, sched);
@@ -585,6 +589,8 @@ public class AMPVer {
         outStream = new PrintStream(outFile);
       } catch (FileNotFoundException e) {
         System.err.println(e);
+        System.err.flush();
+        out.flush();
         System.exit(1);
       }
       UserInterface ui = new UserInterface(outStream, outStream);
@@ -594,6 +600,8 @@ public class AMPVer {
         out.println("AMPVer: error detected on schedule "+id+
                     ".  Exiting.");
         printTime();
+        System.err.flush();
+        out.flush();
         System.exit(2);
       } else if (tidy) {
         sfile.delete();
@@ -647,6 +655,8 @@ public class AMPVer {
         workers[i].join();
       } catch (InterruptedException e) {
         out.println("Thread "+i+" interrupted");
+        System.err.flush();
+        out.flush();
         System.exit(1);
       }
     }
