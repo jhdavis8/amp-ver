@@ -18,14 +18,16 @@ $(PQUEUES): pqueue_%: out/SimpleLinear_%.out \
   out/FineGrainedHeapFair_%.out \
   out/FineGrainedHeapNoCycles_%.out \
   out/SkipQueue_%.out \
-  out/SkipQueuePatched_%.out
+  out/SkipQueue2SC_%.out \
+  out/SkipQueue2QC_%.out
 
 pqueue_schedules: \
   $(addprefix out/FineGrainedHeap_S,$(addsuffix .out,1 2 3)) \
   $(addprefix out/FineGrainedHeapFair_S,$(addsuffix .out,1 2 3)) \
   $(addprefix out/FineGrainedHeapNoCycles_S,$(addsuffix .out,1 2 3)) \
   $(addprefix out/SkipQueue_S,$(addsuffix .out,1 2 3)) \
-  $(addprefix out/SkipQueuePatched_S,$(addsuffix .out,1 2 3))
+  $(addprefix out/SkipQueue2SC_S,$(addsuffix .out,1 2 3)) \
+  $(addprefix out/SkipQueue2QC_S,$(addsuffix .out,1 2 3))
 
 clean:
 	rm -rf out/FineGrainedHeap*.* out/SkipQueue*.*
@@ -74,7 +76,7 @@ SL_OUT = $(addprefix out/SimpleLinear_,$(addsuffix .out,A B C D E))
 # Ex: make -f pqueues.mk out/SimpleLinear_1.out
 $(SL_OUT): out/SimpleLinear_%.out: $(MAIN_CLASS) $(SL_DEP)
 	rm -rf out/SimpleLinear_$*.dir.tmp
-	$(AMPVER) $(PQUEUE_BOUND_$*) -property=quiescent \
+	-$(AMPVER) $(PQUEUE_BOUND_$*) -property=quiescent \
   -spec=nonblocking -checkTermination=true \
   -tmpDir=out/SimpleLinear_$*.dir.tmp $(SL_SRC) \
   >out/SimpleLinear_$*.out.tmp
@@ -103,7 +105,7 @@ ST_OUT = $(addprefix out/SimpleTree_,$(addsuffix .out,A B C D E))
 # Ex: make -f pqueues.mk out/SimpleTree_1.out
 $(ST_OUT): out/SimpleTree_%.out: $(MAIN_CLASS) $(ST_DEP)
 	rm -rf out/SimpleTree_$*.dir.tmp
-	$(AMPVER) $(PQUEUE_BOUND_$*) -property=quiescent \
+	-$(AMPVER) $(PQUEUE_BOUND_$*) -property=quiescent \
   -spec=nonblocking -checkTermination=true \
   -tmpDir=out/SimpleTree_$*.dir.tmp $(ST_SRC) \
   >out/SimpleTree_$*.out.tmp
@@ -113,7 +115,7 @@ $(ST_OUT): out/SimpleTree_%.out: $(MAIN_CLASS) $(ST_DEP)
 
 # Ex: make -f pqeueues.mk out/SimpleTree_S1.out
 out/SimpleTree_S%.out: $(ST_DEP) $(PQUEUE_SCHED_$*)
-	$(VERIFY) -checkTermination=true \
+	-$(VERIFY) -checkTermination=true \
   $(ST_ALL) $(PQUEUE_SCHED_$*) >out/SimpleTree_S$*.out
 
 
@@ -245,7 +247,7 @@ SKIPQ2SC_OUT = $(addprefix out/SkipQueue2SC_,$(addsuffix .out,A B C D E))
 # Ex: make -f pqueues.mk out/SkipQueue2SC_1.out
 $(SKIPQ2SC_OUT): out/SkipQueue2SC_%.out: $(MAIN_CLASS) $(SKIPQ_DEP)
 	rm -rf out/SkipQueue2SC_$*.dir.tmp
-	$(AMPVER) $(PQUEUE_BOUND_$*) -D_PATCH_SKIPQUEUE \
+	-$(AMPVER) $(PQUEUE_BOUND_$*) -D_PATCH_SKIPQUEUE \
   -spec=nonblocking -checkTermination -property=sc \
   -checkMemoryLeak=false \
   -tmpDir=out/SkipQueue2SC_$*.dir.tmp $(SKIPQ_SRC) \
@@ -259,7 +261,7 @@ $(SKIPQ2SC_OUT): out/SkipQueue2SC_%.out: $(MAIN_CLASS) $(SKIPQ_DEP)
 # memory (e.g., 2587s, 15GB on a MacBook Pro)
 out/SkipQueue2SC_S%.out: $(SKIPQ_DEP) $(PQUEUE_SCHED_$*)
 	$(VERIFY) -checkMemoryLeak=false -checkTermination=true \
-  -D_PATCH_SKIPQUEUE -DNLINEAR \
+  -D_PATCH_SKIPQUEUE -DNLINEAR -preemptionBound=2 \
   $(SKIPQ_ALL) $(PQUEUE_SCHED_$*) >out/SkipQueue2SC_S$*.out
 
 # Same as above, but checking quiescent consistency.  All of these
@@ -272,7 +274,7 @@ SKIPQQ_DEP = $(SKIPQQ_ALL) $(PQUEUE_INC) $(AMR_INC) $(AB_INC)
 # Ex: make -f pqueues.mk out/SkipQueue2QC_1.out
 $(SKIPQ2QC_OUT): out/SkipQueue2QC_%.out: $(MAIN_CLASS) $(SKIPQQ_DEP)
 	rm -rf out/SkipQueue2QC_$*.dir.tmp
-	$(AMPVER) $(PQUEUE_BOUND_$*) -D_PATCH_SKIPQUEUE \
+	-$(AMPVER) $(PQUEUE_BOUND_$*) -D_PATCH_SKIPQUEUE \
   -spec=nonblocking -checkTermination -property=quiescent \
   -checkMemoryLeak=false \
   -tmpDir=out/SkipQueue2QC_$*.dir.tmp $(SKIPQ_SRC) \

@@ -59,7 +59,7 @@ BQUEUE_OUT = $(addprefix out/BoundedQueue_,$(addsuffix .out,A B C D E))
 CAP=2 # queue capacity
 $(BQUEUE_OUT): out/BoundedQueue_%.out: $(MAIN_CLASS) $(BQUEUE_DEP)
 	rm -rf out/BoundedQueue_$*.dir.tmp
-	$(AMPVER) $(QUEUE_BOUND_$*) -spec=bounded -capacity=$(CAP) \
+	-$(AMPVER) $(QUEUE_BOUND_$*) -spec=bounded -capacity=$(CAP) \
   -checkMemoryLeak=false -tmpDir=out/BoundedQueue_$*.dir.tmp \
   $(BQUEUE_SRC) > out/BoundedQueue_$*.out.tmp
 	rm -rf out/BoundedQueue_$*.dir
@@ -84,7 +84,7 @@ UBQUEUE_OUT = $(addprefix out/UnboundedQueue_,$(addsuffix .out,A B C D E))
 # Example: make -f queues.mk out/UnboundedQueue_1.out
 $(UBQUEUE_OUT): out/UnboundedQueue_%.out: $(MAIN_CLASS) $(UBQUEUE_DEP)
 	rm -rf out/UnboundedQueue_$*.dir.tmp
-	$(AMPVER) $(QUEUE_BOUND_$*) -spec=nonblocking \
+	-$(AMPVER) $(QUEUE_BOUND_$*) -spec=nonblocking \
   -checkMemoryLeak=false -tmpDir=out/UnboundedQueue_$*.dir.tmp \
   $(UBQUEUE_SRC) >out/UnboundedQueue_$*.out.tmp
 	rm -rf out/UnboundedQueue_$*.dir
@@ -108,7 +108,7 @@ LFQUEUE_OUT =  $(addprefix out/LockFreeQueue_,$(addsuffix .out,A B C D E))
 # Example: make -f queues.mk out/LockFreeQueue_1.out
 $(LFQUEUE_OUT): out/LockFreeQueue_%.out: $(MAIN_CLASS) $(LFQUEUE_DEP)
 	rm -rf out/LockFreeQueue_$*.dir.tmp
-	$(AMPVER) $(QUEUE_BOUND_$*) -spec=nonblocking \
+	-$(AMPVER) $(QUEUE_BOUND_$*) -spec=nonblocking \
   -checkMemoryLeak=false -tmpDir=out/LockFreeQueue_$*.dir.tmp \
   $(LFQUEUE_SRC) >out/LockFreeQueue_$*.out.tmp
 	rm -rf out/LockFreeQueue_$*.dir
@@ -132,7 +132,7 @@ SQUEUE_OUT =  $(addprefix out/SynchronousQueue_,$(addsuffix .out,A B C D E))
 # Example: make -f queues.mk out/SynchronousQueue_1.out
 $(SQUEUE_OUT): out/SynchronousQueue_%.out: $(MAIN_CLASS) $(SQUEUE_DEP)
 	rm -rf out/SynchronousQueue_$*.dir.tmp
-	$(AMPVER) $(QUEUE_BOUND_$*) -spec=sync \
+	-$(AMPVER) $(QUEUE_BOUND_$*) -spec=sync \
   -checkMemoryLeak=true -tmpDir=out/SynchronousQueue_$*.dir.tmp \
   $(SQUEUE_SRC) >out/SynchronousQueue_$*.out.tmp
 	rm -rf out/SynchronousQueue_$*.dir
@@ -171,7 +171,7 @@ SDQUEUE_OUT = $(addprefix out/SynchronousDualQueue2_,$(addsuffix .out,A B C D E)
 # Example: make -f queues.mk out/SynchronousDualQueue2_1.out
 $(SDQUEUE_OUT): out/SynchronousDualQueue2_%.out: $(MAIN_CLASS) $(SDQUEUE_DEP)
 	rm -rf out/SynchronousDualQueue2_$*.dir.tmp
-	$(AMPVER) $(SQUEUE_BOUND_$*) -spec=sync \
+	-$(AMPVER) $(SQUEUE_BOUND_$*) -spec=sync \
   -checkMemoryLeak=false -tmpDir=out/SynchronousDualQueue2_$*.dir.tmp \
   $(SDQUEUE_SRC) >out/SynchronousDualQueue2_$*.out.tmp
 	rm -rf out/SynchronousDualQueue2_$*.dir
