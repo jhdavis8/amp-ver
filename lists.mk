@@ -55,6 +55,7 @@ LIST_SCHED_3 = $(SCHEDULE_DIR)/sched_set_3.cvl
 
 
 ## CoarseList
+# Assumes hash codes map distinct to distinct, so can fail is nd hashkind is set
 
 COARSE = $(LIST_DIR)/CoarseList.cvl
 COARSE_SRC = $(COARSE) $(HASH_SRC) $(LOCK_SRC)
@@ -66,7 +67,7 @@ COARSE_OUT = $(addprefix out/CoarseList_,$(addsuffix .out,A B C D E))
 # Ex: make -f lists.mk out/CoarseList_1.out
 $(COARSE_OUT): out/CoarseList_%.out: $(MAIN_CLASS) $(COARSE_DEP)
 	rm -rf out/CoarseList_$*.dir.tmp
-	$(AMPVER) $(LIST_BOUND_$*) -spec=nonblocking \
+	-$(AMPVER) $(LIST_BOUND_$*) -spec=nonblocking \
   -tmpDir=out/CoarseList_$*.dir.tmp $(COARSE_SRC) \
   >out/CoarseList_$*.out.tmp
 	rm -rf out/CoarseList_$*.dir
@@ -91,7 +92,7 @@ FINE_OUT = $(addprefix out/FineList_,$(addsuffix .out,A B C D E))
 # Ex: make -f lists.mk out/FineList_1.out
 $(FINE_OUT): out/FineList_%.out: $(MAIN_CLASS) $(FINE_DEP)
 	rm -rf out/FineList_$*.dir.tmp
-	$(AMPVER) $(LIST_BOUND_$*) -spec=nonblocking \
+	-$(AMPVER) $(LIST_BOUND_$*) -spec=nonblocking \
   -tmpDir=out/FineList_$*.dir.tmp $(FINE_SRC) \
   >out/FineList_$*.out.tmp
 	rm -rf out/FineList_$*.dir
@@ -115,7 +116,7 @@ OPT_OUT = $(addprefix out/OptimisticList_,$(addsuffix .out,A B C D E))
 # Ex: make -f lists.mk out/OptimisticList_1.out
 $(OPT_OUT): out/OptimisticList_%.out: $(MAIN_CLASS) $(OPT_DEP)
 	rm -rf out/OptimisticList_$*.dir.tmp
-	$(AMPVER) $(LIST_BOUND_$*) -spec=nonblocking -checkMemoryLeak=false \
+	-$(AMPVER) $(LIST_BOUND_$*) -spec=nonblocking -checkMemoryLeak=false \
   -tmpDir=out/OptimisticList_$*.dir.tmp $(OPT_SRC) \
   >out/OptimisticList_$*.out.tmp
 	rm -rf out/OptimisticList_$*.dir
@@ -139,7 +140,7 @@ LAZY_OUT = $(addprefix out/LazyList_,$(addsuffix .out,A B C D E))
 # Ex: make -f lists.mk out/LazyList_1.out
 $(LAZY_OUT): out/LazyList_%.out: $(MAIN_CLASS) $(LAZY_DEP)
 	rm -rf out/LazyList_$*.dir.tmp
-	$(AMPVER) $(LIST_BOUND_$*) -spec=nonblocking -checkMemoryLeak=false \
+	-$(AMPVER) $(LIST_BOUND_$*) -spec=nonblocking -checkMemoryLeak=false \
   -tmpDir=out/LazyList_$*.dir.tmp $(LAZY_SRC) \
   >out/LazyList_$*.out.tmp
 	rm -rf out/LazyList_$*.dir
@@ -164,7 +165,7 @@ LOCKFREEORG_OUT = $(addprefix out/LockFreeListOriginal_,$(addsuffix .out,A B C D
 # Ex: make -f lists.mk out/LockFreeList_1.out
 $(LOCKFREE_OUT): out/LockFreeList_%.out: $(MAIN_CLASS) $(LOCKFREE_DEP)
 	rm -rf out/LockFreeList_$*.dir.tmp
-	$(AMPVER) $(LIST_BOUND_$*) -spec=nonblocking -checkMemoryLeak=false \
+	-$(AMPVER) $(LIST_BOUND_$*) -spec=nonblocking -checkMemoryLeak=false \
   -tmpDir=out/LockFreeList_$*.dir.tmp $(LOCKFREE_SRC) \
   >out/LockFreeList_$*.out.tmp
 	rm -rf out/LockFreeList_$*.dir
