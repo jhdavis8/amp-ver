@@ -35,12 +35,18 @@ clean:
 
 .PHONY: clean all myall $(HASHSETS) hashset_schedules
 
+DRY ?= FALSE
+DRYFLAG =
+ifneq ($(DRY),FALSE)
+	DRYFLAG = -dryrun
+endif
+
 # New hashset bound settings
-HASH_BOUND_A = -kind=set $(BOUND_A)
-HASH_BOUND_B = -kind=set $(BOUND_B)
-HASH_BOUND_C = -kind=set $(BOUND_C)
-HASH_BOUND_D = -kind=set $(BOUND_D)
-HASH_BOUND_E = -kind=set $(BOUND_E)
+HASH_BOUND_A = -kind=set $(BOUND_A) $(DRYFLAG)
+HASH_BOUND_B = -kind=set $(BOUND_B) $(DRYFLAG)
+HASH_BOUND_C = -kind=set $(BOUND_C) $(DRYFLAG)
+HASH_BOUND_D = -kind=set $(BOUND_D) $(DRYFLAG)
+HASH_BOUND_E = -kind=set $(BOUND_E) $(DRYFLAG)
 
 SET_INC = $(DRIVER_INC) $(SET_H)
 SET_SRC = $(DRIVER_SRC) $(SET_COL)
