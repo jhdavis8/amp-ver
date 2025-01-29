@@ -78,13 +78,13 @@ def get_fields_from_lines(lines: List[str], fname: os.PathLike) \
             passed = False
             if not schedules:
                 schedules = int(re.findall(r'\d+', line)[0])
-        if passed != None and time and schedules:
+        if passed is not None and time and schedules:
             break
     if not time:
         raise ValueError(f"No time recorded in file {fname}")
     if not schedules:
         raise ValueError(f"No schedule number in file {fname}")
-    if passed == None:
+    if passed is None:
         raise ValueError(f"Could not find pass or fail status in {fname}")
     return time, schedules, passed
 
@@ -117,8 +117,8 @@ def parse_results(root_dir: os.PathLike, verbose: Optional[bool]) -> \
                 time, schedules, passed = get_fields_from_lines(lines, fname)
 
                 # Populate source paths and tests if needed
-                if passed and (data_structure not in source_paths
-                               or source_paths[data_structure] == 'No file'):
+                if data_structure not in source_paths \
+                   or source_paths[data_structure] == 'No file':
                     source_paths[data_structure] = find_source_path(root_dir,
                                                                     fname)
                 tests.add(test)
