@@ -43,7 +43,7 @@ endif
 LIST_BOUND_A = -kind=set $(BOUND_A) $(DRYFLAG)
 LIST_BOUND_B = -kind=set $(BOUND_B) $(DRYFLAG)
 LIST_BOUND_C = -kind=set $(BOUND_C) $(DRYFLAG)
-LIST_BOUND_D = -kind=set $(BOUND_D) $(DRYFLAG)
+LIST_BOUND_D = -kind=set $(BOUND_D) $(DRYFLAG) -tidy
 LIST_BOUND_E = -kind=set $(BOUND_E) $(DRYFLAG) -tidy
 
 LIST_INC = $(DRIVER_INC) $(LIST_H) lists.mk

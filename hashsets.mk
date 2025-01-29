@@ -45,7 +45,7 @@ endif
 HASH_BOUND_A = -kind=set $(BOUND_A) $(DRYFLAG)
 HASH_BOUND_B = -kind=set $(BOUND_B) $(DRYFLAG)
 HASH_BOUND_C = -kind=set $(BOUND_C) $(DRYFLAG)
-HASH_BOUND_D = -kind=set $(BOUND_D) $(DRYFLAG)
+HASH_BOUND_D = -kind=set $(BOUND_D) $(DRYFLAG) -tidy
 HASH_BOUND_E = -kind=set $(BOUND_E) $(DRYFLAG) -tidy
 
 SET_INC = $(DRIVER_INC) $(SET_H)
@@ -136,15 +136,15 @@ out/StripedHashSet_S%.out: $(STRIPED_DEP) $(SET_SCHED_$*)
 ## RefinableHashSet
 
 REFINABLE = $(SET_DIR)/RefinableHashSet.cvl
-REFINABLE_SRC = $(REFINABLE) $(HASH_SRC) $(LOCK_SRC) $(ARRAYLIST_SRC)
+REFINABLE_SRC = $(REFINABLE) $(HASH_SRC) $(LOCK_SRC) $(ARRAYLIST_SRC) $(AMR_SRC)
 REFINABLE_ALL = $(SET_SRC) $(REFINABLE_SRC) $(NBSET_OR)
-REFINABLE_DEP = $(REFINABLE_ALL) $(SET_INC) $(HASH_INC) $(LOCK_INC) $(ARRAYLIST_INC)
+REFINABLE_DEP = $(REFINABLE_ALL) $(SET_INC) $(HASH_INC) $(LOCK_INC) $(ARRAYLIST_INC) $(AMR_INC)
 REFINABLE_OUT = $(addprefix out/RefinableHashSet_,$(addsuffix .out,A B C D E))
 
 # Ex: make -f sets.mk out/RefinableHashSet_1.out
 $(REFINABLE_OUT): out/RefinableHashSet_%.out: $(MAIN_CLASS) $(REFINABLE_DEP)
 	rm -rf out/RefinableHashSet_$*.dir.tmp
-	-$(AMPVER) $(HASH_BOUND_$*) -spec=nonblocking \
+	-$(AMPVER) $(HASH_BOUND_$*) -spec=nonblocking -D_LOCK_TEST \
   -tmpDir=out/RefinableHashSet_$*.dir.tmp $(REFINABLE_SRC) \
   >out/RefinableHashSet_$*.out.tmp
 	rm -rf out/RefinableHashSet_$*.dir
@@ -153,7 +153,7 @@ $(REFINABLE_OUT): out/RefinableHashSet_%.out: $(MAIN_CLASS) $(REFINABLE_DEP)
 
 # Ex: make -f sets.mk out/RefinableHashSet_S1.out
 out/RefinableHashSet_S%.out: $(REFINABLE_DEP) $(SET_SCHED_$*)
-	-$(VERIFY) -checkMemoryLeak=false -checkTermination=true \
+	-$(VERIFY) -checkMemoryLeak=false -checkTermination=true -D_LOCK_TEST \
   $(REFINABLE_ALL) $(SET_SCHED_$*) >out/RefinableHashSet_S$*.out
 
 ## StripedCuckooHashSet
@@ -184,16 +184,16 @@ out/StripedCuckooHashSet_S%.out: $(SCUCKOO_DEP) $(SET_SCHED_$*)
 ## RefinableCuckooHashSet
 
 RCUCKOO = $(SET_DIR)/RefinableCuckooHashSet.cvl
-RCUCKOO_SRC = $(RCUCKOO) $(HASH_SRC) $(LOCK_SRC) $(ARRAYLIST_SRC)
+RCUCKOO_SRC = $(RCUCKOO) $(HASH_SRC) $(LOCK_SRC) $(ARRAYLIST_SRC) $(AMR_SRC)
 RCUCKOO_ALL = $(SET_SRC) $(RCUCKOO_SRC) $(NBSET_OR)
-RCUCKOO_DEP = $(RCUCKOO_ALL) $(SET_INC) $(HASH_INC) $(LOCK_INC) $(ARRAYLIST_INC)
+RCUCKOO_DEP = $(RCUCKOO_ALL) $(SET_INC) $(HASH_INC) $(LOCK_INC) $(ARRAYLIST_INC) $(AMR_INC)
 RCUCKOO_OUT = $(addprefix out/RefinableCuckooHashSet_,$(addsuffix .out,A B C D E))
 
 # Ex: make -f sets.mk out/RefinableCuckooHashSet_1.out
 # some bugs are revealed: config 3 schedule_3366
 $(RCUCKOO_OUT): out/RefinableCuckooHashSet_%.out: $(MAIN_CLASS) $(RCUCKOO_DEP)
 	rm -rf out/RefinableCuckooHashSet_$*.dir.tmp
-	-$(AMPVER) $(HASH_BOUND_$*) -spec=nonblocking \
+	-$(AMPVER) $(HASH_BOUND_$*) -spec=nonblocking -D_LOCK_TEST \
   -tmpDir=out/RefinableCuckooHashSet_$*.dir.tmp $(RCUCKOO_SRC) \
   >out/RefinableCuckooHashSet_$*.out.tmp
 	rm -rf out/RefinableCuckooHashSet_$*.dir
@@ -202,7 +202,7 @@ $(RCUCKOO_OUT): out/RefinableCuckooHashSet_%.out: $(MAIN_CLASS) $(RCUCKOO_DEP)
 
 # Ex: make -f sets.mk out/RefinableCuckooHashSet_S1.out
 out/RefinableCuckooHashSet_S%.out: $(RCUCKOO_DEP) $(SET_SCHED_$*)
-	-$(VERIFY) -checkMemoryLeak=false -checkTermination=true \
+	-$(VERIFY) -checkMemoryLeak=false -checkTermination=true -D_LOCK_TEST \
   $(RCUCKOO_ALL) $(SET_SCHED_$*) >out/RefinableCuckooHashSet_S$*.out
 
 

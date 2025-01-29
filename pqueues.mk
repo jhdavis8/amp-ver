@@ -47,17 +47,24 @@ ifneq ($(DRY),FALSE)
 	DRYFLAG = -dryrun
 endif
 
+PREEMPTION_BOUND ?= FALSE
+PBFLAG =
+ifneq ($(PREEMPTION_BOUND),FALSE)
+	PBFLAG = -preemptionBound=2
+endif
+
 # New priority queue bound settings
 PQUEUE_BOUND_A = -kind=pqueue -genericVals -distinctPriorities -addsDominate \
-  $(BOUND_A) -DRANGE=2 -DLOGRANGE=1 $(DRYFLAG)
+  $(BOUND_A) -DRANGE=2 -DLOGRANGE=1 $(DRYFLAG) $(PBFLAG)
 PQUEUE_BOUND_B = -kind=pqueue -genericVals -distinctPriorities -addsDominate \
-	$(BOUND_B) -DRANGE=3 -DLOGRANGE=2 $(DRYFLAG)
+	$(BOUND_B) -DRANGE=3 -DLOGRANGE=2 $(DRYFLAG) $(PBFLAG)
 PQUEUE_BOUND_C = -kind=pqueue -genericVals -distinctPriorities -addsDominate \
-	$(BOUND_C) -DRANGE=3 -DLOGRANGE=2 $(DRYFLAG)
+	$(BOUND_C) -DRANGE=3 -DLOGRANGE=2 $(DRYFLAG) $(PBFLAG)
 PQUEUE_BOUND_D = -kind=pqueue -genericVals -distinctPriorities -addsDominate \
-	$(BOUND_D) -DRANGE=4 -DLOGRANGE=2 $(DRYFLAG)
+	$(BOUND_D) -DRANGE=4 -DLOGRANGE=2 $(DRYFLAG) $(PBFLAG)
 PQUEUE_BOUND_E = -kind=pqueue -genericVals -distinctPriorities -addsDominate \
 	$(BOUND_E) -DRANGE=5 -DLOGRANGE=3 $(DRYFLAG)
+# E is always preemption bounded to 2
 
 PQUEUE_INC = $(DRIVER_INC) $(PQUEUE_H) pqueues.mk
 PQUEUE_SRC = $(DRIVER_SRC) $(PQUEUE_COL)
