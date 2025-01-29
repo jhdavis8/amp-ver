@@ -154,7 +154,7 @@ def generate_latex(data_structures: Dict[str, Dict[str, Tuple[int, bool, int]]],
                 if results[test][1]:
                     table += str(results[test][0])
                 else:
-                    table += '\\textbf{' + str(results[test][0]) + '}'
+                    table += '\\textcolor{red}{' + str(results[test][0]) + '}'
             else:
                 table += '--'
             table += ' & '
