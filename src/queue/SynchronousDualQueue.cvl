@@ -207,7 +207,7 @@ T Queue_deq(Queue this) {
         continue;
       }
       T item = AtomicInteger_get(n->item);
-#ifdef PATCH
+#ifdef _PATCH
       // added by Josh to correct defect...
       if (item == -1) {
         if (npd_loop_bottom(tid)) return -1;
