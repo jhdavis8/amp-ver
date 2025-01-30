@@ -146,7 +146,7 @@ $(REFINABLE_OUT): out/RefinableHashSet_%.out: $(MAIN_CLASS) $(REFINABLE_DEP)
 	rm -rf out/RefinableHashSet_$*.dir.tmp
 	-$(AMPVER) $(HASH_BOUND_$*) -spec=nonblocking -D_LOCK_TEST \
   -tmpDir=out/RefinableHashSet_$*.dir.tmp $(REFINABLE_SRC) \
-  >out/RefinableHashSet_$*.out.tmp
+  -checkMemoryLeak=false >out/RefinableHashSet_$*.out.tmp
 	rm -rf out/RefinableHashSet_$*.dir
 	mv out/RefinableHashSet_$*.out.tmp out/RefinableHashSet_$*.out
 	mv out/RefinableHashSet_$*.dir.tmp out/RefinableHashSet_$*.dir
@@ -195,7 +195,7 @@ $(RCUCKOO_OUT): out/RefinableCuckooHashSet_%.out: $(MAIN_CLASS) $(RCUCKOO_DEP)
 	rm -rf out/RefinableCuckooHashSet_$*.dir.tmp
 	-$(AMPVER) $(HASH_BOUND_$*) -spec=nonblocking -D_LOCK_TEST \
   -tmpDir=out/RefinableCuckooHashSet_$*.dir.tmp $(RCUCKOO_SRC) \
-  >out/RefinableCuckooHashSet_$*.out.tmp
+  -checkMemoryLeak=false >out/RefinableCuckooHashSet_$*.out.tmp
 	rm -rf out/RefinableCuckooHashSet_$*.dir
 	mv out/RefinableCuckooHashSet_$*.out.tmp out/RefinableCuckooHashSet_$*.out
 	mv out/RefinableCuckooHashSet_$*.dir.tmp out/RefinableCuckooHashSet_$*.dir

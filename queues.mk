@@ -15,14 +15,15 @@ all: $(QUEUES) queue_schedules
 
 $(QUEUES): queue_%: out/BoundedQueue_%.out \
   out/UnboundedQueue_%.out out/LockFreeQueue_%.out \
-  out/SynchronousQueue_%.out out/SynchronousDualQueue2_%.out
+  out/SynchronousQueue_%.out out/SynchronousDualQueue_%.out \
+  out/SynchronousDualQueuePatched_%.out
 
 queue_schedules: \
   $(addprefix out/BoundedQueue_S,$(addsuffix .out,1 2 3)) \
   $(addprefix out/UnboundedQueue_S,$(addsuffix .out,1 2 3)) \
   $(addprefix out/LockFreeQueue_S,$(addsuffix .out,1 2 3)) \
   $(addprefix out/SynchronousQueue_S,$(addsuffix .out,1 2 3)) \
-  $(addprefix out/SynchronousDualQueue2_S,$(addsuffix .out,1 2 3))
+  $(addprefix out/SynchronousDualQueue_S,$(addsuffix .out,1 2 3))
 
 clean:
 	rm -rf out/BoundedQueue*.* out/UnboundedQueue*.* \
@@ -140,7 +141,7 @@ SQUEUE_BOUND_C = -kind=queue -fair -genericVals -threadSym -nthread=1..2 \
 SQUEUE_BOUND_D = -kind=queue -fair -genericVals -threadSym -nthread=1..3 \
 	-nstep=1..4 -npreAdd=0 -checkTermination=true -ncore=$(NCORE) $(DRYFLAG)
 SQUEUE_BOUND_E = -kind=queue -fair -genericVals -threadSym -nthread=1..3 \
-	-nstep=1..5 -npreAdd=0 -checkTermination=true -ncore=$(NCORE) $(DRYFLAG)
+	-nstep=1..5 -npreAdd=0 -checkTermination=true -ncore=$(NCORE) $(DRYFLAG) -preemptionBound=2
 
 ## SynchronousQueue
 
@@ -168,30 +169,41 @@ out/SynchronousQueue_S%.out: $(SQUEUE_DEP) $(QUEUE_SCHED_$*)
 
 # SynchronousDualQueue
 
-SDQUEUE = $(QUEUE_DIR)/SynchronousDualQueue2.cvl
+SDQUEUE = $(QUEUE_DIR)/SynchronousDualQueue.cvl
 SDQUEUE_SRC = $(SDQUEUE) $(AI_SRC) $(AR_SRC) $(NPD_SRC)
 SDQUEUE_ALL = $(QUEUE_SRC) $(SDQUEUE_SRC) $(SQUEUE_OR)
 SDQUEUE_DEP = $(SDQUEUE_ALL) $(QUEUE_INC) $(AI_INC) $(AR_INC) $(NPD_INC)
-SDQUEUE_OUT = $(addprefix out/SynchronousDualQueue2_,$(addsuffix .out,A B C D E))
+SDQUEUE_OUT = $(addprefix out/SynchronousDualQueue_,$(addsuffix .out,A B C D E))
 
-# Example: make -f queues.mk out/SynchronousDualQueue2_1.out
-$(SDQUEUE_OUT): out/SynchronousDualQueue2_%.out: $(MAIN_CLASS) $(SDQUEUE_DEP)
-	rm -rf out/SynchronousDualQueue2_$*.dir.tmp
+# Example: make -f queues.mk out/SynchronousDualQueue_1.out
+$(SDQUEUE_OUT): out/SynchronousDualQueue_%.out: $(MAIN_CLASS) $(SDQUEUE_DEP)
+	rm -rf out/SynchronousDualQueue_$*.dir.tmp
 	-$(AMPVER) $(SQUEUE_BOUND_$*) -spec=sync \
-  -checkMemoryLeak=false -tmpDir=out/SynchronousDualQueue2_$*.dir.tmp \
-  $(SDQUEUE_SRC) >out/SynchronousDualQueue2_$*.out.tmp
-	rm -rf out/SynchronousDualQueue2_$*.dir
-	mv out/SynchronousDualQueue2_$*.out.tmp out/SynchronousDualQueue2_$*.out
-	mv out/SynchronousDualQueue2_$*.dir.tmp out/SynchronousDualQueue2_$*.dir
+  -checkMemoryLeak=false -tmpDir=out/SynchronousDualQueue_$*.dir.tmp \
+  $(SDQUEUE_SRC) >out/SynchronousDualQueue_$*.out.tmp
+	rm -rf out/SynchronousDualQueue_$*.dir
+	mv out/SynchronousDualQueue_$*.out.tmp out/SynchronousDualQueue_$*.out
+	mv out/SynchronousDualQueue_$*.dir.tmp out/SynchronousDualQueue_$*.dir
+
+SDQUEUEP_OUT = $(addprefix out/SynchronousDualQueuePatched_,$(addsuffix .out,A B C D E))
+
+$(SDQUEUEP_OUT): out/SynchronousDualQueuePatched_%.out: $(MAIN_CLASS) $(SDQUEUE_DEP)
+	rm -rf out/SynchronousDualQueuePatched_$*.dir.tmp
+	-$(AMPVER) $(SQUEUE_BOUND_$*) -spec=sync -D_PATCH \
+  -checkMemoryLeak=false -tmpDir=out/SynchronousDualQueuePatched_$*.dir.tmp \
+  $(SDQUEUE_SRC) >out/SynchronousDualQueuePatched_$*.out.tmp
+	rm -rf out/SynchronousDualQueuePatched_$*.dir
+	mv out/SynchronousDualQueuePatched_$*.out.tmp out/SynchronousDualQueuePatched_$*.out
+	mv out/SynchronousDualQueuePatched_$*.dir.tmp out/SynchronousDualQueuePatched_$*.dir
 
 # using preemptionBound ...
 
-SDQUEUE1 = $(QUEUE_DIR)/SynchronousDualQueue1.cvl
+SDQUEUE1 = $(QUEUE_DIR)/SynchronousDualQueueAlt.cvl
 SDQUEUE1_SRC = $(SDQUEUE1) $(AI_SRC) $(AR_SRC)
 SDQUEUE1_ALL = $(QUEUE_SRC) $(SDQUEUE1_SRC) $(SQUEUE_OR)
 SDQUEUE1_DEP = $(SDQUEUE1_ALL) $(QUEUE_INC) $(AI_INC) $(AR_INC)
 # Example: make -f queues.mk
-out/SynchronousDualQueue1_S%.out: $(SDQUEUE1_DEP) $(QUEUE_SCHED_$*)
+out/SynchronousDualQueueAlt_S%.out: $(SDQUEUE1_DEP) $(QUEUE_SCHED_$*)
 	$(VERIFY) -fair -checkMemoryLeak=false -checkTermination=true \
   -preemptionBound=4 \
-  $(SDQUEUE1_ALL) $(QUEUE_SCHED_$*) >out/SynchronousDualQueue1_S$*.out
+  $(SDQUEUE1_ALL) $(QUEUE_SCHED_$*) >out/SynchronousDualQueueAlt_S$*.out

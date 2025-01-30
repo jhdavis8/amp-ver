@@ -9,8 +9,8 @@
    and companion code ch15/priority/src/priority/SkipQueue.java.
  
    This is a lock-free priority queue implemented with a
-   PrioritySkipList.  This model contains an optional patch to fix a
-   bug; the patched version is obtained using -D_PATCH_SKIPQUEUE.
+   PrioritySkipList.  This model contains an optional original mode
+   to reproduce a bug, obtained using -D_ORIGINAL_SKIPQUEUE.
  
    Verified Software Lab
    Department of Computer & Information Sciences
@@ -231,7 +231,7 @@ static Node findAndMarkMin(PrioritySkipList p) {
       } else {
         curr = AtomicMarkableReference_getReference(curr->next[0]);
       }
-#ifdef _PATCH_SKIPQUEUE
+#ifndef _ORIGINAL_SKIPQUEUE
     } else {
       curr = AtomicMarkableReference_getReference(curr->next[0]);
 #endif

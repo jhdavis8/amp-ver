@@ -207,11 +207,13 @@ T Queue_deq(Queue this) {
         continue;
       }
       T item = AtomicInteger_get(n->item);
+#ifdef PATCH
       // added by Josh to correct defect...
       if (item == -1) {
         if (npd_loop_bottom(tid)) return -1;
         continue;
       }
+#endif
       bool success = ai_compareAndSet(n->item, item, -1);
       ar_compareAndSet(this->head, h, n);
       if (success) {
