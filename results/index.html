@@ -1,0 +1,282 @@
+<style type="text/css">
+.tg  {border-collapse:collapse;border-spacing:0;}
+.tg td{border-color:black;border-style:solid;border-width:1px;
+       font-family:Arial, sans-serif;font-size:14px;
+       overflow:hidden;padding:10px 5px;word-break:normal;}
+.tg th{border-color:black;border-style:solid;border-width:1px;
+       font-family:Arial, sans-serif;font-size:14px;
+       font-weight:normal;overflow:hidden;padding:10px 5px;word-break:normal;}
+.tg .tg-head{border-color:inherit;font-family:serif !important;
+             background-color:darkgrey;text-align:left;vertical-align:top;
+             font-weight:bold}
+.tg .tg-left{border-color:inherit;font-family:serif !important;             background-color:lightgrey;text-align:left;vertical-align:top}.tg .tg-base{border-color:inherit;font-family:serif !important;
+             background-color:white;text-align:left;vertical-align:top}
+.tg .tg-fail{border-color:inherit;font-family:serif !important;
+             background-color:lightcoral;text-align:left;vertical-align:top;
+             font-weight:bold}
+</style>
+<table class="tg"><thead>
+  <tr>
+    <th class="tg-head"> </th>
+    <th class="tg-head" title="BOUND_A:
+Pre-adds: 0
+Threads: 1-2
+Steps: 1-2
+Hashcode: identity
+Set/List schedules: 63
+Queue schedules: 9
+SyncQueue schedules: 9
+PQueue schedules: 7">A</th>
+    <th class="tg-head" title="BOUND_B:
+Pre-adds: 0-1
+Threads: 1-2
+Steps: 1-2
+Hashcode: identity
+
+Set/List schedules: 270
+Queue schedules: 18
+SyncQueue schedules: 25
+PQueue schedules: 25">B</th>
+    <th class="tg-head" title="BOUND_C:
+Pre-adds: 0-1
+Threads: 1-2
+Steps: 1-2
+Hashcode: nondeterministic
+
+Set/List schedules: 270
+Queue schedules: 18
+SyncQueue schedules: 25
+PQueue schedules: 25">C</th>
+    <th class="tg-head" title="BOUND_D:
+Pre-adds: 0-1
+Threads: 1-3
+Steps: 1-3
+Hashcode: identity
+
+Set/List schedules: 8108
+Queue schedules: 58
+SyncQueue schedules: 83
+PQueue schedules: 156">D</th>
+    <th class="tg-head" title="BOUND_E:
+Pre-adds: 0-1
+Threads: 1-3
+Steps: 1-4
+Hashcode: identity
+Preemption bound: 2
+
+Set/List schedules: 322930
+Queue schedules: 166
+SyncQueue schedules: 223
+PQueue schedules: 1096">E</th>
+  </tr></thead>
+<tbody>
+  <tr>
+    <td class="tg-left"><a href="./src/queue/BoundedQueue.cvl">BoundedQueue</a></td>
+    <td class="tg-base">8 sec. (<a href="out/BoundedQueue_A.out">out</a>, <a href="out/BoundedQueue_A.dir">dir</a>)</td>
+    <td class="tg-base">10 sec. (<a href="out/BoundedQueue_B.out">out</a>, <a href="out/BoundedQueue_B.dir">dir</a>)</td>
+    <td class="tg-base">--</td>
+    <td class="tg-base">115 sec. (<a href="out/BoundedQueue_D.out">out</a>, <a href="out/BoundedQueue_D.dir">dir</a>)</td>
+    <td class="tg-base">123 sec. (<a href="out/BoundedQueue_E.out">out</a>, <a href="out/BoundedQueue_E.dir">dir</a>)</td>
+  </tr>
+  <tr>
+    <td class="tg-left"><a href="./src/hashset/CoarseHashSet.cvl">CoarseHashSet</a></td>
+    <td class="tg-base">19 sec. (<a href="out/CoarseHashSet_A.out">out</a>, <a href="out/CoarseHashSet_A.dir">dir</a>)</td>
+    <td class="tg-base">50 sec. (<a href="out/CoarseHashSet_B.out">out</a>, <a href="out/CoarseHashSet_B.dir">dir</a>)</td>
+    <td class="tg-base">55 sec. (<a href="out/CoarseHashSet_C.out">out</a>, <a href="out/CoarseHashSet_C.dir">dir</a>)</td>
+    <td class="tg-base">1572 sec. (<a href="out/CoarseHashSet_D.out">out</a>, <a href="out/CoarseHashSet_D.dir">dir</a>)</td>
+    <td class="tg-base">--</td>
+  </tr>
+  <tr>
+    <td class="tg-left"><a href="./src/list/CoarseList.cvl">CoarseList</a></td>
+    <td class="tg-base">17 sec. (<a href="out/CoarseList_A.out">out</a>, <a href="out/CoarseList_A.dir">dir</a>)</td>
+    <td class="tg-base">47 sec. (<a href="out/CoarseList_B.out">out</a>, <a href="out/CoarseList_B.dir">dir</a>)</td>
+    <td class="tg-base">--</td>
+    <td class="tg-base">1613 sec. (<a href="out/CoarseList_D.out">out</a>, <a href="out/CoarseList_D.dir">dir</a>)</td>
+    <td class="tg-base">--</td>
+  </tr>
+  <tr>
+    <td class="tg-left"><a href="./src/pqueue/FineGrainedHeap.cvl">FineGrainedHeap</a></td>
+    <td class="tg-fail"><a href="out/FineGrainedHeap_A.dir/schedule_5.out">6 sec.</a> (<a href="out/FineGrainedHeap_A.out">out</a>, <a href="out/FineGrainedHeap_A.dir">dir</a>)</td>
+    <td class="tg-fail"><a href="out/FineGrainedHeap_B.dir/schedule_18.out">11 sec.</a> (<a href="out/FineGrainedHeap_B.out">out</a>, <a href="out/FineGrainedHeap_B.dir">dir</a>)</td>
+    <td class="tg-base">--</td>
+    <td class="tg-fail"><a href="out/FineGrainedHeap_D.dir/schedule_80.out">22 sec.</a> (<a href="out/FineGrainedHeap_D.out">out</a>, <a href="out/FineGrainedHeap_D.dir">dir</a>)</td>
+    <td class="tg-fail"><a href="out/FineGrainedHeap_E.dir/schedule_115.out">27 sec.</a> (<a href="out/FineGrainedHeap_E.out">out</a>, <a href="out/FineGrainedHeap_E.dir">dir</a>)</td>
+  </tr>
+  <tr>
+    <td class="tg-left"><a href="./src/pqueue/FineGrainedHeap.cvl">FineGrainedHeapFair</a></td>
+    <td class="tg-base">7 sec. (<a href="out/FineGrainedHeapFair_A.out">out</a>, <a href="out/FineGrainedHeapFair_A.dir">dir</a>)</td>
+    <td class="tg-fail"><a href="out/FineGrainedHeapFair_B.dir/schedule_24.out">11 sec.</a> (<a href="out/FineGrainedHeapFair_B.out">out</a>, <a href="out/FineGrainedHeapFair_B.dir">dir</a>)</td>
+    <td class="tg-base">--</td>
+    <td class="tg-fail"><a href="out/FineGrainedHeapFair_D.dir/schedule_83.out">24 sec.</a> (<a href="out/FineGrainedHeapFair_D.out">out</a>, <a href="out/FineGrainedHeapFair_D.dir">dir</a>)</td>
+    <td class="tg-fail"><a href="out/FineGrainedHeapFair_E.dir/schedule_114.out">27 sec.</a> (<a href="out/FineGrainedHeapFair_E.out">out</a>, <a href="out/FineGrainedHeapFair_E.dir">dir</a>)</td>
+  </tr>
+  <tr>
+    <td class="tg-left"><a href="./src/list/FineList.cvl">FineList</a></td>
+    <td class="tg-base">17 sec. (<a href="out/FineList_A.out">out</a>, <a href="out/FineList_A.dir">dir</a>)</td>
+    <td class="tg-base">47 sec. (<a href="out/FineList_B.out">out</a>, <a href="out/FineList_B.dir">dir</a>)</td>
+    <td class="tg-base">--</td>
+    <td class="tg-base">1766 sec. (<a href="out/FineList_D.out">out</a>, <a href="out/FineList_D.dir">dir</a>)</td>
+    <td class="tg-base">--</td>
+  </tr>
+  <tr>
+    <td class="tg-left"><a href="./src/list/LazyList.cvl">LazyList</a></td>
+    <td class="tg-base">17 sec. (<a href="out/LazyList_A.out">out</a>, <a href="out/LazyList_A.dir">dir</a>)</td>
+    <td class="tg-base">49 sec. (<a href="out/LazyList_B.out">out</a>, <a href="out/LazyList_B.dir">dir</a>)</td>
+    <td class="tg-base">--</td>
+    <td class="tg-base">1988 sec. (<a href="out/LazyList_D.out">out</a>, <a href="out/LazyList_D.dir">dir</a>)</td>
+    <td class="tg-base">--</td>
+  </tr>
+  <tr>
+    <td class="tg-left"><a href="./src/hashset/LockFreeHashSet.cvl">LockFreeHashSet</a></td>
+    <td class="tg-base">21 sec. (<a href="out/LockFreeHashSet_A.out">out</a>, <a href="out/LockFreeHashSet_A.dir">dir</a>)</td>
+    <td class="tg-fail"><a href="out/LockFreeHashSet_B.dir/schedule_240.out">52 sec.</a> (<a href="out/LockFreeHashSet_B.out">out</a>, <a href="out/LockFreeHashSet_B.dir">dir</a>)</td>
+    <td class="tg-fail"><a href="out/LockFreeHashSet_C.dir/schedule_11.out">8 sec.</a> (<a href="out/LockFreeHashSet_C.out">out</a>, <a href="out/LockFreeHashSet_C.dir">dir</a>)</td>
+    <td class="tg-fail"><a href="out/LockFreeHashSet_D.dir/schedule_3872.out">547 sec.</a> (<a href="out/LockFreeHashSet_D.out">out</a>, <a href="out/LockFreeHashSet_D.dir">dir</a>)</td>
+    <td class="tg-base">--</td>
+  </tr>
+  <tr>
+    <td class="tg-left"><a href="./src/hashset/LockFreeHashSetPatched.cvl">LockFreeHashSetPatched</a></td>
+    <td class="tg-base">19 sec. (<a href="out/LockFreeHashSetPatched_A.out">out</a>, <a href="out/LockFreeHashSetPatched_A.dir">dir</a>)</td>
+    <td class="tg-base">56 sec. (<a href="out/LockFreeHashSetPatched_B.out">out</a>, <a href="out/LockFreeHashSetPatched_B.dir">dir</a>)</td>
+    <td class="tg-fail"><a href="out/LockFreeHashSetPatched_C.dir/schedule_14.out">8 sec.</a> (<a href="out/LockFreeHashSetPatched_C.out">out</a>, <a href="out/LockFreeHashSetPatched_C.dir">dir</a>)</td>
+    <td class="tg-fail"><a href="out/LockFreeHashSetPatched_D.dir/schedule_5756.out">1054 sec.</a> (<a href="out/LockFreeHashSetPatched_D.out">out</a>, <a href="out/LockFreeHashSetPatched_D.dir">dir</a>)</td>
+    <td class="tg-base">--</td>
+  </tr>
+  <tr>
+    <td class="tg-left"><a href="./src/list/LockFreeList.cvl">LockFreeList</a></td>
+    <td class="tg-base">18 sec. (<a href="out/LockFreeList_A.out">out</a>, <a href="out/LockFreeList_A.dir">dir</a>)</td>
+    <td class="tg-base">51 sec. (<a href="out/LockFreeList_B.out">out</a>, <a href="out/LockFreeList_B.dir">dir</a>)</td>
+    <td class="tg-base">--</td>
+    <td class="tg-base">1856 sec. (<a href="out/LockFreeList_D.out">out</a>, <a href="out/LockFreeList_D.dir">dir</a>)</td>
+    <td class="tg-base">--</td>
+  </tr>
+  <tr>
+    <td class="tg-left"><a href="./src/list/LockFreeList.cvl">LockFreeListOriginal</a></td>
+    <td class="tg-base">18 sec. (<a href="out/LockFreeListOriginal_A.out">out</a>, <a href="out/LockFreeListOriginal_A.dir">dir</a>)</td>
+    <td class="tg-fail"><a href="out/LockFreeListOriginal_B.dir/schedule_240.out">48 sec.</a> (<a href="out/LockFreeListOriginal_B.out">out</a>, <a href="out/LockFreeListOriginal_B.dir">dir</a>)</td>
+    <td class="tg-base">--</td>
+    <td class="tg-fail"><a href="out/LockFreeListOriginal_D.dir/schedule_3872.out">486 sec.</a> (<a href="out/LockFreeListOriginal_D.out">out</a>, <a href="out/LockFreeListOriginal_D.dir">dir</a>)</td>
+    <td class="tg-base">--</td>
+  </tr>
+  <tr>
+    <td class="tg-left"><a href="./src/queue/LockFreeQueue.cvl">LockFreeQueue</a></td>
+    <td class="tg-base">6 sec. (<a href="out/LockFreeQueue_A.out">out</a>, <a href="out/LockFreeQueue_A.dir">dir</a>)</td>
+    <td class="tg-base">9 sec. (<a href="out/LockFreeQueue_B.out">out</a>, <a href="out/LockFreeQueue_B.dir">dir</a>)</td>
+    <td class="tg-base">--</td>
+    <td class="tg-base">61 sec. (<a href="out/LockFreeQueue_D.out">out</a>, <a href="out/LockFreeQueue_D.dir">dir</a>)</td>
+    <td class="tg-base">171 sec. (<a href="out/LockFreeQueue_E.out">out</a>, <a href="out/LockFreeQueue_E.dir">dir</a>)</td>
+  </tr>
+  <tr>
+    <td class="tg-left"><a href="./src/list/OptimisticList.cvl">OptimisticList</a></td>
+    <td class="tg-base">18 sec. (<a href="out/OptimisticList_A.out">out</a>, <a href="out/OptimisticList_A.dir">dir</a>)</td>
+    <td class="tg-base">49 sec. (<a href="out/OptimisticList_B.out">out</a>, <a href="out/OptimisticList_B.dir">dir</a>)</td>
+    <td class="tg-base">--</td>
+    <td class="tg-base">2136 sec. (<a href="out/OptimisticList_D.out">out</a>, <a href="out/OptimisticList_D.dir">dir</a>)</td>
+    <td class="tg-base">--</td>
+  </tr>
+  <tr>
+    <td class="tg-left"><a href="./src/hashset/RefinableCuckooHashSet.cvl">RefinableCuckooHashSet</a></td>
+    <td class="tg-base">22 sec. (<a href="out/RefinableCuckooHashSet_A.out">out</a>, <a href="out/RefinableCuckooHashSet_A.dir">dir</a>)</td>
+    <td class="tg-base">59 sec. (<a href="out/RefinableCuckooHashSet_B.out">out</a>, <a href="out/RefinableCuckooHashSet_B.dir">dir</a>)</td>
+    <td class="tg-fail">&infin;</td>
+    <td class="tg-fail"><a href="out/RefinableCuckooHashSet_D.dir/schedule_5659.out">1093 sec.</a> (<a href="out/RefinableCuckooHashSet_D.out">out</a>, <a href="out/RefinableCuckooHashSet_D.dir">dir</a>)</td>
+    <td class="tg-base">--</td>
+  </tr>
+  <tr>
+    <td class="tg-left"><a href="./src/hashset/RefinableHashSet.cvl">RefinableHashSet</a></td>
+    <td class="tg-base">21 sec. (<a href="out/RefinableHashSet_A.out">out</a>, <a href="out/RefinableHashSet_A.dir">dir</a>)</td>
+    <td class="tg-fail"><a href="out/RefinableHashSet_B.dir/schedule_229.out">50 sec.</a> (<a href="out/RefinableHashSet_B.out">out</a>, <a href="out/RefinableHashSet_B.dir">dir</a>)</td>
+    <td class="tg-fail"><a href="out/RefinableHashSet_C.dir/schedule_229.out">54 sec.</a> (<a href="out/RefinableHashSet_C.out">out</a>, <a href="out/RefinableHashSet_C.dir">dir</a>)</td>
+    <td class="tg-fail"><a href="out/RefinableHashSet_D.dir/schedule_3850.out">572 sec.</a> (<a href="out/RefinableHashSet_D.out">out</a>, <a href="out/RefinableHashSet_D.dir">dir</a>)</td>
+    <td class="tg-base">--</td>
+  </tr>
+  <tr>
+    <td class="tg-left"><a href="./src/pqueue/SimpleLinear.cvl">SimpleLinear</a></td>
+    <td class="tg-base">6 sec. (<a href="out/SimpleLinear_A.out">out</a>, <a href="out/SimpleLinear_A.dir">dir</a>)</td>
+    <td class="tg-base">10 sec. (<a href="out/SimpleLinear_B.out">out</a>, <a href="out/SimpleLinear_B.dir">dir</a>)</td>
+    <td class="tg-base">--</td>
+    <td class="tg-base">39 sec. (<a href="out/SimpleLinear_D.out">out</a>, <a href="out/SimpleLinear_D.dir">dir</a>)</td>
+    <td class="tg-base">447 sec. (<a href="out/SimpleLinear_E.out">out</a>, <a href="out/SimpleLinear_E.dir">dir</a>)</td>
+  </tr>
+  <tr>
+    <td class="tg-left"><a href="./src/pqueue/SimpleTree.cvl">SimpleTree</a></td>
+    <td class="tg-base">6 sec. (<a href="out/SimpleTree_A.out">out</a>, <a href="out/SimpleTree_A.dir">dir</a>)</td>
+    <td class="tg-base">12 sec. (<a href="out/SimpleTree_B.out">out</a>, <a href="out/SimpleTree_B.dir">dir</a>)</td>
+    <td class="tg-base">--</td>
+    <td class="tg-fail"><a href="out/SimpleTree_D.dir/schedule_133.out">44 sec.</a> (<a href="out/SimpleTree_D.out">out</a>, <a href="out/SimpleTree_D.dir">dir</a>)</td>
+    <td class="tg-fail"><a href="out/SimpleTree_E.dir/schedule_445.out">204 sec.</a> (<a href="out/SimpleTree_E.out">out</a>, <a href="out/SimpleTree_E.dir">dir</a>)</td>
+  </tr>
+  <tr>
+    <td class="tg-left"><a href="./src/pqueue/SkipQueue.cvl">SkipQueueOriginal</a></td>
+    <td class="tg-base">9 sec. (<a href="out/SkipQueueOriginal_A.out">out</a>, <a href="out/SkipQueueOriginal_A.dir">dir</a>)</td>
+    <td class="tg-base">26 sec. (<a href="out/SkipQueueOriginal_B.out">out</a>, <a href="out/SkipQueueOriginal_B.dir">dir</a>)</td>
+    <td class="tg-base">--</td>
+    <td class="tg-fail"><a href="out/SkipQueueOriginal_D.dir/schedule_141.out">228 sec.</a> (<a href="out/SkipQueueOriginal_D.out">out</a>, <a href="out/SkipQueueOriginal_D.dir">dir</a>)</td>
+    <td class="tg-fail"><a href="out/SkipQueueOriginal_E.dir/schedule_454.out">254 sec.</a> (<a href="out/SkipQueueOriginal_E.out">out</a>, <a href="out/SkipQueueOriginal_E.dir">dir</a>)</td>
+  </tr>
+  <tr>
+    <td class="tg-left"><a href="./src/pqueue/SkipQueue.cvl">SkipQueueQC</a></td>
+    <td class="tg-base">10 sec. (<a href="out/SkipQueueQC_A.out">out</a>, <a href="out/SkipQueueQC_A.dir">dir</a>)</td>
+    <td class="tg-base">26 sec. (<a href="out/SkipQueueQC_B.out">out</a>, <a href="out/SkipQueueQC_B.dir">dir</a>)</td>
+    <td class="tg-base">--</td>
+    <td class="tg-base">263 sec. (<a href="out/SkipQueueQC_D.out">out</a>, <a href="out/SkipQueueQC_D.dir">dir</a>)</td>
+    <td class="tg-base">8582 sec. (<a href="out/SkipQueueQC_E.out">out</a>, <a href="out/SkipQueueQC_E.dir">dir</a>)</td>
+  </tr>
+  <tr>
+    <td class="tg-left"><a href="./src/pqueue/SkipQueue.cvl">SkipQueueSC</a></td>
+    <td class="tg-base">9 sec. (<a href="out/SkipQueueSC_A.out">out</a>, <a href="out/SkipQueueSC_A.dir">dir</a>)</td>
+    <td class="tg-base">23 sec. (<a href="out/SkipQueueSC_B.out">out</a>, <a href="out/SkipQueueSC_B.dir">dir</a>)</td>
+    <td class="tg-base">--</td>
+    <td class="tg-base">178 sec. (<a href="out/SkipQueueSC_D.out">out</a>, <a href="out/SkipQueueSC_D.dir">dir</a>)</td>
+    <td class="tg-fail"><a href="out/SkipQueueSC_E.dir/schedule_1094.out">2730 sec.</a> (<a href="out/SkipQueueSC_E.out">out</a>, <a href="out/SkipQueueSC_E.dir">dir</a>)</td>
+  </tr>
+  <tr>
+    <td class="tg-left"><a href="./src/hashset/StripedCuckooHashSet.cvl">StripedCuckooHashSet</a></td>
+    <td class="tg-base">20 sec. (<a href="out/StripedCuckooHashSet_A.out">out</a>, <a href="out/StripedCuckooHashSet_A.dir">dir</a>)</td>
+    <td class="tg-base">53 sec. (<a href="out/StripedCuckooHashSet_B.out">out</a>, <a href="out/StripedCuckooHashSet_B.dir">dir</a>)</td>
+    <td class="tg-fail">&infin;</td>
+    <td class="tg-fail"><a href="out/StripedCuckooHashSet_D.dir/schedule_5679.out">896 sec.</a> (<a href="out/StripedCuckooHashSet_D.out">out</a>, <a href="out/StripedCuckooHashSet_D.dir">dir</a>)</td>
+    <td class="tg-base">--</td>
+  </tr>
+  <tr>
+    <td class="tg-left"><a href="./src/hashset/StripedHashSet.cvl">StripedHashSet</a></td>
+    <td class="tg-base">19 sec. (<a href="out/StripedHashSet_A.out">out</a>, <a href="out/StripedHashSet_A.dir">dir</a>)</td>
+    <td class="tg-base">52 sec. (<a href="out/StripedHashSet_B.out">out</a>, <a href="out/StripedHashSet_B.dir">dir</a>)</td>
+    <td class="tg-base">59 sec. (<a href="out/StripedHashSet_C.out">out</a>, <a href="out/StripedHashSet_C.dir">dir</a>)</td>
+    <td class="tg-base">1732 sec. (<a href="out/StripedHashSet_D.out">out</a>, <a href="out/StripedHashSet_D.dir">dir</a>)</td>
+    <td class="tg-base">--</td>
+  </tr>
+  <tr>
+    <td class="tg-left"><a href="./src/queue/SynchronousDualQueue.cvl">SynchronousDualQueue</a></td>
+    <td class="tg-base">8 sec. (<a href="out/SynchronousDualQueue_A.out">out</a>, <a href="out/SynchronousDualQueue_A.dir">dir</a>)</td>
+    <td class="tg-base">14 sec. (<a href="out/SynchronousDualQueue_B.out">out</a>, <a href="out/SynchronousDualQueue_B.dir">dir</a>)</td>
+    <td class="tg-base">--</td>
+    <td class="tg-fail"><a href="out/SynchronousDualQueue_D.dir/schedule_76.out">116 sec.</a> (<a href="out/SynchronousDualQueue_D.out">out</a>, <a href="out/SynchronousDualQueue_D.dir">dir</a>)</td>
+    <td class="tg-base">182 sec. (<a href="out/SynchronousDualQueue_E.out">out</a>, <a href="out/SynchronousDualQueue_E.dir">dir</a>)</td>
+  </tr>
+  <tr>
+    <td class="tg-left"><a href="./src/queue/SynchronousDualQueue.cvl">SynchronousDualQueuePatched</a></td>
+    <td class="tg-base">8 sec. (<a href="out/SynchronousDualQueuePatched_A.out">out</a>, <a href="out/SynchronousDualQueuePatched_A.dir">dir</a>)</td>
+    <td class="tg-base">14 sec. (<a href="out/SynchronousDualQueuePatched_B.out">out</a>, <a href="out/SynchronousDualQueuePatched_B.dir">dir</a>)</td>
+    <td class="tg-base">--</td>
+    <td class="tg-base">1450 sec. (<a href="out/SynchronousDualQueuePatched_D.out">out</a>, <a href="out/SynchronousDualQueuePatched_D.dir">dir</a>)</td>
+    <td class="tg-base">187 sec. (<a href="out/SynchronousDualQueuePatched_E.out">out</a>, <a href="out/SynchronousDualQueuePatched_E.dir">dir</a>)</td>
+  </tr>
+  <tr>
+    <td class="tg-left"><a href="./src/queue/SynchronousQueue.cvl">SynchronousQueue</a></td>
+    <td class="tg-base">6 sec. (<a href="out/SynchronousQueue_A.out">out</a>, <a href="out/SynchronousQueue_A.dir">dir</a>)</td>
+    <td class="tg-base">11 sec. (<a href="out/SynchronousQueue_B.out">out</a>, <a href="out/SynchronousQueue_B.dir">dir</a>)</td>
+    <td class="tg-base">--</td>
+    <td class="tg-base">44 sec. (<a href="out/SynchronousQueue_D.out">out</a>, <a href="out/SynchronousQueue_D.dir">dir</a>)</td>
+    <td class="tg-base">246 sec. (<a href="out/SynchronousQueue_E.out">out</a>, <a href="out/SynchronousQueue_E.dir">dir</a>)</td>
+  </tr>
+  <tr>
+    <td class="tg-left"><a href="./src/queue/UnboundedQueue.cvl">UnboundedQueue</a></td>
+    <td class="tg-base">6 sec. (<a href="out/UnboundedQueue_A.out">out</a>, <a href="out/UnboundedQueue_A.dir">dir</a>)</td>
+    <td class="tg-base">9 sec. (<a href="out/UnboundedQueue_B.out">out</a>, <a href="out/UnboundedQueue_B.dir">dir</a>)</td>
+    <td class="tg-base">--</td>
+    <td class="tg-base">32 sec. (<a href="out/UnboundedQueue_D.out">out</a>, <a href="out/UnboundedQueue_D.dir">dir</a>)</td>
+    <td class="tg-base">157 sec. (<a href="out/UnboundedQueue_E.out">out</a>, <a href="out/UnboundedQueue_E.dir">dir</a>)</td>
+  </tr>
+</tbody>
+</table>
