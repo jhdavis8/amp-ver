@@ -1,0 +1,31 @@
+
+          COLLECT: Installation Instructions
+
+This repository contains the source code for the COLLECT Verifier as
+well as CIVL-C implementations of data structures from *The Art of
+Multiprocessor Programming*.
+
+Instructions:
+
+First, you will need a recent version of the Java SDK (version 17 or
+higher), and GNU Make.  Install these if you don't already have them.
+
+Second, install the latest (unstable) release of the CIVL model
+checker following the instructions here:
+
+http://vsl.cis.udel.edu/lib/sw/civl/trunk/latest/release/index.html
+
+
+Next, download and unpack the COLLECT distribution and move it
+to wherever you like on your local system.
+
+Move into the root directory of the distribution.  Make a copy of
+config/config_default.mk called config/config.mk and edit as
+appropriate to provide system-specific information.
+
+Type "make".  This should compile COLLECT and run some simple tests on
+a number of data structures.
+
+To run more extensive tests, see the individual make files
+hashsets.mk, lists.mk, queues.mk, and pqueues.mk.  Each has comments
+and a number of rules to run different sized configurations.
