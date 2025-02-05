@@ -8,6 +8,6 @@ bin
 java/collect.jar
 java/classes
 config/config.mk
-experiments/results/out
+examples/out/*
+experiments/results/out/*
 experiments/results/index.html
-
