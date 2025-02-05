@@ -161,6 +161,7 @@ public class AMPVer {
     System.err.println(msg);
     System.err.flush();
     out.flush();
+    printUsage(System.err);
     System.exit(1);
   }
 
@@ -263,6 +264,57 @@ public class AMPVer {
       err("Expected either true or false for "+key+" but saw "+value);
     }
     throw new RuntimeException("unreachable");
+  }
+
+  private void printUsage(PrintStream out) {
+    out.println("collect: the Concurrent Collection Verifier");
+    out.println("See https://collect-verifier.org");
+    out.println("Usage: collect <options> file ...");
+    out.println("Options:");
+    out.println("  -kind=(set|queue|pqueue)");
+    out.println("    the kind of collection being verified");
+    out.println("  -spec=(nonblocking|bounded|sync)");
+    out.println("    synchronization protocol (for queues only, for now)");
+    out.println("  -property=(sc|linear|quiescent)");
+    out.println("    consistency property to check");
+    out.println("  -root=DIR");
+    out.println("    specifies root directory of COLLECT distribution");
+    out.println("  -tmpDir=DIR");
+    out.println("    working directory to store temporary files");
+    out.println("  -valueBound=INT");
+    out.println("    upper bound on values to be added to the collection");
+    out.println("  -nthread=RANGE");
+    out.println("    upper and/or lower bounds on number of worker threads");
+    out.println("  -npreAdd=RANGE");
+    out.println("    upper and/or lower bounds on number of pre-add operations");
+    out.println("  -genericVals=(true|false)");
+    out.println("    use sequence 0,1,... for add operations (queue and pqueue)");
+    out.println("  -distinctPriorities=(true|false)");
+    out.println("    use distinct priorities for pqueue adds");
+    out.println("  -addsDominate=(true|false)");
+    out.println("    number of adds >= number of removes");
+    out.println("  -threadSym=(true|false)");
+    out.println("    assume thread symmetry");
+    out.println("  -noAllAdd=(true|false)");
+    out.println("    skip schedules that only have add operations");
+    out.println("  -dryRun=(true|false)");
+    out.println("    generated CIVL schedules but don't run them");
+    out.println("  -tidy=(true|false)");
+    out.println("    erase schedule and output files when done");
+    out.println("  -hashKind=(nd|ident)");
+    out.println("    use nondeterministic or identity function for hashes");
+    out.println("  -hashDomainBound=INT");
+    out.println("    modulus applied to hash function inputs (nd only)");
+    out.println("  -hashRangeBound=INT");
+    out.println("    upper bound on output of hash function (nd only)");
+    out.println("  -fair=(true|false)");
+    out.println("    assume weak fairness");
+    out.println("  -ncore=INT");
+    out.println("    number of verification threads to use");
+    out.println("  -capacity=INT");
+    out.println("    max capacity for bounded collections");
+    out.println("Note: a RANGE is either an int or int..int");
+    out.println("If Boolean value is missing, default is true.");
   }
 
   /**
@@ -597,7 +649,7 @@ public class AMPVer {
       boolean result = ui.run(commandArray);
       outStream.close();
       if (!result) {
-        out.println("AMPVer: error detected on schedule "+id+
+        out.println("collect: error detected on schedule "+id+
                     ".  Exiting.");
         printTime();
         System.err.flush();
@@ -665,7 +717,7 @@ public class AMPVer {
   }
   
   public static void main(String[] args) throws IOException {
-    System.out.println("AMP Verification Driver v0.1");
+    System.out.println("COLLECT Verifier v0.1");
     AMPVer av = new AMPVer();
     av.parseCommandLine(args);
     av.makeCoreCommands();
