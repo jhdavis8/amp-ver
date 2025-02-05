@@ -88,7 +88,7 @@ public class AMPVer {
   private boolean distinctPriorities = false;
 
   /** In any schedule, the number of adds will be greater than or
-   * equal to the number of removes. Default: true. */
+   * equal to the number of removes. Default: false. */
   private boolean addsDominate = false;
 
   /** Threads are assumed to be symmetric, so any permutation of
@@ -272,49 +272,56 @@ public class AMPVer {
     out.println("Usage: collect <options> file ...");
     out.println("Options:");
     out.println("  -kind=(set|queue|pqueue)");
-    out.println("    the kind of collection being verified");
+    out.println("    the kind of collection being verified. Default: set");
     out.println("  -spec=(nonblocking|bounded|sync)");
-    out.println("    synchronization protocol (for queues only, for now)");
+    out.println("    synchronization protocol, default nonblocking (queues only)");
     out.println("  -property=(sc|linear|quiescent)");
-    out.println("    consistency property to check");
-    out.println("  -root=DIR");
-    out.println("    specifies root directory of COLLECT distribution");
+    out.println("    consistency property to check, default linear");
     out.println("  -tmpDir=DIR");
     out.println("    working directory to store temporary files");
     out.println("  -valueBound=INT");
-    out.println("    upper bound on values to be added to the collection");
+    out.println("    upper bound on values to be added to the collection, default 2");
     out.println("  -nthread=RANGE");
-    out.println("    upper and/or lower bounds on number of worker threads");
+    out.println("    range of number of worker threads, default 1..3");
+    out.println("  -nstep=RANGE");
+    out.println("    range od total number of steps, default 1..3");
     out.println("  -npreAdd=RANGE");
-    out.println("    upper and/or lower bounds on number of pre-add operations");
+    out.println("    range of number of pre-add operations, default 0..1");
     out.println("  -genericVals=(true|false)");
-    out.println("    use sequence 0,1,... for add operations (queue and pqueue)");
+    out.println("    use sequence 0,1,... for adds, default true");
     out.println("  -distinctPriorities=(true|false)");
-    out.println("    use distinct priorities for pqueue adds");
+    out.println("    use distinct priorities for pqueue adds, default false");
     out.println("  -addsDominate=(true|false)");
-    out.println("    number of adds >= number of removes");
+    out.println("    number of adds >= number of removes, default false");
     out.println("  -threadSym=(true|false)");
-    out.println("    assume thread symmetry");
+    out.println("    assume thread symmetry, default true");
     out.println("  -noAllAdd=(true|false)");
-    out.println("    skip schedules that only have add operations");
+    out.println("    skip schedules that only have add operations, default false");
     out.println("  -dryRun=(true|false)");
-    out.println("    generated CIVL schedules but don't run them");
+    out.println("    generate CIVL schedules but don't run them, default false");
     out.println("  -tidy=(true|false)");
-    out.println("    erase schedule and output files when done");
+    out.println("    erase schedule and output files when done, default false");
     out.println("  -hashKind=(nd|ident)");
-    out.println("    use nondeterministic or identity function for hashes");
+    out.println("    nondeterministic or identity hash function? default ident");
     out.println("  -hashDomainBound=INT");
-    out.println("    modulus applied to hash function inputs (nd only)");
+    out.println("    modulus applied to hash function inputs (nd only, required)");
     out.println("  -hashRangeBound=INT");
-    out.println("    upper bound on output of hash function (nd only)");
+    out.println("    upper bound on output of hash function (nd only, required)");
     out.println("  -fair=(true|false)");
-    out.println("    assume weak fairness");
+    out.println("    assume weak fairness, default false");
     out.println("  -ncore=INT");
-    out.println("    number of verification threads to use");
+    out.println("    number of verification threads to use, default 4");
     out.println("  -capacity=INT");
-    out.println("    max capacity for bounded collections");
-    out.println("Note: a RANGE is either an int or int..int");
-    out.println("If Boolean value is missing, default is true.");
+    out.println("    max capacity for bounded collections, default: not specified");
+    out.println("  -root=DIR");
+    out.println("    specifies root directory of COLLECT distribution");
+    out.println("  -checkMemoryLeak=(true|false)");
+    out.println("    check for memory leaks? If no, use GC.  default true");
+    out.println("  -DX=val");
+    out.println("    define a preprocessor object macro named X to be val");
+    out.println("Notes:");
+    out.println("  - a RANGE is either an int or int..int");
+    out.println("  - if a Boolean value is not specified, it is same as specifying true");
   }
 
   /**
@@ -444,15 +451,6 @@ public class AMPVer {
         civlOptions.add(arg);
       }
     }
-    if (tmpDir == null) {
-      Path workingPath =
-        FileSystems.getDefault().getPath("");
-      Path tmpPath = Files.createTempDirectory(workingPath, "AVREP_");
-      tmpDir = tmpPath.toFile();
-    } else {
-      // make the directory if it isn't already there
-      tmpDir.mkdir();
-    }
     if (filenames.isEmpty())
       err("No filename specified on command line");
     if (!("nonblocking".equals(spec) || "bounded".equals(spec) ||
@@ -489,6 +487,15 @@ public class AMPVer {
       if (hashRangeBound != -1)
         err("-hashRangeBound can only be used with nondeterministic hashing"+
             " (-hashKind=nd)");
+    }
+    if (tmpDir == null) {
+      Path workingPath =
+        FileSystems.getDefault().getPath("");
+      Path tmpPath = Files.createTempDirectory(workingPath, "AVREP_");
+      tmpDir = tmpPath.toFile();
+    } else {
+      // make the directory if it isn't already there
+      tmpDir.mkdir();
     }
     out.println("Generating schedules for "+
                 "nthread="+nthread_lo+".."+nthread_hi+" "+

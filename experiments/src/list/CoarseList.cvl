@@ -1,0 +1,220 @@
+/* Filename : CoarseList.cvl
+   Authors  : Wenhao Wu, Eric Kurtz, Josh Davis, Stephen F. Siegel
+   Created  : 2018-05-01
+   Modified : 2025-01-17
+
+   CIVL model of CoarseList class from "The Art of Multiprocessor
+   Programming" 2nd ed, by Herlihy, Luchangco, Shavit, and Spear,
+   Sec. 9.4 "Coarse-grained synchronization", and companion code
+   ch9/src/lists/CoarseList.java.
+  
+   This is a concurrent coarse grained list using one lock.  Note:
+   "For simplicity, we assume that each item’s hash code is unique"
+   (Sec. 9.2, p. 203).
+
+   Verified Software Lab
+   Department of Computer & Information Sciences
+   University of Delaware
+ */
+#include "Lock.h"
+#include "Set.h"
+#include "hash.cvh"
+#include "tid.h"
+#include "types.h"
+#include <limits.h>
+#include <stdbool.h>
+#include <stdlib.h>
+
+// Types...
+
+typedef struct Node {
+  T item;
+  int key;
+  struct Node * next;
+} * Node;
+
+struct Set {
+  Node head;
+  Node tail;
+  Lock lock;
+};
+
+static Node node_create(T item) {
+  Node this = malloc(sizeof(struct Node));
+  this->item = item;
+  this->key = hash_code(item);
+  this->next = NULL;
+  return this;
+}
+
+static Node node_create_sentinel(int key) {
+  Node this = malloc(sizeof(struct Node));
+  this->item = -1; // null
+  this->key = key;
+  this->next = NULL;
+  return this;
+}
+
+static void node_destroy(Node node) {
+  free(node);
+}
+
+Set Set_create() {
+  Set this = malloc(sizeof(struct Set));
+  this->head = node_create_sentinel(INT_MIN);
+  this->tail = node_create_sentinel(INT_MAX);
+  this->head->next = this->tail;
+  this->lock = Lock_create();
+  return this;
+}
+
+void Set_destroy(Set list) {
+  Node curr = list->head;
+  while (curr != NULL) {
+    Node nxt = curr->next;
+    node_destroy(curr);
+    curr = nxt;
+  }
+  Lock_destroy(list->lock);
+  free(list);
+}
+
+void Set_initialize_context(void) {}
+
+void Set_finalize_context(void) {}
+
+void Set_initialize(Set set) {}
+
+void Set_finalize(Set set) {}
+
+void Set_terminate(int tid) {}
+
+bool Set_stuck(void) {
+  return false;
+}
+
+void Set_print(Set list) {
+  $print("{ ");
+  Node curr = list->head->next;
+  while (curr != list->tail) {
+    $print(curr->item, " ");
+    curr = curr->next;
+  }
+  $print("}");
+}
+
+bool Set_add(Set this, T item) {
+  Node pred, curr;
+  int key = hash_code(item);
+  Lock_acquire(this->lock);
+  // try...
+  pred = this->head;
+  curr = pred->next;
+  while (curr->key < key) {
+    pred = curr;
+    curr = curr->next;
+  }
+  if (key == curr->key) {
+    Lock_release(this->lock); // finally
+    return false;
+  } else {
+    Node node = node_create(item);
+    node->next = curr;
+    pred->next = node;
+    Lock_release(this->lock); // finally
+    return true;
+  }
+}
+
+bool Set_remove(Set this, T item) {
+  Node pred, curr;
+  int key = hash_code(item);
+  Lock_acquire(this->lock);
+  // try...
+  pred = this->head;
+  curr = pred->next;
+  while (curr->key < key) {
+    pred = curr;
+    curr = curr->next;
+  }
+  if (key == curr->key) {
+    pred->next = curr->next;
+    node_destroy(curr); // not in original code
+    Lock_release(this->lock); // finally
+    return true;
+  } else {
+    Lock_release(this->lock); // finally
+    return false;
+  }
+}
+
+// this method from companion code...
+bool Set_contains(Set this, T item) {
+  Node curr;
+  Node pred; // pred is not necessary
+  int key = hash_code(item);
+  Lock_acquire(this->lock);
+  // try...
+  pred = this->head; // could be deleted
+  curr = pred->next;
+  while (curr->key < key) {
+    pred = curr; // could be deleted
+    curr = curr->next;
+  }
+  bool result = (key == curr->key);
+  Lock_release(this->lock); // finally
+  return result;
+}
+
+#ifdef _COARSE_LIST_MAIN
+
+static void startup(Set s, int nproc) {
+  tid_init(nproc);
+  Set_initialize_context();
+  Set_initialize(s);
+}
+
+static void shutdown(Set s) {
+  Set_finalize(s);
+  Set_finalize_context();
+  tid_finalize();
+}
+
+void main() {
+  Set list = Set_create();
+  startup(list, 3);
+  $parfor(int i : 0 .. 2) {
+    tid_register(i);
+    Set_add(list, i);
+    Set_terminate(i);
+    tid_unregister();
+  }
+  Set_print(list);
+  $print("\n");
+  $for(int j : 0 .. 2)
+    $assert(Set_contains(list, j));
+  shutdown(list);
+
+  startup(list, 3);
+  $parfor(int i : 0 .. 2) {
+    tid_register(i);
+    Set_remove(list, i);
+    Set_terminate(i);
+    tid_unregister();
+  }
+  shutdown(list);
+
+  startup(list, 1);
+  tid_register(0);
+  $for(int j : 0 .. 2) {
+    $assert(!Set_contains(list, j));
+  }
+  Set_terminate(0);
+  tid_unregister();
+  shutdown(list);
+  
+  Set_print(list);
+  $print("\n");
+  Set_destroy(list);
+}
+#endif

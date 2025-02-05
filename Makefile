@@ -1,20 +1,23 @@
-# ------------------------------------------------------------------------------------
-# AMPVer: A CIVL Model-Checking Verification Framework for Concurrent Data
-# Structures
-#
-# This is the Makefile for AMPVer.
-# ------------------------------------------------------------------------------
-
-ROOT = .
+# Main Makefile for COLLECT.  Creates the executable file in
+# bin directory.
+ROOT=.
 include $(ROOT)/common.mk
 
-all: test
+all: bin/$(COLLECT_BIN)
 
-test:
-	$(MAKE) -C $(DRIVER_DIR)
-	$(MAKE) -C $(QUEUE_DIR)
-	$(MAKE) -C $(SET_DIR)
-	$(MAKE) -C $(LIST_DIR)
-	$(MAKE) -C $(PQUEUE_DIR)
+java/$(COLLECT_JAR): $(SOURCES)
+	$(MAKE) -C java
 
-.PHONY: all test
+bin/$(COLLECT_BIN): java/$(COLLECT_JAR) Makefile
+	rm -rf bin
+	mkdir bin
+	echo "#!/bin/sh" > bin/$(COLLECT_BIN)
+	echo "$(JAVA) -jar $(CURDIR)/java/$(COLLECT_JAR) -root=$(CURDIR) \
+\$$@" >> bin/$(COLLECT_BIN)
+	chmod ugo+x bin/$(COLLECT_BIN)
+
+clean:
+	$(MAKE) -C java clean
+	rm -rf bin
+
+.PHONY: all clean

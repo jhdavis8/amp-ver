@@ -1,1 +1,0 @@
-This is the output directory. Output from runs started with the Makefile will be directed here by default.

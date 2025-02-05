@@ -6,15 +6,11 @@
 # same directory as this file.  Then edit config.mk.  Do not place
 # config.mk under version control. (It should be ignored by git.)
 
-# Where CIVL source and classes are located
-CIVL_ROOT = $(HOME)/Documents/workspace/CIVL
+# Complete CIVL jar file:
+CIVL_JAR = $(HOME)/Documents/workspace/CIVL/lib/civl-complete.jar
 
 # Command to execute CIVL Model Checker
 CIVL = civl
-
-# Directory containing the VSL dependencies.  It should be called
-# something like vsl-1.22.
-VSL_DEPS=/opt/vsl-1.22
 
 # Java compile command
 JAVAC = javac
@@ -24,3 +20,9 @@ JAVA = java
 
 # how many threads to use in Java program
 NCORE = 4
+
+# Name of JAR file
+COLLECT_JAR = collect.jar
+
+# Name of executable file
+COLLECT_BIN = collect
