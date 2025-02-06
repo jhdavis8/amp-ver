@@ -5,7 +5,7 @@
 # Makefile for queue experiments.
 
 ROOT = ..
-include $(ROOT)/common.mk
+include $(ROOT)/experiments/common.mk
 
 
 ## Common definitions

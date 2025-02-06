@@ -5,7 +5,7 @@
 # Makefile for priority queues experiments.
 
 ROOT = ..
-include $(ROOT)/common.mk
+include $(ROOT)/experiments/common.mk
 
 
 ## Common definitions
