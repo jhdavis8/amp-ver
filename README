@@ -1,0 +1,53 @@
+	     COLLECT: the Concurrent Collection Verifier
+
+COLLECT is a tool for verifying concurrent collections.
+
+A concurrent collection implements a standard collection interface,
+such as set, queue, stack, or priority queue, and can be safely
+accessed by multiple threads simultaneously.
+
+COLLECT uses model checking techniques to verify a concurrent
+collection implementation within a small scope.  It is built on top of
+the CIVL Model Checker (https://civl.dev).  Given a concurrent
+collection implemented in the CIVL-C language, and parameters that
+specify small bounds on the number of threads, number of method calls,
+and other parameters, COLLECT explores the reachable states of the
+program.  It is able to check standard consistency properties within
+these bounds, such as sequential consistency, linearizability, or
+quiescent consistency.
+
+More information is available at https://collect-verifier.org.
+
+
+			     Installation
+
+1. Get the latest CIVL distribution from here:
+
+https://vsl.cis.udel.edu/lib/sw/civl/trunk/latest/release
+
+Follow the instructions in the README file for "Binary Installation".
+Once complete, you should be able to run CIVL by typing "civl" on the
+command line.  You should also know where you put the CIVL JAR file on
+your system.
+
+2. Download and unpack collect.tgz if you have not already done so.
+The root directory should be named collect and contain this README.
+
+3. Create a configuration file.  Move into directory collect/config
+and make a copy of config_default.mk called config.mk in that
+directory.  Read the comments and edit config.mk as needed for your
+system.
+
+4. From the root directory (collect), type "make".  This should
+compile the code and create the JAR file collect.jar, if that was not
+already done.  It will also create the executable file bin/collect.
+
+5. Put collect/bin in your PATH however you like: move it do a
+directory in your PATH, or add collect/bin to your PATH, or create a
+symlink to this file from a place in your PATH.  Test that it works by
+typing "collect" from any direcctory; you should see usage information
+for the tool.
+
+6. Try collect on some examples.  Change into the directory
+collect/examples, read the Makefile and try executing some of the
+commands documented there.
