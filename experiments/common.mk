@@ -4,12 +4,13 @@
 include $(ROOT)/common.mk
 
 # Experiment directories
-EXP = $(ROOT)/experiments/src
+EXP = src
 SET_DIR = $(EXP)/hashset
 LIST_DIR = $(EXP)/list
 QUEUE_DIR = $(EXP)/queue
 PQUEUE_DIR = $(EXP)/pqueue
 SCHEDULE_DIR = $(EXP)/schedule
+OUT_DIR = results/out
 
 # Collection kinds: wrap any kind of collection into one interface
 SET_COL = $(DRIVER)/set_collection.cvl

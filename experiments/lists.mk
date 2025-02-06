@@ -15,20 +15,20 @@ LISTS = list_A list_B list_C list_D list_E
 
 all: $(LISTS) list_schedules
 
-$(LISTS): list_%: out/CoarseList_%.out \
-  out/FineList_%.out out/OptimisticList_%.out out/LazyList_%.out \
-  out/LockFreeList_%.out out/LockFreeListOriginal_%.out
+$(LISTS): list_%: $(OUT_DIR)/CoarseList_%.out \
+  $(OUT_DIR)/FineList_%.out $(OUT_DIR)/OptimisticList_%.out $(OUT_DIR)/LazyList_%.out \
+  $(OUT_DIR)/LockFreeList_%.out $(OUT_DIR)/LockFreeListOriginal_%.out
 
 list_schedules: \
-  $(addprefix out/CoarseList_S,$(addsuffix .out,1 2 3)) \
-  $(addprefix out/FineList_S,$(addsuffix .out,1 2 3)) \
-  $(addprefix out/OptimisticList_S,$(addsuffix .out,1 2 3)) \
-  $(addprefix out/LazyList_S,$(addsuffix .out,1 2 3)) \
-  $(addprefix out/LockFreeList_S,$(addsuffix .out,1 2 3)) \
-  $(addprefix out/LockFreeListOriginal_S,$(addsuffix .out,1 2 3))
+  $(addprefix $(OUT_DIR)/CoarseList_S,$(addsuffix .out,1 2 3)) \
+  $(addprefix $(OUT_DIR)/FineList_S,$(addsuffix .out,1 2 3)) \
+  $(addprefix $(OUT_DIR)/OptimisticList_S,$(addsuffix .out,1 2 3)) \
+  $(addprefix $(OUT_DIR)/LazyList_S,$(addsuffix .out,1 2 3)) \
+  $(addprefix $(OUT_DIR)/LockFreeList_S,$(addsuffix .out,1 2 3)) \
+  $(addprefix $(OUT_DIR)/LockFreeListOriginal_S,$(addsuffix .out,1 2 3))
 
 clean:
-	rm -rf out/*List*.*
+	rm -rf $(OUT_DIR)/*List*.*
 
 .PHONY: clean all myall $(LISTS) list_schedules
 
@@ -60,24 +60,24 @@ COARSE = $(LIST_DIR)/CoarseList.cvl
 COARSE_SRC = $(COARSE) $(HASH_SRC) $(LOCK_SRC)
 COARSE_ALL = $(LIST_SRC) $(COARSE_SRC) $(NBSET_OR)
 COARSE_DEP = $(COARSE_ALL) $(LIST_INC) $(HASH_INC) $(LOCK_INC)
-COARSE_OUT = $(addprefix out/CoarseList_,$(addsuffix .out,A B C D E))
+COARSE_OUT = $(addprefix $(OUT_DIR)/CoarseList_,$(addsuffix .out,A B C D E))
 
 # Multiple schedule analyses
-# Ex: make -f lists.mk out/CoarseList_1.out
-$(COARSE_OUT): out/CoarseList_%.out: $(COLLECT) $(COARSE_DEP)
-	rm -rf out/CoarseList_$*.dir.tmp
+# Ex: make -f lists.mk $(OUT_DIR)/CoarseList_1.out
+$(COARSE_OUT): $(OUT_DIR)/CoarseList_%.out: $(COLLECT) $(COARSE_DEP)
+	rm -rf $(OUT_DIR)/CoarseList_$*.dir.tmp
 	-$(COLLECT) $(LIST_BOUND_$*) -spec=nonblocking \
-  -tmpDir=out/CoarseList_$*.dir.tmp $(COARSE_SRC) \
-  >out/CoarseList_$*.out.tmp
-	rm -rf out/CoarseList_$*.dir
-	mv out/CoarseList_$*.out.tmp out/CoarseList_$*.out
-	mv out/CoarseList_$*.dir.tmp out/CoarseList_$*.dir
+  -tmpDir=$(OUT_DIR)/CoarseList_$*.dir.tmp $(COARSE_SRC) \
+  >$(OUT_DIR)/CoarseList_$*.out.tmp
+	rm -rf $(OUT_DIR)/CoarseList_$*.dir
+	mv $(OUT_DIR)/CoarseList_$*.out.tmp $(OUT_DIR)/CoarseList_$*.out
+	mv $(OUT_DIR)/CoarseList_$*.dir.tmp $(OUT_DIR)/CoarseList_$*.dir
 
 # Single schedules.
-# Ex: make -f lists.mk out/CoarseList_S1.out
-out/CoarseList_S%.out: $(COARSE_DEP) $(LIST_SCHED_$*)
+# Ex: make -f lists.mk $(OUT_DIR)/CoarseList_S1.out
+$(OUT_DIR)/CoarseList_S%.out: $(COARSE_DEP) $(LIST_SCHED_$*)
 	$(VERIFY) -checkMemoryLeak=false -checkTermination=true \
-  $(COARSE_ALL) $(LIST_SCHED_$*) >out/CoarseList_S$*.out
+  $(COARSE_ALL) $(LIST_SCHED_$*) >$(OUT_DIR)/CoarseList_S$*.out
 
 
 ## FineList
@@ -86,22 +86,22 @@ FINE = $(LIST_DIR)/FineList.cvl
 FINE_SRC = $(FINE) $(HASH_SRC) $(LOCK_SRC)
 FINE_ALL = $(LIST_SRC) $(FINE_SRC) $(NBSET_OR)
 FINE_DEP = $(FINE_ALL) $(LIST_INC) $(HASH_INC) $(LOCK_INC)
-FINE_OUT = $(addprefix out/FineList_,$(addsuffix .out,A B C D E))
+FINE_OUT = $(addprefix $(OUT_DIR)/FineList_,$(addsuffix .out,A B C D E))
 
-# Ex: make -f lists.mk out/FineList_1.out
-$(FINE_OUT): out/FineList_%.out: $(COLLECT) $(FINE_DEP)
-	rm -rf out/FineList_$*.dir.tmp
+# Ex: make -f lists.mk $(OUT_DIR)/FineList_1.out
+$(FINE_OUT): $(OUT_DIR)/FineList_%.out: $(COLLECT) $(FINE_DEP)
+	rm -rf $(OUT_DIR)/FineList_$*.dir.tmp
 	-$(COLLECT) $(LIST_BOUND_$*) -spec=nonblocking \
-  -tmpDir=out/FineList_$*.dir.tmp $(FINE_SRC) \
-  >out/FineList_$*.out.tmp
-	rm -rf out/FineList_$*.dir
-	mv out/FineList_$*.out.tmp out/FineList_$*.out
-	mv out/FineList_$*.dir.tmp out/FineList_$*.dir
+  -tmpDir=$(OUT_DIR)/FineList_$*.dir.tmp $(FINE_SRC) \
+  >$(OUT_DIR)/FineList_$*.out.tmp
+	rm -rf $(OUT_DIR)/FineList_$*.dir
+	mv $(OUT_DIR)/FineList_$*.out.tmp $(OUT_DIR)/FineList_$*.out
+	mv $(OUT_DIR)/FineList_$*.dir.tmp $(OUT_DIR)/FineList_$*.dir
 
-# Ex: make -f lists.mk out/FineList_S1.out
-out/FineList_S%.out: $(FINE_DEP) $(LIST_SCHED_$*)
+# Ex: make -f lists.mk $(OUT_DIR)/FineList_S1.out
+$(OUT_DIR)/FineList_S%.out: $(FINE_DEP) $(LIST_SCHED_$*)
 	$(VERIFY) -checkMemoryLeak=false -checkTermination=true \
-  $(FINE_ALL) $(LIST_SCHED_$*) >out/FineList_S$*.out
+  $(FINE_ALL) $(LIST_SCHED_$*) >$(OUT_DIR)/FineList_S$*.out
 
 
 ## OptimisticList
@@ -110,22 +110,22 @@ OPT = $(LIST_DIR)/OptimisticList.cvl
 OPT_SRC = $(OPT) $(HASH_SRC) $(LOCK_SRC)
 OPT_ALL = $(LIST_SRC) $(OPT_SRC) $(NBSET_OR)
 OPT_DEP = $(OPT_ALL) $(LIST_INC) $(HASH_INC) $(LOCK_INC)
-OPT_OUT = $(addprefix out/OptimisticList_,$(addsuffix .out,A B C D E))
+OPT_OUT = $(addprefix $(OUT_DIR)/OptimisticList_,$(addsuffix .out,A B C D E))
 
-# Ex: make -f lists.mk out/OptimisticList_1.out
-$(OPT_OUT): out/OptimisticList_%.out: $(COLLECT) $(OPT_DEP)
-	rm -rf out/OptimisticList_$*.dir.tmp
+# Ex: make -f lists.mk $(OUT_DIR)/OptimisticList_1.out
+$(OPT_OUT): $(OUT_DIR)/OptimisticList_%.out: $(COLLECT) $(OPT_DEP)
+	rm -rf $(OUT_DIR)/OptimisticList_$*.dir.tmp
 	-$(COLLECT) $(LIST_BOUND_$*) -spec=nonblocking -checkMemoryLeak=false \
-  -tmpDir=out/OptimisticList_$*.dir.tmp $(OPT_SRC) \
-  >out/OptimisticList_$*.out.tmp
-	rm -rf out/OptimisticList_$*.dir
-	mv out/OptimisticList_$*.out.tmp out/OptimisticList_$*.out
-	mv out/OptimisticList_$*.dir.tmp out/OptimisticList_$*.dir
+  -tmpDir=$(OUT_DIR)/OptimisticList_$*.dir.tmp $(OPT_SRC) \
+  >$(OUT_DIR)/OptimisticList_$*.out.tmp
+	rm -rf $(OUT_DIR)/OptimisticList_$*.dir
+	mv $(OUT_DIR)/OptimisticList_$*.out.tmp $(OUT_DIR)/OptimisticList_$*.out
+	mv $(OUT_DIR)/OptimisticList_$*.dir.tmp $(OUT_DIR)/OptimisticList_$*.dir
 
-# Ex: make -f lists.mk out/OptimisiticList_S1.out
-out/OptimisticList_S%.out: $(OPT_DEP) $(LIST_SCHED_$*)
+# Ex: make -f lists.mk $(OUT_DIR)/OptimisiticList_S1.out
+$(OUT_DIR)/OptimisticList_S%.out: $(OPT_DEP) $(LIST_SCHED_$*)
 	$(VERIFY) -checkMemoryLeak=false -checkTermination=true \
-  $(OPT_ALL) $(LIST_SCHED_$*) >out/OptimisticList_S$*.out
+  $(OPT_ALL) $(LIST_SCHED_$*) >$(OUT_DIR)/OptimisticList_S$*.out
 
 
 ## LazyList
@@ -134,22 +134,22 @@ LAZY = $(LIST_DIR)/LazyList.cvl
 LAZY_SRC = $(LAZY) $(HASH_SRC) $(LOCK_SRC)
 LAZY_ALL = $(LIST_SRC) $(LAZY_SRC) $(NBSET_OR)
 LAZY_DEP = $(LAZY_ALL) $(LIST_INC) $(HASH_INC) $(LOCK_INT)
-LAZY_OUT = $(addprefix out/LazyList_,$(addsuffix .out,A B C D E))
+LAZY_OUT = $(addprefix $(OUT_DIR)/LazyList_,$(addsuffix .out,A B C D E))
 
-# Ex: make -f lists.mk out/LazyList_1.out
-$(LAZY_OUT): out/LazyList_%.out: $(COLLECT) $(LAZY_DEP)
-	rm -rf out/LazyList_$*.dir.tmp
+# Ex: make -f lists.mk $(OUT_DIR)/LazyList_1.out
+$(LAZY_OUT): $(OUT_DIR)/LazyList_%.out: $(COLLECT) $(LAZY_DEP)
+	rm -rf $(OUT_DIR)/LazyList_$*.dir.tmp
 	-$(COLLECT) $(LIST_BOUND_$*) -spec=nonblocking -checkMemoryLeak=false \
-  -tmpDir=out/LazyList_$*.dir.tmp $(LAZY_SRC) \
-  >out/LazyList_$*.out.tmp
-	rm -rf out/LazyList_$*.dir
-	mv out/LazyList_$*.out.tmp out/LazyList_$*.out
-	mv out/LazyList_$*.dir.tmp out/LazyList_$*.dir
+  -tmpDir=$(OUT_DIR)/LazyList_$*.dir.tmp $(LAZY_SRC) \
+  >$(OUT_DIR)/LazyList_$*.out.tmp
+	rm -rf $(OUT_DIR)/LazyList_$*.dir
+	mv $(OUT_DIR)/LazyList_$*.out.tmp $(OUT_DIR)/LazyList_$*.out
+	mv $(OUT_DIR)/LazyList_$*.dir.tmp $(OUT_DIR)/LazyList_$*.dir
 
-# Ex: make -f lists.mk out/LazyList_S1.out
-out/LazyList_S%.out: $(LAZY_DEP) $(LIST_SCHED_$*)
+# Ex: make -f lists.mk $(OUT_DIR)/LazyList_S1.out
+$(OUT_DIR)/LazyList_S%.out: $(LAZY_DEP) $(LIST_SCHED_$*)
 	$(VERIFY) -checkMemoryLeak=false -checkTermination=true \
-  $(LAZY_ALL) $(LIST_SCHED_$*) >out/LazyList_S$*.out
+  $(LAZY_ALL) $(LIST_SCHED_$*) >$(OUT_DIR)/LazyList_S$*.out
 
 
 ## LockFreeList (Nonblocking list)
@@ -158,36 +158,36 @@ LOCKFREE = $(LIST_DIR)/LockFreeList.cvl
 LOCKFREE_SRC = $(LOCKFREE) $(HASH_SRC) $(AMR_SRC)
 LOCKFREE_ALL = $(LIST_SRC) $(LOCKFREE_SRC) $(NBSET_OR)
 LOCKFREE_DEP = $(LOCKFREE_ALL) $(LIST_INC) $(HASH_INC) $(AMR_INC)
-LOCKFREE_OUT = $(addprefix out/LockFreeList_,$(addsuffix .out,A B C D E))
-LOCKFREEORG_OUT = $(addprefix out/LockFreeListOriginal_,$(addsuffix .out,A B C D E))
+LOCKFREE_OUT = $(addprefix $(OUT_DIR)/LockFreeList_,$(addsuffix .out,A B C D E))
+LOCKFREEORG_OUT = $(addprefix $(OUT_DIR)/LockFreeListOriginal_,$(addsuffix .out,A B C D E))
 
-# Ex: make -f lists.mk out/LockFreeList_1.out
-$(LOCKFREE_OUT): out/LockFreeList_%.out: $(COLLECT) $(LOCKFREE_DEP)
-	rm -rf out/LockFreeList_$*.dir.tmp
+# Ex: make -f lists.mk $(OUT_DIR)/LockFreeList_1.out
+$(LOCKFREE_OUT): $(OUT_DIR)/LockFreeList_%.out: $(COLLECT) $(LOCKFREE_DEP)
+	rm -rf $(OUT_DIR)/LockFreeList_$*.dir.tmp
 	-$(COLLECT) $(LIST_BOUND_$*) -spec=nonblocking -checkMemoryLeak=false \
-  -tmpDir=out/LockFreeList_$*.dir.tmp $(LOCKFREE_SRC) \
-  >out/LockFreeList_$*.out.tmp
-	rm -rf out/LockFreeList_$*.dir
-	mv out/LockFreeList_$*.out.tmp out/LockFreeList_$*.out
-	mv out/LockFreeList_$*.dir.tmp out/LockFreeList_$*.dir
+  -tmpDir=$(OUT_DIR)/LockFreeList_$*.dir.tmp $(LOCKFREE_SRC) \
+  >$(OUT_DIR)/LockFreeList_$*.out.tmp
+	rm -rf $(OUT_DIR)/LockFreeList_$*.dir
+	mv $(OUT_DIR)/LockFreeList_$*.out.tmp $(OUT_DIR)/LockFreeList_$*.out
+	mv $(OUT_DIR)/LockFreeList_$*.dir.tmp $(OUT_DIR)/LockFreeList_$*.dir
 
-# Ex: make -f lists.mk out/LockFreeListOriginal_1.out
-$(LOCKFREEORG_OUT): out/LockFreeListOriginal_%.out: $(COLLECT) $(LOCKFREE_DEP)
-	rm -rf out/LockFreeListOriginal_$*.dir.tmp
+# Ex: make -f lists.mk $(OUT_DIR)/LockFreeListOriginal_1.out
+$(LOCKFREEORG_OUT): $(OUT_DIR)/LockFreeListOriginal_%.out: $(COLLECT) $(LOCKFREE_DEP)
+	rm -rf $(OUT_DIR)/LockFreeListOriginal_$*.dir.tmp
 	-$(COLLECT) $(LIST_BOUND_$*) -spec=nonblocking \
   -checkMemoryLeak=false -DORIGINAL \
-  -tmpDir=out/LockFreeListOriginal_$*.dir.tmp $(LOCKFREE_SRC) \
-  >out/LockFreeListOriginal_$*.out.tmp
-	rm -rf out/LockFreeListOriginal_$*.dir
-	mv out/LockFreeListOriginal_$*.out.tmp out/LockFreeListOriginal_$*.out
-	mv out/LockFreeListOriginal_$*.dir.tmp out/LockFreeListOriginal_$*.dir
+  -tmpDir=$(OUT_DIR)/LockFreeListOriginal_$*.dir.tmp $(LOCKFREE_SRC) \
+  >$(OUT_DIR)/LockFreeListOriginal_$*.out.tmp
+	rm -rf $(OUT_DIR)/LockFreeListOriginal_$*.dir
+	mv $(OUT_DIR)/LockFreeListOriginal_$*.out.tmp $(OUT_DIR)/LockFreeListOriginal_$*.out
+	mv $(OUT_DIR)/LockFreeListOriginal_$*.dir.tmp $(OUT_DIR)/LockFreeListOriginal_$*.dir
 
-# Ex: make -f lists.mk out/LockFreeList_S1.out
-out/LockFreeList_S%.out: $(LOCKFREE_DEP) $(LIST_SCHED_$*)
+# Ex: make -f lists.mk $(OUT_DIR)/LockFreeList_S1.out
+$(OUT_DIR)/LockFreeList_S%.out: $(LOCKFREE_DEP) $(LIST_SCHED_$*)
 	$(VERIFY) -checkMemoryLeak=false -checkTermination=true \
-  $(LOCKFREE_ALL) $(LIST_SCHED_$*) >out/LockFreeList_S$*.out
+  $(LOCKFREE_ALL) $(LIST_SCHED_$*) >$(OUT_DIR)/LockFreeList_S$*.out
 
-# Ex: make -f lists.mk out/LockFreeListOriginal_S1.out
-out/LockFreeListOriginal_S%.out: $(LOCKFREET_DEP) $(LIST_SCHED_$*)
+# Ex: make -f lists.mk $(OUT_DIR)/LockFreeListOriginal_S1.out
+$(OUT_DIR)/LockFreeListOriginal_S%.out: $(LOCKFREET_DEP) $(LIST_SCHED_$*)
 	-$(VERIFY) -checkMemoryLeak=false -checkTermination=true \
-  -DORIGINAL $(LOCKFREE_ALL) $(LIST_SCHED_$*) >out/LockFreeListOriginal_S$*.out
+  -DORIGINAL $(LOCKFREE_ALL) $(LIST_SCHED_$*) >$(OUT_DIR)/LockFreeListOriginal_S$*.out

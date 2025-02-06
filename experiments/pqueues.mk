@@ -14,25 +14,25 @@ PQUEUES = pqueue_A pqueue_B pqueue_C pqueue_D pqueue_E
 
 all: $(PQUEUES) pqueue_schedules
 
-$(PQUEUES): pqueue_%: out/SimpleLinear_%.out \
-  out/SimpleTree_%.out \
-  out/FineGrainedHeap_%.out \
-  out/FineGrainedHeapFair_%.out \
-  out/FineGrainedHeapNoCycles_%.out \
-  out/SkipQueueOriginal_%.out \
-  out/SkipQueueSC_%.out \
-  out/SkipQueueQC_%.out
+$(PQUEUES): pqueue_%: $(OUT_DIR)/SimpleLinear_%.out \
+  $(OUT_DIR)/SimpleTree_%.out \
+  $(OUT_DIR)/FineGrainedHeap_%.out \
+  $(OUT_DIR)/FineGrainedHeapFair_%.out \
+  $(OUT_DIR)/FineGrainedHeapNoCycles_%.out \
+  $(OUT_DIR)/SkipQueueOriginal_%.out \
+  $(OUT_DIR)/SkipQueueSC_%.out \
+  $(OUT_DIR)/SkipQueueQC_%.out
 
 pqueue_schedules: \
-  $(addprefix out/FineGrainedHeap_S,$(addsuffix .out,1 2 3)) \
-  $(addprefix out/FineGrainedHeapFair_S,$(addsuffix .out,1 2 3)) \
-  $(addprefix out/FineGrainedHeapNoCycles_S,$(addsuffix .out,1 2 3)) \
-  $(addprefix out/SkipQueueOriginal_S,$(addsuffix .out,1 2 3)) \
-  $(addprefix out/SkipQueueSC_S,$(addsuffix .out,1 2 3)) \
-  $(addprefix out/SkipQueueQC_S,$(addsuffix .out,1 2 3))
+  $(addprefix $(OUT_DIR)/FineGrainedHeap_S,$(addsuffix .out,1 2 3)) \
+  $(addprefix $(OUT_DIR)/FineGrainedHeapFair_S,$(addsuffix .out,1 2 3)) \
+  $(addprefix $(OUT_DIR)/FineGrainedHeapNoCycles_S,$(addsuffix .out,1 2 3)) \
+  $(addprefix $(OUT_DIR)/SkipQueueOriginal_S,$(addsuffix .out,1 2 3)) \
+  $(addprefix $(OUT_DIR)/SkipQueueSC_S,$(addsuffix .out,1 2 3)) \
+  $(addprefix $(OUT_DIR)/SkipQueueQC_S,$(addsuffix .out,1 2 3))
 
 clean:
-	rm -rf out/FineGrainedHeap*.* out/SkipQueue*.*
+	rm -rf $(OUT_DIR)/FineGrainedHeap*.* $(OUT_DIR)/SkipQueue*.*
 
 
 # For SimpleLinear, RANGE must be specified.  This must be at least 1
@@ -86,23 +86,23 @@ SL = $(PQUEUE_DIR)/SimpleLinear.cvl
 SL_SRC = $(SL) $(ARRAYLIST_SRC) $(BIN_SRC)
 SL_ALL = $(PQUEUEQ_SRC) $(SL_SRC) $(NBPQUEUE_OR)
 SL_DEP = $(SL_ALL) $(PQUEUE_INC) $(ARRAYLIST_INC) $(BIN_INC)
-SL_OUT = $(addprefix out/SimpleLinear_,$(addsuffix .out,A B C D E))
+SL_OUT = $(addprefix $(OUT_DIR)/SimpleLinear_,$(addsuffix .out,A B C D E))
 
-# Ex: make -f pqueues.mk out/SimpleLinear_1.out
-$(SL_OUT): out/SimpleLinear_%.out: $(COLLECT) $(SL_DEP)
-	rm -rf out/SimpleLinear_$*.dir.tmp
+# Ex: make -f pqueues.mk $(OUT_DIR)/SimpleLinear_1.out
+$(SL_OUT): $(OUT_DIR)/SimpleLinear_%.out: $(COLLECT) $(SL_DEP)
+	rm -rf $(OUT_DIR)/SimpleLinear_$*.dir.tmp
 	-$(COLLECT) $(PQUEUE_BOUND_$*) -property=quiescent \
   -spec=nonblocking -checkTermination=true \
-  -tmpDir=out/SimpleLinear_$*.dir.tmp $(SL_SRC) \
-  >out/SimpleLinear_$*.out.tmp
-	rm -rf out/SimpleLinear_$*.dir
-	mv out/SimpleLinear_$*.out.tmp out/SimpleLinear_$*.out
-	mv out/SimpleLinear_$*.dir.tmp out/SimpleLinear_$*.dir
+  -tmpDir=$(OUT_DIR)/SimpleLinear_$*.dir.tmp $(SL_SRC) \
+  >$(OUT_DIR)/SimpleLinear_$*.out.tmp
+	rm -rf $(OUT_DIR)/SimpleLinear_$*.dir
+	mv $(OUT_DIR)/SimpleLinear_$*.out.tmp $(OUT_DIR)/SimpleLinear_$*.out
+	mv $(OUT_DIR)/SimpleLinear_$*.dir.tmp $(OUT_DIR)/SimpleLinear_$*.dir
 
-# Ex: make -f pqeueues.mk out/SimpleLinear_S1.out
-out/SimpleLinear_S%.out: $(SL_DEP) $(PQUEUE_SCHED_$*)
+# Ex: make -f pqeueues.mk $(OUT_DIR)/SimpleLinear_S1.out
+$(OUT_DIR)/SimpleLinear_S%.out: $(SL_DEP) $(PQUEUE_SCHED_$*)
 	$(VERIFY) -checkTermination=true \
-  $(SL_ALL) $(PQUEUE_SCHED_$*) >out/SimpleLinear_S$*.out
+  $(SL_ALL) $(PQUEUE_SCHED_$*) >$(OUT_DIR)/SimpleLinear_S$*.out
 
 
 ## SimpleTree.   There is a bug revealed in group 3 schedule 1830:
@@ -115,23 +115,23 @@ ST = $(PQUEUE_DIR)/SimpleTree.cvl
 ST_SRC = $(ST) $(AI_SRC) $(ARRAYLIST_SRC) $(BIN_SRC)
 ST_ALL = $(PQUEUEQ_SRC) $(ST_SRC) $(NBPQUEUE_OR)
 ST_DEP = $(ST_ALL) $(PQUEUE_INC) $(AI_INC) $(ARRAYLIST_INC) $(BIN_INC)
-ST_OUT = $(addprefix out/SimpleTree_,$(addsuffix .out,A B C D E))
+ST_OUT = $(addprefix $(OUT_DIR)/SimpleTree_,$(addsuffix .out,A B C D E))
 
-# Ex: make -f pqueues.mk out/SimpleTree_1.out
-$(ST_OUT): out/SimpleTree_%.out: $(COLLECT) $(ST_DEP)
-	rm -rf out/SimpleTree_$*.dir.tmp
+# Ex: make -f pqueues.mk $(OUT_DIR)/SimpleTree_1.out
+$(ST_OUT): $(OUT_DIR)/SimpleTree_%.out: $(COLLECT) $(ST_DEP)
+	rm -rf $(OUT_DIR)/SimpleTree_$*.dir.tmp
 	-$(COLLECT) $(PQUEUE_BOUND_$*) -property=quiescent \
   -spec=nonblocking -checkTermination=true \
-  -tmpDir=out/SimpleTree_$*.dir.tmp $(ST_SRC) \
-  >out/SimpleTree_$*.out.tmp
-	rm -rf out/SimpleTree_$*.dir
-	mv out/SimpleTree_$*.out.tmp out/SimpleTree_$*.out
-	mv out/SimpleTree_$*.dir.tmp out/SimpleTree_$*.dir
+  -tmpDir=$(OUT_DIR)/SimpleTree_$*.dir.tmp $(ST_SRC) \
+  >$(OUT_DIR)/SimpleTree_$*.out.tmp
+	rm -rf $(OUT_DIR)/SimpleTree_$*.dir
+	mv $(OUT_DIR)/SimpleTree_$*.out.tmp $(OUT_DIR)/SimpleTree_$*.out
+	mv $(OUT_DIR)/SimpleTree_$*.dir.tmp $(OUT_DIR)/SimpleTree_$*.dir
 
-# Ex: make -f pqeueues.mk out/SimpleTree_S1.out
-out/SimpleTree_S%.out: $(ST_DEP) $(PQUEUE_SCHED_$*)
+# Ex: make -f pqeueues.mk $(OUT_DIR)/SimpleTree_S1.out
+$(OUT_DIR)/SimpleTree_S%.out: $(ST_DEP) $(PQUEUE_SCHED_$*)
 	-$(VERIFY) -checkTermination=true \
-  $(ST_ALL) $(PQUEUE_SCHED_$*) >out/SimpleTree_S$*.out
+  $(ST_ALL) $(PQUEUE_SCHED_$*) >$(OUT_DIR)/SimpleTree_S$*.out
 
 
 ## FineGrainedHeap
@@ -147,45 +147,45 @@ FGH = $(PQUEUE_DIR)/FineGrainedHeap.cvl
 FGH_SRC = $(FGH) $(LOCK_SRC)
 FGH_ALL = $(PQUEUE_SRC) $(FGH_SRC) $(NBPQUEUE_OR)
 FGH_DEP = $(FGH_ALL) $(PQUEUE_INC) $(LOCK_INC)
-FGH_OUT = $(addprefix out/FineGrainedHeap_,$(addsuffix .out,A B C D E))
+FGH_OUT = $(addprefix $(OUT_DIR)/FineGrainedHeap_,$(addsuffix .out,A B C D E))
 
-# Ex: make -f pqueues.mk out/FineGrainedHeap_1.out
-$(FGH_OUT): out/FineGrainedHeap_%.out: $(COLLECT) $(FGH_DEP)
-	rm -rf out/FineGrainedHeap_$*.dir.tmp
+# Ex: make -f pqueues.mk $(OUT_DIR)/FineGrainedHeap_1.out
+$(FGH_OUT): $(OUT_DIR)/FineGrainedHeap_%.out: $(COLLECT) $(FGH_DEP)
+	rm -rf $(OUT_DIR)/FineGrainedHeap_$*.dir.tmp
 	-$(COLLECT) $(PQUEUE_BOUND_$*) -spec=nonblocking \
   -checkTermination=true \
-  -tmpDir=out/FineGrainedHeap_$*.dir.tmp $(FGH_SRC) \
-  >out/FineGrainedHeap_$*.out.tmp
-	rm -rf out/FineGrainedHeap_$*.dir
-	mv out/FineGrainedHeap_$*.out.tmp out/FineGrainedHeap_$*.out
-	mv out/FineGrainedHeap_$*.dir.tmp out/FineGrainedHeap_$*.dir
+  -tmpDir=$(OUT_DIR)/FineGrainedHeap_$*.dir.tmp $(FGH_SRC) \
+  >$(OUT_DIR)/FineGrainedHeap_$*.out.tmp
+	rm -rf $(OUT_DIR)/FineGrainedHeap_$*.dir
+	mv $(OUT_DIR)/FineGrainedHeap_$*.out.tmp $(OUT_DIR)/FineGrainedHeap_$*.out
+	mv $(OUT_DIR)/FineGrainedHeap_$*.dir.tmp $(OUT_DIR)/FineGrainedHeap_$*.dir
 
-# Ex: make -f pqeueues.mk out/FineGrainedHeap_S1.out
-out/FineGrainedHeap_S%.out: $(FGH_DEP) $(PQUEUE_SCHED_$*)
+# Ex: make -f pqeueues.mk $(OUT_DIR)/FineGrainedHeap_S1.out
+$(OUT_DIR)/FineGrainedHeap_S%.out: $(FGH_DEP) $(PQUEUE_SCHED_$*)
 	$(VERIFY) -checkMemoryLeak=false -checkTermination=true \
-  $(FGH_ALL) $(PQUEUE_SCHED_$*) >out/FineGrainedHeap_S$*.out
+  $(FGH_ALL) $(PQUEUE_SCHED_$*) >$(OUT_DIR)/FineGrainedHeap_S$*.out
 
 
 # Version 2
 # Same as above, but not checking for cycles in sate space.
 
-FGHNC_OUT = $(addprefix out/FineGrainedHeapNoCycles_,$(addsuffix .out,A B C D E))
+FGHNC_OUT = $(addprefix $(OUT_DIR)/FineGrainedHeapNoCycles_,$(addsuffix .out,A B C D E))
 
-# Ex: make -f pqueues.mk out/FineGrainedHeapNoCycles_1.out
-$(FGHNC_OUT): out/FineGrainedHeapNoCycles_%.out: $(COLLECT) $(FGH_DEP)
-	rm -rf out/FineGrainedHeapNoCycles_$*.dir.tmp
+# Ex: make -f pqueues.mk $(OUT_DIR)/FineGrainedHeapNoCycles_1.out
+$(FGHNC_OUT): $(OUT_DIR)/FineGrainedHeapNoCycles_%.out: $(COLLECT) $(FGH_DEP)
+	rm -rf $(OUT_DIR)/FineGrainedHeapNoCycles_$*.dir.tmp
 	-$(COLLECT) $(PQUEUE_BOUND_$*) -spec=nonblocking \
   -checkTermination=false \
-  -tmpDir=out/FineGrainedHeapNoCycles_$*.dir.tmp $(FGH_SRC) \
-  >out/FineGrainedHeapNoCycles_$*.out.tmp
-	rm -rf out/FineGrainedHeapNoCycles_$*.dir
-	mv out/FineGrainedHeapNoCycles_$*.out.tmp out/FineGrainedHeapNoCycles_$*.out
-	mv out/FineGrainedHeapNoCycles_$*.dir.tmp out/FineGrainedHeapNoCycles_$*.dir
+  -tmpDir=$(OUT_DIR)/FineGrainedHeapNoCycles_$*.dir.tmp $(FGH_SRC) \
+  >$(OUT_DIR)/FineGrainedHeapNoCycles_$*.out.tmp
+	rm -rf $(OUT_DIR)/FineGrainedHeapNoCycles_$*.dir
+	mv $(OUT_DIR)/FineGrainedHeapNoCycles_$*.out.tmp $(OUT_DIR)/FineGrainedHeapNoCycles_$*.out
+	mv $(OUT_DIR)/FineGrainedHeapNoCycles_$*.dir.tmp $(OUT_DIR)/FineGrainedHeapNoCycles_$*.dir
 
-# Ex: make -f pqueues.mk out/FineGrainedHeapNoCycles_S1.out
-out/FineGrainedHeapNoCycles_S%.out: $(FGH_DEP) $(PQUEUE_SCHED_$*)
+# Ex: make -f pqueues.mk $(OUT_DIR)/FineGrainedHeapNoCycles_S1.out
+$(OUT_DIR)/FineGrainedHeapNoCycles_S%.out: $(FGH_DEP) $(PQUEUE_SCHED_$*)
 	$(VERIFY) -checkMemoryLeak=false -checkTermination=false \
-  $(FGH_ALL) $(PQUEUE_SCHED_$*) >out/FineGrainedHeap_S$*.out
+  $(FGH_ALL) $(PQUEUE_SCHED_$*) >$(OUT_DIR)/FineGrainedHeap_S$*.out
 
 
 # Version 3
@@ -195,23 +195,23 @@ out/FineGrainedHeapNoCycles_S%.out: $(FGH_DEP) $(PQUEUE_SCHED_$*)
 FGHFL_SRC = $(FGH) $(FAIRLOCK_SRC)
 FGHFL_ALL = $(PQUEUE_SRC) $(FGHFL_SRC) $(NBPQUEUE_OR)
 FGHFL_DEP = $(FGHFL_ALL) $(PQUEUE_INC) $(LOCK_INC)
-FGHFL_OUT = $(addprefix out/FineGrainedHeapFair_,$(addsuffix .out,A B C D E))
+FGHFL_OUT = $(addprefix $(OUT_DIR)/FineGrainedHeapFair_,$(addsuffix .out,A B C D E))
 
-# Ex: make -f pqueues.mk out/FineGrainedHeapFair_1.out
-$(FGHFL_OUT): out/FineGrainedHeapFair_%.out: $(COLLECT) $(FGHFL_DEP)
-	rm -rf out/FineGrainedHeapFair_$*.dir.tmp
+# Ex: make -f pqueues.mk $(OUT_DIR)/FineGrainedHeapFair_1.out
+$(FGHFL_OUT): $(OUT_DIR)/FineGrainedHeapFair_%.out: $(COLLECT) $(FGHFL_DEP)
+	rm -rf $(OUT_DIR)/FineGrainedHeapFair_$*.dir.tmp
 	-$(COLLECT) $(PQUEUE_BOUND_$*) -fair -spec=nonblocking \
   -checkTermination=true \
-  -tmpDir=out/FineGrainedHeapFair_$*.dir.tmp $(FGHFL_SRC) \
-  >out/FineGrainedHeapFair_$*.out.tmp
-	rm -rf out/FineGrainedHeapFair_$*.dir
-	mv out/FineGrainedHeapFair_$*.out.tmp out/FineGrainedHeapFair_$*.out
-	mv out/FineGrainedHeapFair_$*.dir.tmp out/FineGrainedHeapFair_$*.dir
+  -tmpDir=$(OUT_DIR)/FineGrainedHeapFair_$*.dir.tmp $(FGHFL_SRC) \
+  >$(OUT_DIR)/FineGrainedHeapFair_$*.out.tmp
+	rm -rf $(OUT_DIR)/FineGrainedHeapFair_$*.dir
+	mv $(OUT_DIR)/FineGrainedHeapFair_$*.out.tmp $(OUT_DIR)/FineGrainedHeapFair_$*.out
+	mv $(OUT_DIR)/FineGrainedHeapFair_$*.dir.tmp $(OUT_DIR)/FineGrainedHeapFair_$*.dir
 
-# Ex: make -f pqueues.mk out/FineGrainedHeapFair_S1.out
-out/FineGrainedHeapFair_S%.out: $(FGHFL_DEP) $(PQUEUE_SCHED_$*)
+# Ex: make -f pqueues.mk $(OUT_DIR)/FineGrainedHeapFair_S1.out
+$(OUT_DIR)/FineGrainedHeapFair_S%.out: $(FGHFL_DEP) $(PQUEUE_SCHED_$*)
 	$(VERIFY) -checkMemoryLeak=false -checkTermination=true -fair \
-  $(FGHFL_ALL) $(PQUEUE_SCHED_$*) >out/FineGrainedHeapFair_S$*.out
+  $(FGHFL_ALL) $(PQUEUE_SCHED_$*) >$(OUT_DIR)/FineGrainedHeapFair_S$*.out
 
 
 ## SkipQueue
@@ -228,27 +228,27 @@ SKIPQ = $(PQUEUE_DIR)/SkipQueue.cvl
 SKIPQ_SRC = $(SKIPQ) $(AMR_SRC) $(AB_SRC)
 SKIPQ_ALL = $(PQUEUE_SRC) $(SKIPQ_SRC) $(NBPQUEUE_OR)
 SKIPQ_DEP = $(SKIPQ_ALL) $(PQUEUE_INC) $(AMR_INC) $(AB_INC)
-SKIPQ_OUT = $(addprefix out/SkipQueueOriginal_,$(addsuffix .out,A B C D E))
+SKIPQ_OUT = $(addprefix $(OUT_DIR)/SkipQueueOriginal_,$(addsuffix .out,A B C D E))
 
 # Check quiescent consistency (the property is really irrelevant).
-# Ex: make -f pqueues.mk out/SkipQueueOriginal_3.out
+# Ex: make -f pqueues.mk $(OUT_DIR)/SkipQueueOriginal_3.out
 # should reveal nontermination
-$(SKIPQ_OUT): out/SkipQueueOriginal_%.out: $(COLLECT) $(SKIPQ_DEP)
-	rm -rf out/SkipQueueOriginal_$*.dir.tmp
+$(SKIPQ_OUT): $(OUT_DIR)/SkipQueueOriginal_%.out: $(COLLECT) $(SKIPQ_DEP)
+	rm -rf $(OUT_DIR)/SkipQueueOriginal_$*.dir.tmp
 	-$(COLLECT) $(PQUEUE_BOUND_$*) -spec=nonblocking -D_ORIGINAL_SKIPQUEUE \
   -checkTermination -property=quiescent -checkMemoryLeak=false \
-  -tmpDir=out/SkipQueueOriginal_$*.dir.tmp $(SKIPQ_SRC) \
-  >out/SkipQueueOriginal_$*.out.tmp
-	rm -rf out/SkipQueueOriginal_$*.dir
-	mv out/SkipQueueOriginal_$*.out.tmp out/SkipQueueOriginal_$*.out
-	mv out/SkipQueueOriginal_$*.dir.tmp out/SkipQueueOriginal_$*.dir
+  -tmpDir=$(OUT_DIR)/SkipQueueOriginal_$*.dir.tmp $(SKIPQ_SRC) \
+  >$(OUT_DIR)/SkipQueueOriginal_$*.out.tmp
+	rm -rf $(OUT_DIR)/SkipQueueOriginal_$*.dir
+	mv $(OUT_DIR)/SkipQueueOriginal_$*.out.tmp $(OUT_DIR)/SkipQueueOriginal_$*.out
+	mv $(OUT_DIR)/SkipQueueOriginal_$*.dir.tmp $(OUT_DIR)/SkipQueueOriginal_$*.dir
 
 # Check sequential consistency
-# Ex: make -f pqueues.mk out/SkipQueueOriginal_S1.out
-out/SkipQueueOriginal_S%.out: $(SKIPQ_DEP) $(PQUEUE_SCHED_$*)
+# Ex: make -f pqueues.mk $(OUT_DIR)/SkipQueueOriginal_S1.out
+$(OUT_DIR)/SkipQueueOriginal_S%.out: $(SKIPQ_DEP) $(PQUEUE_SCHED_$*)
 	-$(VERIFY) -checkMemoryLeak=false -checkTermination=true -DNLINEAR \
   -D_ORIGINAL_SKIPQUEUE \
-  $(SKIPQ_ALL) $(PQUEUE_SCHED_$*) >out/SkipQueueOriginal_S$*.out
+  $(SKIPQ_ALL) $(PQUEUE_SCHED_$*) >$(OUT_DIR)/SkipQueueOriginal_S$*.out
 
 
 # Version 2: the corrected version.  The correction appears in the
@@ -258,49 +258,49 @@ out/SkipQueueOriginal_S%.out: $(SKIPQ_DEP) $(PQUEUE_SCHED_$*)
 # (add(0,1)), thread 0 does 2 adds (add(1,0) and add(2,2)), threads 1
 # and 2 each do one remove.
 
-SKIPQ2SC_OUT = $(addprefix out/SkipQueueSC_,$(addsuffix .out,A B C D E))
+SKIPQ2SC_OUT = $(addprefix $(OUT_DIR)/SkipQueueSC_,$(addsuffix .out,A B C D E))
 
-# Ex: make -f pqueues.mk out/SkipQueueSC_1.out
-$(SKIPQ2SC_OUT): out/SkipQueueSC_%.out: $(COLLECT) $(SKIPQ_DEP)
-	rm -rf out/SkipQueueSC_$*.dir.tmp
+# Ex: make -f pqueues.mk $(OUT_DIR)/SkipQueueSC_1.out
+$(SKIPQ2SC_OUT): $(OUT_DIR)/SkipQueueSC_%.out: $(COLLECT) $(SKIPQ_DEP)
+	rm -rf $(OUT_DIR)/SkipQueueSC_$*.dir.tmp
 	-$(COLLECT) $(PQUEUE_BOUND_$*) \
   -spec=nonblocking -checkTermination -property=sc \
   -checkMemoryLeak=false \
-  -tmpDir=out/SkipQueueSC_$*.dir.tmp $(SKIPQ_SRC) \
-  >out/SkipQueueSC_$*.out.tmp
-	rm -rf out/SkipQueueSC_$*.dir
-	mv out/SkipQueueSC_$*.out.tmp out/SkipQueueSC_$*.out
-	mv out/SkipQueueSC_$*.dir.tmp out/SkipQueueSC_$*.dir
+  -tmpDir=$(OUT_DIR)/SkipQueueSC_$*.dir.tmp $(SKIPQ_SRC) \
+  >$(OUT_DIR)/SkipQueueSC_$*.out.tmp
+	rm -rf $(OUT_DIR)/SkipQueueSC_$*.dir
+	mv $(OUT_DIR)/SkipQueueSC_$*.out.tmp $(OUT_DIR)/SkipQueueSC_$*.out
+	mv $(OUT_DIR)/SkipQueueSC_$*.dir.tmp $(OUT_DIR)/SkipQueueSC_$*.dir
 
-# make -f pqueues.mk out/SkipQueueSC_S1.out
+# make -f pqueues.mk $(OUT_DIR)/SkipQueueSC_S1.out
 # should reveal SC violation, but may take a long time and a lot of
 # memory (e.g., 2587s, 15GB on a MacBook Pro)
-out/SkipQueueSC_S%.out: $(SKIPQ_DEP) $(PQUEUE_SCHED_$*)
+$(OUT_DIR)/SkipQueueSC_S%.out: $(SKIPQ_DEP) $(PQUEUE_SCHED_$*)
 	$(VERIFY) -checkMemoryLeak=false -checkTermination=true \
   -DNLINEAR -preemptionBound=2 \
-  $(SKIPQ_ALL) $(PQUEUE_SCHED_$*) >out/SkipQueueSC_S$*.out
+  $(SKIPQ_ALL) $(PQUEUE_SCHED_$*) >$(OUT_DIR)/SkipQueueSC_S$*.out
 
 # Same as above, but checking quiescent consistency.  All of these
 # should pass (or run out of memory)...
 
-SKIPQ2QC_OUT = $(addprefix out/SkipQueueQC_,$(addsuffix .out,A B C D E))
+SKIPQ2QC_OUT = $(addprefix $(OUT_DIR)/SkipQueueQC_,$(addsuffix .out,A B C D E))
 SKIPQQ_ALL = $(PQUEUEQ_SRC) $(SKIPQ_SRC) $(NBPQUEUE_OR)
 SKIPQQ_DEP = $(SKIPQQ_ALL) $(PQUEUE_INC) $(AMR_INC) $(AB_INC)
 
-# Ex: make -f pqueues.mk out/SkipQueueQC_1.out
-$(SKIPQ2QC_OUT): out/SkipQueueQC_%.out: $(COLLECT) $(SKIPQQ_DEP)
-	rm -rf out/SkipQueueQC_$*.dir.tmp
+# Ex: make -f pqueues.mk $(OUT_DIR)/SkipQueueQC_1.out
+$(SKIPQ2QC_OUT): $(OUT_DIR)/SkipQueueQC_%.out: $(COLLECT) $(SKIPQQ_DEP)
+	rm -rf $(OUT_DIR)/SkipQueueQC_$*.dir.tmp
 	-$(COLLECT) $(PQUEUE_BOUND_$*) \
   -spec=nonblocking -checkTermination -property=quiescent \
   -checkMemoryLeak=false \
-  -tmpDir=out/SkipQueueQC_$*.dir.tmp $(SKIPQ_SRC) \
-  >out/SkipQueueQC_$*.out.tmp
-	rm -rf out/SkipQueueQC_$*.dir
-	mv out/SkipQueueQC_$*.out.tmp out/SkipQueueQC_$*.out
-	mv out/SkipQueueQC_$*.dir.tmp out/SkipQueueQC_$*.dir
+  -tmpDir=$(OUT_DIR)/SkipQueueQC_$*.dir.tmp $(SKIPQ_SRC) \
+  >$(OUT_DIR)/SkipQueueQC_$*.out.tmp
+	rm -rf $(OUT_DIR)/SkipQueueQC_$*.dir
+	mv $(OUT_DIR)/SkipQueueQC_$*.out.tmp $(OUT_DIR)/SkipQueueQC_$*.out
+	mv $(OUT_DIR)/SkipQueueQC_$*.dir.tmp $(OUT_DIR)/SkipQueueQC_$*.dir
 
-# Ex: make -f pqueues.mk out/SkipQueueQC_S1.out
-out/SkipQueueQC_S%.out: $(SKIPQQ_DEP) $(PQUEUE_SCHED_$*)
+# Ex: make -f pqueues.mk $(OUT_DIR)/SkipQueueQC_S1.out
+$(OUT_DIR)/SkipQueueQC_S%.out: $(SKIPQQ_DEP) $(PQUEUE_SCHED_$*)
 	$(VERIFY) -checkMemoryLeak=false -checkTermination=true \
   $(SKIPQQ_ALL) $(PQUEUE_SCHED_$*) \
-  >out/SkipQueueQC_S$*.out
+  >$(OUT_DIR)/SkipQueueQC_S$*.out
