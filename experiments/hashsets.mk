@@ -3,7 +3,8 @@
 # Created  : 2024-11-25
 # Modified : 2025-01-17
 # Makefile for hash sets experiments.
-ROOT = .
+
+ROOT = ..
 include $(ROOT)/common.mk
 
 
@@ -70,9 +71,9 @@ COARSE_OUT = $(addprefix out/CoarseHashSet_,$(addsuffix .out,A B C D E))
 
 # Multiple schedule analyses
 # Ex: make -f sets.mk out/CoarseHashSet_1.out
-$(COARSE_OUT): out/CoarseHashSet_%.out: $(MAIN_CLASS) $(COARSE_DEP)
+$(COARSE_OUT): out/CoarseHashSet_%.out: $(COLLECT) $(COARSE_DEP)
 	rm -rf out/CoarseHashSet_$*.dir.tmp
-	-$(AMPVER) $(HASH_BOUND_$*) -spec=nonblocking \
+	-$(COLLECT) $(HASH_BOUND_$*) -spec=nonblocking \
   -tmpDir=out/CoarseHashSet_$*.dir.tmp $(COARSE_SRC) \
   >out/CoarseHashSet_$*.out.tmp
 	rm -rf out/CoarseHashSet_$*.dir
@@ -93,9 +94,9 @@ COARSEQ_DEP = $(COARSEQ_ALL) $(SET_INC) $(HASH_INC) $(LOCK_INC) $(ARRAYLIST_INC)
 COARSEQ_OUT = $(addprefix out/CoarseHashSetQ_,$(addsuffix .out,A B C D E))
 
 # Ex: make -f sets.mk out/CoarseHashSetQ_1.out
-$(COARSEQ_OUT): out/CoarseHashSetQ_%.out: $(MAIN_CLASS) $(COARSEQ_DEP)
+$(COARSEQ_OUT): out/CoarseHashSetQ_%.out: $(COLLECT) $(COARSEQ_DEP)
 	rm -rf out/CoarseHashSetQ_$*.dir.tmp
-	-$(AMPVER) $(HASH_BOUND_$*) -spec=nonblocking -property=quiescent \
+	-$(COLLECT) $(HASH_BOUND_$*) -spec=nonblocking -property=quiescent \
   -tmpDir=out/CoarseHashSetQ_$*.dir.tmp $(COARSE_SRC) \
   >out/CoarseHashSetQ_$*.out.tmp
 	rm -rf out/CoarseHashSetQ_$*.dir
@@ -118,9 +119,9 @@ STRIPED_DEP = $(STRIPED_ALL) $(SET_INC) $(HASH_INC) $(LOCK_INC) $(ARRAYLIST_INC)
 STRIPED_OUT = $(addprefix out/StripedHashSet_,$(addsuffix .out,A B C D E))
 
 # Ex: make -f sets.mk out/StripedHashSet_1.out
-$(STRIPED_OUT): out/StripedHashSet_%.out: $(MAIN_CLASS) $(STRIPED_DEP)
+$(STRIPED_OUT): out/StripedHashSet_%.out: $(COLLECT) $(STRIPED_DEP)
 	rm -rf out/StripedHashSet_$*.dir.tmp
-	-$(AMPVER) $(HASH_BOUND_$*) -spec=nonblocking \
+	-$(COLLECT) $(HASH_BOUND_$*) -spec=nonblocking \
   -tmpDir=out/StripedHashSet_$*.dir.tmp $(STRIPED_SRC) \
   >out/StripedHashSet_$*.out.tmp
 	rm -rf out/StripedHashSet_$*.dir
@@ -142,9 +143,9 @@ REFINABLE_DEP = $(REFINABLE_ALL) $(SET_INC) $(HASH_INC) $(LOCK_INC) $(ARRAYLIST_
 REFINABLE_OUT = $(addprefix out/RefinableHashSet_,$(addsuffix .out,A B C D E))
 
 # Ex: make -f sets.mk out/RefinableHashSet_1.out
-$(REFINABLE_OUT): out/RefinableHashSet_%.out: $(MAIN_CLASS) $(REFINABLE_DEP)
+$(REFINABLE_OUT): out/RefinableHashSet_%.out: $(COLLECT) $(REFINABLE_DEP)
 	rm -rf out/RefinableHashSet_$*.dir.tmp
-	-$(AMPVER) $(HASH_BOUND_$*) -spec=nonblocking -D_LOCK_TEST \
+	-$(COLLECT) $(HASH_BOUND_$*) -spec=nonblocking -D_LOCK_TEST \
   -tmpDir=out/RefinableHashSet_$*.dir.tmp $(REFINABLE_SRC) \
   -checkMemoryLeak=false >out/RefinableHashSet_$*.out.tmp
 	rm -rf out/RefinableHashSet_$*.dir
@@ -166,9 +167,9 @@ SCUCKOO_OUT = $(addprefix out/StripedCuckooHashSet_,$(addsuffix .out,A B C D E))
 
 # Ex: make -f sets.mk out/StripedCuckooHashSet_1.out
 # some bugs are revealed: config 3 schedule_3366
-$(SCUCKOO_OUT): out/StripedCuckooHashSet_%.out: $(MAIN_CLASS) $(SCUCKOO_DEP)
+$(SCUCKOO_OUT): out/StripedCuckooHashSet_%.out: $(COLLECT) $(SCUCKOO_DEP)
 	rm -rf out/StripedCuckooHashSet_$*.dir.tmp
-	-$(AMPVER) $(HASH_BOUND_$*) -spec=nonblocking \
+	-$(COLLECT) $(HASH_BOUND_$*) -spec=nonblocking \
   -tmpDir=out/StripedCuckooHashSet_$*.dir.tmp $(SCUCKOO_SRC) \
   >out/StripedCuckooHashSet_$*.out.tmp
 	rm -rf out/StripedCuckooHashSet_$*.dir
@@ -191,9 +192,9 @@ RCUCKOO_OUT = $(addprefix out/RefinableCuckooHashSet_,$(addsuffix .out,A B C D E
 
 # Ex: make -f sets.mk out/RefinableCuckooHashSet_1.out
 # some bugs are revealed: config 3 schedule_3366
-$(RCUCKOO_OUT): out/RefinableCuckooHashSet_%.out: $(MAIN_CLASS) $(RCUCKOO_DEP)
+$(RCUCKOO_OUT): out/RefinableCuckooHashSet_%.out: $(COLLECT) $(RCUCKOO_DEP)
 	rm -rf out/RefinableCuckooHashSet_$*.dir.tmp
-	-$(AMPVER) $(HASH_BOUND_$*) -spec=nonblocking -D_LOCK_TEST \
+	-$(COLLECT) $(HASH_BOUND_$*) -spec=nonblocking -D_LOCK_TEST \
   -tmpDir=out/RefinableCuckooHashSet_$*.dir.tmp $(RCUCKOO_SRC) \
   -checkMemoryLeak=false >out/RefinableCuckooHashSet_$*.out.tmp
 	rm -rf out/RefinableCuckooHashSet_$*.dir
@@ -215,9 +216,9 @@ LOCKFREE_DEP = $(LOCKFREE_ALL) $(SET_INC) $(HASH_INC) $(AMR_INC) $(AI_INC)
 LOCKFREE_OUT = $(addprefix out/LockFreeHashSet_,$(addsuffix .out,A B C D E))
 
 # Ex: make -f sets.mk out/LockFreeHashSet_1.out
-$(LOCKFREE_OUT): out/LockFreeHashSet_%.out: $(MAIN_CLASS) $(LOCKFREE_DEP)
+$(LOCKFREE_OUT): out/LockFreeHashSet_%.out: $(COLLECT) $(LOCKFREE_DEP)
 	rm -rf out/LockFreeHashSet_$*.dir.tmp
-	-$(AMPVER) -fair -checkMemoryLeak=false $(HASH_BOUND_$*) -spec=nonblocking \
+	-$(COLLECT) -fair -checkMemoryLeak=false $(HASH_BOUND_$*) -spec=nonblocking \
   -tmpDir=out/LockFreeHashSet_$*.dir.tmp $(LOCKFREE_SRC) \
   >out/LockFreeHashSet_$*.out.tmp
 	rm -rf out/LockFreeHashSet_$*.dir
@@ -239,9 +240,9 @@ LOCKFREEP_DEP = $(LOCKFREEP_ALL) $(SET_INC) $(HASH_INC) $(AMR_INC) $(AI_INC)
 LOCKFREEP_OUT = $(addprefix out/LockFreeHashSetPatched_,$(addsuffix .out,A B C D E))
 
 # Ex: make -f sets.mk out/LockFreeHashSetPatched_1.out
-$(LOCKFREEP_OUT): out/LockFreeHashSetPatched_%.out: $(MAIN_CLASS) $(LOCKFREEP_DEP)
+$(LOCKFREEP_OUT): out/LockFreeHashSetPatched_%.out: $(COLLECT) $(LOCKFREEP_DEP)
 	rm -rf out/LockFreeHashSetPatched_$*.dir.tmp
-	-$(AMPVER) -fair -checkMemoryLeak=false $(HASH_BOUND_$*) -spec=nonblocking \
+	-$(COLLECT) -fair -checkMemoryLeak=false $(HASH_BOUND_$*) -spec=nonblocking \
   -tmpDir=out/LockFreeHashSetPatched_$*.dir.tmp $(LOCKFREEP_SRC) \
   >out/LockFreeHashSetPatched_$*.out.tmp
 	rm -rf out/LockFreeHashSetPatched_$*.dir

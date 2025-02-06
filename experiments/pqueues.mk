@@ -3,7 +3,8 @@
 # Created  : 2024-11-25
 # Modified : 2025-01-16
 # Makefile for priority queues experiments.
-ROOT = .
+
+ROOT = ..
 include $(ROOT)/common.mk
 
 
@@ -88,9 +89,9 @@ SL_DEP = $(SL_ALL) $(PQUEUE_INC) $(ARRAYLIST_INC) $(BIN_INC)
 SL_OUT = $(addprefix out/SimpleLinear_,$(addsuffix .out,A B C D E))
 
 # Ex: make -f pqueues.mk out/SimpleLinear_1.out
-$(SL_OUT): out/SimpleLinear_%.out: $(MAIN_CLASS) $(SL_DEP)
+$(SL_OUT): out/SimpleLinear_%.out: $(COLLECT) $(SL_DEP)
 	rm -rf out/SimpleLinear_$*.dir.tmp
-	-$(AMPVER) $(PQUEUE_BOUND_$*) -property=quiescent \
+	-$(COLLECT) $(PQUEUE_BOUND_$*) -property=quiescent \
   -spec=nonblocking -checkTermination=true \
   -tmpDir=out/SimpleLinear_$*.dir.tmp $(SL_SRC) \
   >out/SimpleLinear_$*.out.tmp
@@ -117,9 +118,9 @@ ST_DEP = $(ST_ALL) $(PQUEUE_INC) $(AI_INC) $(ARRAYLIST_INC) $(BIN_INC)
 ST_OUT = $(addprefix out/SimpleTree_,$(addsuffix .out,A B C D E))
 
 # Ex: make -f pqueues.mk out/SimpleTree_1.out
-$(ST_OUT): out/SimpleTree_%.out: $(MAIN_CLASS) $(ST_DEP)
+$(ST_OUT): out/SimpleTree_%.out: $(COLLECT) $(ST_DEP)
 	rm -rf out/SimpleTree_$*.dir.tmp
-	-$(AMPVER) $(PQUEUE_BOUND_$*) -property=quiescent \
+	-$(COLLECT) $(PQUEUE_BOUND_$*) -property=quiescent \
   -spec=nonblocking -checkTermination=true \
   -tmpDir=out/SimpleTree_$*.dir.tmp $(ST_SRC) \
   >out/SimpleTree_$*.out.tmp
@@ -149,9 +150,9 @@ FGH_DEP = $(FGH_ALL) $(PQUEUE_INC) $(LOCK_INC)
 FGH_OUT = $(addprefix out/FineGrainedHeap_,$(addsuffix .out,A B C D E))
 
 # Ex: make -f pqueues.mk out/FineGrainedHeap_1.out
-$(FGH_OUT): out/FineGrainedHeap_%.out: $(MAIN_CLASS) $(FGH_DEP)
+$(FGH_OUT): out/FineGrainedHeap_%.out: $(COLLECT) $(FGH_DEP)
 	rm -rf out/FineGrainedHeap_$*.dir.tmp
-	-$(AMPVER) $(PQUEUE_BOUND_$*) -spec=nonblocking \
+	-$(COLLECT) $(PQUEUE_BOUND_$*) -spec=nonblocking \
   -checkTermination=true \
   -tmpDir=out/FineGrainedHeap_$*.dir.tmp $(FGH_SRC) \
   >out/FineGrainedHeap_$*.out.tmp
@@ -171,9 +172,9 @@ out/FineGrainedHeap_S%.out: $(FGH_DEP) $(PQUEUE_SCHED_$*)
 FGHNC_OUT = $(addprefix out/FineGrainedHeapNoCycles_,$(addsuffix .out,A B C D E))
 
 # Ex: make -f pqueues.mk out/FineGrainedHeapNoCycles_1.out
-$(FGHNC_OUT): out/FineGrainedHeapNoCycles_%.out: $(MAIN_CLASS) $(FGH_DEP)
+$(FGHNC_OUT): out/FineGrainedHeapNoCycles_%.out: $(COLLECT) $(FGH_DEP)
 	rm -rf out/FineGrainedHeapNoCycles_$*.dir.tmp
-	-$(AMPVER) $(PQUEUE_BOUND_$*) -spec=nonblocking \
+	-$(COLLECT) $(PQUEUE_BOUND_$*) -spec=nonblocking \
   -checkTermination=false \
   -tmpDir=out/FineGrainedHeapNoCycles_$*.dir.tmp $(FGH_SRC) \
   >out/FineGrainedHeapNoCycles_$*.out.tmp
@@ -197,9 +198,9 @@ FGHFL_DEP = $(FGHFL_ALL) $(PQUEUE_INC) $(LOCK_INC)
 FGHFL_OUT = $(addprefix out/FineGrainedHeapFair_,$(addsuffix .out,A B C D E))
 
 # Ex: make -f pqueues.mk out/FineGrainedHeapFair_1.out
-$(FGHFL_OUT): out/FineGrainedHeapFair_%.out: $(MAIN_CLASS) $(FGHFL_DEP)
+$(FGHFL_OUT): out/FineGrainedHeapFair_%.out: $(COLLECT) $(FGHFL_DEP)
 	rm -rf out/FineGrainedHeapFair_$*.dir.tmp
-	-$(AMPVER) $(PQUEUE_BOUND_$*) -fair -spec=nonblocking \
+	-$(COLLECT) $(PQUEUE_BOUND_$*) -fair -spec=nonblocking \
   -checkTermination=true \
   -tmpDir=out/FineGrainedHeapFair_$*.dir.tmp $(FGHFL_SRC) \
   >out/FineGrainedHeapFair_$*.out.tmp
@@ -232,9 +233,9 @@ SKIPQ_OUT = $(addprefix out/SkipQueueOriginal_,$(addsuffix .out,A B C D E))
 # Check quiescent consistency (the property is really irrelevant).
 # Ex: make -f pqueues.mk out/SkipQueueOriginal_3.out
 # should reveal nontermination
-$(SKIPQ_OUT): out/SkipQueueOriginal_%.out: $(MAIN_CLASS) $(SKIPQ_DEP)
+$(SKIPQ_OUT): out/SkipQueueOriginal_%.out: $(COLLECT) $(SKIPQ_DEP)
 	rm -rf out/SkipQueueOriginal_$*.dir.tmp
-	-$(AMPVER) $(PQUEUE_BOUND_$*) -spec=nonblocking -D_ORIGINAL_SKIPQUEUE \
+	-$(COLLECT) $(PQUEUE_BOUND_$*) -spec=nonblocking -D_ORIGINAL_SKIPQUEUE \
   -checkTermination -property=quiescent -checkMemoryLeak=false \
   -tmpDir=out/SkipQueueOriginal_$*.dir.tmp $(SKIPQ_SRC) \
   >out/SkipQueueOriginal_$*.out.tmp
@@ -260,9 +261,9 @@ out/SkipQueueOriginal_S%.out: $(SKIPQ_DEP) $(PQUEUE_SCHED_$*)
 SKIPQ2SC_OUT = $(addprefix out/SkipQueueSC_,$(addsuffix .out,A B C D E))
 
 # Ex: make -f pqueues.mk out/SkipQueueSC_1.out
-$(SKIPQ2SC_OUT): out/SkipQueueSC_%.out: $(MAIN_CLASS) $(SKIPQ_DEP)
+$(SKIPQ2SC_OUT): out/SkipQueueSC_%.out: $(COLLECT) $(SKIPQ_DEP)
 	rm -rf out/SkipQueueSC_$*.dir.tmp
-	-$(AMPVER) $(PQUEUE_BOUND_$*) \
+	-$(COLLECT) $(PQUEUE_BOUND_$*) \
   -spec=nonblocking -checkTermination -property=sc \
   -checkMemoryLeak=false \
   -tmpDir=out/SkipQueueSC_$*.dir.tmp $(SKIPQ_SRC) \
@@ -287,9 +288,9 @@ SKIPQQ_ALL = $(PQUEUEQ_SRC) $(SKIPQ_SRC) $(NBPQUEUE_OR)
 SKIPQQ_DEP = $(SKIPQQ_ALL) $(PQUEUE_INC) $(AMR_INC) $(AB_INC)
 
 # Ex: make -f pqueues.mk out/SkipQueueQC_1.out
-$(SKIPQ2QC_OUT): out/SkipQueueQC_%.out: $(MAIN_CLASS) $(SKIPQQ_DEP)
+$(SKIPQ2QC_OUT): out/SkipQueueQC_%.out: $(COLLECT) $(SKIPQQ_DEP)
 	rm -rf out/SkipQueueQC_$*.dir.tmp
-	-$(AMPVER) $(PQUEUE_BOUND_$*) \
+	-$(COLLECT) $(PQUEUE_BOUND_$*) \
   -spec=nonblocking -checkTermination -property=quiescent \
   -checkMemoryLeak=false \
   -tmpDir=out/SkipQueueQC_$*.dir.tmp $(SKIPQ_SRC) \

@@ -3,7 +3,8 @@
 # Created  : 2024-11-25
 # Modified : 2025-01-17
 # Makefile for queue experiments.
-ROOT = .
+
+ROOT = ..
 include $(ROOT)/common.mk
 
 
@@ -64,9 +65,9 @@ BQUEUE_OUT = $(addprefix out/BoundedQueue_,$(addsuffix .out,A B C D E))
 # Multiple schedule analyses.
 # Example: make -f queues.mk out/BoundedQueue_1.out
 CAP=2 # queue capacity
-$(BQUEUE_OUT): out/BoundedQueue_%.out: $(MAIN_CLASS) $(BQUEUE_DEP)
+$(BQUEUE_OUT): out/BoundedQueue_%.out: $(COLLECT) $(BQUEUE_DEP)
 	rm -rf out/BoundedQueue_$*.dir.tmp
-	-$(AMPVER) $(QUEUE_BOUND_$*) -spec=bounded -capacity=$(CAP) \
+	-$(COLLECT) $(QUEUE_BOUND_$*) -spec=bounded -capacity=$(CAP) \
   -checkMemoryLeak=false -tmpDir=out/BoundedQueue_$*.dir.tmp \
   $(BQUEUE_SRC) > out/BoundedQueue_$*.out.tmp
 	rm -rf out/BoundedQueue_$*.dir
@@ -89,9 +90,9 @@ UBQUEUE_DEP = $(UBQUEUE_ALL) $(QUEUE_INC) $(LOCK_INC)
 UBQUEUE_OUT = $(addprefix out/UnboundedQueue_,$(addsuffix .out,A B C D E))
 
 # Example: make -f queues.mk out/UnboundedQueue_1.out
-$(UBQUEUE_OUT): out/UnboundedQueue_%.out: $(MAIN_CLASS) $(UBQUEUE_DEP)
+$(UBQUEUE_OUT): out/UnboundedQueue_%.out: $(COLLECT) $(UBQUEUE_DEP)
 	rm -rf out/UnboundedQueue_$*.dir.tmp
-	-$(AMPVER) $(QUEUE_BOUND_$*) -spec=nonblocking \
+	-$(COLLECT) $(QUEUE_BOUND_$*) -spec=nonblocking \
   -checkMemoryLeak=false -tmpDir=out/UnboundedQueue_$*.dir.tmp \
   $(UBQUEUE_SRC) >out/UnboundedQueue_$*.out.tmp
 	rm -rf out/UnboundedQueue_$*.dir
@@ -113,9 +114,9 @@ LFQUEUE_DEP = $(LFQUEUE_ALL) $(QUEUE_INC) $(AR_INC)
 LFQUEUE_OUT =  $(addprefix out/LockFreeQueue_,$(addsuffix .out,A B C D E))
 
 # Example: make -f queues.mk out/LockFreeQueue_1.out
-$(LFQUEUE_OUT): out/LockFreeQueue_%.out: $(MAIN_CLASS) $(LFQUEUE_DEP)
+$(LFQUEUE_OUT): out/LockFreeQueue_%.out: $(COLLECT) $(LFQUEUE_DEP)
 	rm -rf out/LockFreeQueue_$*.dir.tmp
-	-$(AMPVER) $(QUEUE_BOUND_$*) -spec=nonblocking \
+	-$(COLLECT) $(QUEUE_BOUND_$*) -spec=nonblocking \
   -checkMemoryLeak=false -tmpDir=out/LockFreeQueue_$*.dir.tmp \
   $(LFQUEUE_SRC) >out/LockFreeQueue_$*.out.tmp
 	rm -rf out/LockFreeQueue_$*.dir
@@ -152,9 +153,9 @@ SQUEUE_DEP = $(SQUEUE_ALL) $(QUEUE_INC) $(LOCK_INC) $(COND2_INC)
 SQUEUE_OUT =  $(addprefix out/SynchronousQueue_,$(addsuffix .out,A B C D E))
 
 # Example: make -f queues.mk out/SynchronousQueue_1.out
-$(SQUEUE_OUT): out/SynchronousQueue_%.out: $(MAIN_CLASS) $(SQUEUE_DEP)
+$(SQUEUE_OUT): out/SynchronousQueue_%.out: $(COLLECT) $(SQUEUE_DEP)
 	rm -rf out/SynchronousQueue_$*.dir.tmp
-	-$(AMPVER) $(SQUEUE_BOUND_$*) -spec=sync \
+	-$(COLLECT) $(SQUEUE_BOUND_$*) -spec=sync \
   -checkMemoryLeak=true -tmpDir=out/SynchronousQueue_$*.dir.tmp \
   $(SQUEUE_SRC) >out/SynchronousQueue_$*.out.tmp
 	rm -rf out/SynchronousQueue_$*.dir
@@ -176,9 +177,9 @@ SDQUEUE_DEP = $(SDQUEUE_ALL) $(QUEUE_INC) $(AI_INC) $(AR_INC) $(NPD_INC)
 SDQUEUE_OUT = $(addprefix out/SynchronousDualQueue_,$(addsuffix .out,A B C D E))
 
 # Example: make -f queues.mk out/SynchronousDualQueue_1.out
-$(SDQUEUE_OUT): out/SynchronousDualQueue_%.out: $(MAIN_CLASS) $(SDQUEUE_DEP)
+$(SDQUEUE_OUT): out/SynchronousDualQueue_%.out: $(COLLECT) $(SDQUEUE_DEP)
 	rm -rf out/SynchronousDualQueue_$*.dir.tmp
-	-$(AMPVER) $(SQUEUE_BOUND_$*) -spec=sync \
+	-$(COLLECT) $(SQUEUE_BOUND_$*) -spec=sync \
   -checkMemoryLeak=false -tmpDir=out/SynchronousDualQueue_$*.dir.tmp \
   $(SDQUEUE_SRC) >out/SynchronousDualQueue_$*.out.tmp
 	rm -rf out/SynchronousDualQueue_$*.dir
@@ -187,9 +188,9 @@ $(SDQUEUE_OUT): out/SynchronousDualQueue_%.out: $(MAIN_CLASS) $(SDQUEUE_DEP)
 
 SDQUEUEP_OUT = $(addprefix out/SynchronousDualQueuePatched_,$(addsuffix .out,A B C D E))
 
-$(SDQUEUEP_OUT): out/SynchronousDualQueuePatched_%.out: $(MAIN_CLASS) $(SDQUEUE_DEP)
+$(SDQUEUEP_OUT): out/SynchronousDualQueuePatched_%.out: $(COLLECT) $(SDQUEUE_DEP)
 	rm -rf out/SynchronousDualQueuePatched_$*.dir.tmp
-	-$(AMPVER) $(SQUEUE_BOUND_$*) -spec=sync -D_PATCH \
+	-$(COLLECT) $(SQUEUE_BOUND_$*) -spec=sync -D_PATCH \
   -checkMemoryLeak=false -tmpDir=out/SynchronousDualQueuePatched_$*.dir.tmp \
   $(SDQUEUE_SRC) >out/SynchronousDualQueuePatched_$*.out.tmp
 	rm -rf out/SynchronousDualQueuePatched_$*.dir

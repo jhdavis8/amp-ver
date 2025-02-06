@@ -2,11 +2,10 @@
 # Author   : Josh Davis
 # Created  : 2024-11-25
 # Modified : 2025-01-17
-
 # Makefile for lists experiments.  Lists are used to implement the
 # set interface.
 
-ROOT = .
+ROOT = ..
 include $(ROOT)/common.mk
 
 
@@ -65,9 +64,9 @@ COARSE_OUT = $(addprefix out/CoarseList_,$(addsuffix .out,A B C D E))
 
 # Multiple schedule analyses
 # Ex: make -f lists.mk out/CoarseList_1.out
-$(COARSE_OUT): out/CoarseList_%.out: $(MAIN_CLASS) $(COARSE_DEP)
+$(COARSE_OUT): out/CoarseList_%.out: $(COLLECT) $(COARSE_DEP)
 	rm -rf out/CoarseList_$*.dir.tmp
-	-$(AMPVER) $(LIST_BOUND_$*) -spec=nonblocking \
+	-$(COLLECT) $(LIST_BOUND_$*) -spec=nonblocking \
   -tmpDir=out/CoarseList_$*.dir.tmp $(COARSE_SRC) \
   >out/CoarseList_$*.out.tmp
 	rm -rf out/CoarseList_$*.dir
@@ -90,9 +89,9 @@ FINE_DEP = $(FINE_ALL) $(LIST_INC) $(HASH_INC) $(LOCK_INC)
 FINE_OUT = $(addprefix out/FineList_,$(addsuffix .out,A B C D E))
 
 # Ex: make -f lists.mk out/FineList_1.out
-$(FINE_OUT): out/FineList_%.out: $(MAIN_CLASS) $(FINE_DEP)
+$(FINE_OUT): out/FineList_%.out: $(COLLECT) $(FINE_DEP)
 	rm -rf out/FineList_$*.dir.tmp
-	-$(AMPVER) $(LIST_BOUND_$*) -spec=nonblocking \
+	-$(COLLECT) $(LIST_BOUND_$*) -spec=nonblocking \
   -tmpDir=out/FineList_$*.dir.tmp $(FINE_SRC) \
   >out/FineList_$*.out.tmp
 	rm -rf out/FineList_$*.dir
@@ -114,9 +113,9 @@ OPT_DEP = $(OPT_ALL) $(LIST_INC) $(HASH_INC) $(LOCK_INC)
 OPT_OUT = $(addprefix out/OptimisticList_,$(addsuffix .out,A B C D E))
 
 # Ex: make -f lists.mk out/OptimisticList_1.out
-$(OPT_OUT): out/OptimisticList_%.out: $(MAIN_CLASS) $(OPT_DEP)
+$(OPT_OUT): out/OptimisticList_%.out: $(COLLECT) $(OPT_DEP)
 	rm -rf out/OptimisticList_$*.dir.tmp
-	-$(AMPVER) $(LIST_BOUND_$*) -spec=nonblocking -checkMemoryLeak=false \
+	-$(COLLECT) $(LIST_BOUND_$*) -spec=nonblocking -checkMemoryLeak=false \
   -tmpDir=out/OptimisticList_$*.dir.tmp $(OPT_SRC) \
   >out/OptimisticList_$*.out.tmp
 	rm -rf out/OptimisticList_$*.dir
@@ -138,9 +137,9 @@ LAZY_DEP = $(LAZY_ALL) $(LIST_INC) $(HASH_INC) $(LOCK_INT)
 LAZY_OUT = $(addprefix out/LazyList_,$(addsuffix .out,A B C D E))
 
 # Ex: make -f lists.mk out/LazyList_1.out
-$(LAZY_OUT): out/LazyList_%.out: $(MAIN_CLASS) $(LAZY_DEP)
+$(LAZY_OUT): out/LazyList_%.out: $(COLLECT) $(LAZY_DEP)
 	rm -rf out/LazyList_$*.dir.tmp
-	-$(AMPVER) $(LIST_BOUND_$*) -spec=nonblocking -checkMemoryLeak=false \
+	-$(COLLECT) $(LIST_BOUND_$*) -spec=nonblocking -checkMemoryLeak=false \
   -tmpDir=out/LazyList_$*.dir.tmp $(LAZY_SRC) \
   >out/LazyList_$*.out.tmp
 	rm -rf out/LazyList_$*.dir
@@ -163,9 +162,9 @@ LOCKFREE_OUT = $(addprefix out/LockFreeList_,$(addsuffix .out,A B C D E))
 LOCKFREEORG_OUT = $(addprefix out/LockFreeListOriginal_,$(addsuffix .out,A B C D E))
 
 # Ex: make -f lists.mk out/LockFreeList_1.out
-$(LOCKFREE_OUT): out/LockFreeList_%.out: $(MAIN_CLASS) $(LOCKFREE_DEP)
+$(LOCKFREE_OUT): out/LockFreeList_%.out: $(COLLECT) $(LOCKFREE_DEP)
 	rm -rf out/LockFreeList_$*.dir.tmp
-	-$(AMPVER) $(LIST_BOUND_$*) -spec=nonblocking -checkMemoryLeak=false \
+	-$(COLLECT) $(LIST_BOUND_$*) -spec=nonblocking -checkMemoryLeak=false \
   -tmpDir=out/LockFreeList_$*.dir.tmp $(LOCKFREE_SRC) \
   >out/LockFreeList_$*.out.tmp
 	rm -rf out/LockFreeList_$*.dir
@@ -173,9 +172,9 @@ $(LOCKFREE_OUT): out/LockFreeList_%.out: $(MAIN_CLASS) $(LOCKFREE_DEP)
 	mv out/LockFreeList_$*.dir.tmp out/LockFreeList_$*.dir
 
 # Ex: make -f lists.mk out/LockFreeListOriginal_1.out
-$(LOCKFREEORG_OUT): out/LockFreeListOriginal_%.out: $(MAIN_CLASS) $(LOCKFREE_DEP)
+$(LOCKFREEORG_OUT): out/LockFreeListOriginal_%.out: $(COLLECT) $(LOCKFREE_DEP)
 	rm -rf out/LockFreeListOriginal_$*.dir.tmp
-	-$(AMPVER) $(LIST_BOUND_$*) -spec=nonblocking \
+	-$(COLLECT) $(LIST_BOUND_$*) -spec=nonblocking \
   -checkMemoryLeak=false -DORIGINAL \
   -tmpDir=out/LockFreeListOriginal_$*.dir.tmp $(LOCKFREE_SRC) \
   >out/LockFreeListOriginal_$*.out.tmp
