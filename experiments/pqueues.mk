@@ -12,7 +12,7 @@ include $(ROOT)/experiments/common.mk
 
 PQUEUES = pqueue_A pqueue_B pqueue_C pqueue_D pqueue_E
 
-all: $(PQUEUES) pqueue_schedules
+all: $(PQUEUES)
 
 $(PQUEUES): pqueue_%: $(OUT_DIR)/SimpleLinear_%.out \
   $(OUT_DIR)/SimpleTree_%.out \

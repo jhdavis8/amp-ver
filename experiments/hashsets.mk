@@ -12,7 +12,7 @@ include $(ROOT)/experiments/common.mk
 
 HASHSETS = hashset_A hashset_B hashset_C hashset_D hashset_E
 
-all: $(HASHSETS) hashset_schedules
+all: $(HASHSETS)
 
 hashset_C_ex: $(OUT_DIR)/CoarseHashSet_C.out $(OUT_DIR)/StripedHashSet_C.out \
   $(OUT_DIR)/RefinableHashSet_C.out \

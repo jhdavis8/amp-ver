@@ -12,7 +12,7 @@ include $(ROOT)/experiments/common.mk
 
 QUEUES = queue_A queue_B queue_C queue_D queue_E
 
-all: $(QUEUES) queue_schedules
+all: $(QUEUES)
 
 $(QUEUES): queue_%: $(OUT_DIR)/BoundedQueue_%.out \
   $(OUT_DIR)/UnboundedQueue_%.out $(OUT_DIR)/LockFreeQueue_%.out \

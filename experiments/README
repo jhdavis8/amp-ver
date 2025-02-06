@@ -1,0 +1,35 @@
+	     COLLECT: the Concurrent Collection Verifier
+
+This is the experiments directory containing the implementations of concurrent
+collection classes from "The Art of Multiprocessor Programming", 2nd ed.,
+created as a case study demonstrating COLLECT.
+
+This directory contains the following:
+
+  src/ : The concurrent collection implementations, sorted under subdirectories
+         by type (lists, queues, pqueues, hashsets).
+
+  results/ : Contains the destination for experiment outputs (results/out), as
+             well as results_parser.py, which can generate HTML or LaTeX tables
+             of the results.
+
+  Makefile : The core Makefile for the project.
+
+  common.mk : The shared definitions used for the Makefile and .mk files.
+
+  *.mk : The specific Makefiles for each collection type.
+
+
+Several useful rules for running experiments are listed below:
+
+  make
+   - runs all experiments for configurations A through D.
+
+  make config_A
+   - runs all the experiments using configuration A, the smallest set of bounds.
+
+  make bugs
+   - runs only the experiment cases that reproduce a violation.
+
+  make test
+   - runs the short test cases provided for each implementation.

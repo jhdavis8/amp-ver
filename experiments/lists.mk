@@ -13,7 +13,7 @@ include $(ROOT)/experiments/common.mk
 
 LISTS = list_A list_B list_C list_D list_E
 
-all: $(LISTS) list_schedules
+all: $(LISTS)
 
 $(LISTS): list_%: $(OUT_DIR)/CoarseList_%.out \
   $(OUT_DIR)/FineList_%.out $(OUT_DIR)/OptimisticList_%.out $(OUT_DIR)/LazyList_%.out \
