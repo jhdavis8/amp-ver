@@ -18,7 +18,7 @@ JAVAC = javac
 # Java VM command
 JAVA = java
 
-# how many threads to use in Java program
+# how many threads to use for verification
 NCORE = 4
 
 # Name of JAR file
