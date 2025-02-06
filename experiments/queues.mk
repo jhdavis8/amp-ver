@@ -26,11 +26,13 @@ queue_schedules: \
   $(addprefix $(OUT_DIR)/SynchronousQueue_S,$(addsuffix .out,1 2 3)) \
   $(addprefix $(OUT_DIR)/SynchronousDualQueue_S,$(addsuffix .out,1 2 3))
 
+bugs:	$(OUT_DIR)/SynchronousDualQueue_D.out
+
 clean:
 	rm -rf $(OUT_DIR)/BoundedQueue*.* $(OUT_DIR)/UnboundedQueue*.* \
   $(OUT_DIR)/LockFreeQueue*.* $(OUT_DIR)/SynchronousQueue*.* $(OUT_DIR)/SynchronousDualQueue*.*
 
-.PHONY: clean all myall $(QUEUES) queue_schedules
+.PHONY: clean all myall $(QUEUES) queue_schedules bugs
 
 DRY ?= FALSE
 DRYFLAG =

@@ -27,10 +27,12 @@ list_schedules: \
   $(addprefix $(OUT_DIR)/LockFreeList_S,$(addsuffix .out,1 2 3)) \
   $(addprefix $(OUT_DIR)/LockFreeListOriginal_S,$(addsuffix .out,1 2 3))
 
+bugs:	$(OUT_DIR)/LockFreeListOriginal_A.out
+
 clean:
 	rm -rf $(OUT_DIR)/*List*.*
 
-.PHONY: clean all myall $(LISTS) list_schedules
+.PHONY: clean all myall $(LISTS) list_schedules bugs
 
 DRY ?= FALSE
 DRYFLAG =

@@ -31,9 +31,14 @@ pqueue_schedules: \
   $(addprefix $(OUT_DIR)/SkipQueueSC_S,$(addsuffix .out,1 2 3)) \
   $(addprefix $(OUT_DIR)/SkipQueueQC_S,$(addsuffix .out,1 2 3))
 
+bugs: $(OUT_DIR)/SimpleTree_D.out $(OUT_DIR)/FineGrainedHeap_A.out \
+	$(OUT_DIR)/FineGrainedHeapFair_B.out $(OUT_DIR)/SkipQueueOriginal_D.out \
+	$(OUT_DIR)/SkipQueueSC_E.out
+
 clean:
 	rm -rf $(OUT_DIR)/FineGrainedHeap*.* $(OUT_DIR)/SkipQueue*.*
 
+.PHONY: clean all $(PQUEUES) pqueue_schedules bugs
 
 # For SimpleLinear, RANGE must be specified.  This must be at least 1
 # more than the maximum score that will be encountered. For all other

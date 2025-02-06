@@ -30,11 +30,16 @@ hashset_schedules: \
   $(addprefix $(OUT_DIR)/StripedCuckooHashSet_S,$(addsuffix .out,1 2 3)) \
   $(addprefix $(OUT_DIR)/LockFreeHashSet_S,$(addsuffix .out,1 2 3))
 
+bugs:	$(OUTDIR)/RefinableHashSet_B.out $(OUT_DIR)/LockFreeHashSet_B.out \
+	$(OUT_DIR)/LockFreeHashSetPatched_C.out $(OUT_DIR)/StripedCuckooHashSet_C.out \
+	$(OUT_DIR)/RefinableCuckooHashSet_C.out $(OUT_DIR)/StripedCuckooHashSet_D.out \
+	$(OUT_DIR)/RefinableCuckooHashSet_D.out
+
 clean:
 	rm -rf $(OUT_DIR)/CoarseHashSet*.* $(OUT_DIR)/StripedHashSet*.* \
   $(OUT_DIR)/StripedCuckooHashSet*.* $(OUT_DIR)/LockFreeHashSet*.*
 
-.PHONY: clean all myall $(HASHSETS) hashset_schedules
+.PHONY: clean all myall $(HASHSETS) hashset_schedules bugs
 
 DRY ?= FALSE
 DRYFLAG =
