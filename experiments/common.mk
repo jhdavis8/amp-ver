@@ -25,16 +25,18 @@ SQUEUE_OR = $(DRIVER)/sync_queue_oracle.cvl
 NBPQUEUE_OR = $(DRIVER)/nonblocking_pqueue_oracle.cvl
 
 # Global bound settings
-BOUND_A = -hashKind=ident -valueBound=2 -nthread=1..2 -nstep=1..2 -npreAdd=0 \
-  -checkTermination -threadSym -ncore=$(NCORE)
-BOUND_B = -hashKind=ident -valueBound=3 -nthread=1..2 -nstep=1..2 -npreAdd=0..1 \
-  -checkTermination -threadSym -ncore=$(NCORE)
-BOUND_C = -hashKind=nd -valueBound=3 -nthread=1..2 -nstep=1..2 -npreAdd=0..1 \
-  -checkTermination -threadSym -ncore=$(NCORE) -hashRangeBound=2 -hashDomainBound=3
-BOUND_D = -hashKind=ident -valueBound=4 -nthread=1..3 -nstep=1..3 -npreAdd=0..1 \
-  -checkTermination -threadSym -ncore=$(NCORE)
-BOUND_E = -hashKind=ident -valueBound=5 -nthread=1..3 -nstep=1..4 -npreAdd=0..1 \
-  -checkTermination -threadSym -ncore=$(NCORE) -preemptionBound=2
+BOUND_A = -hashKind=ident -valueBound=2 -nthread=1..2 -nstep=1..2 \
+  -npreAdd=0 -checkTermination -threadSym -ncore=$(NCORE)
+BOUND_B = -hashKind=ident -valueBound=3 -nthread=1..2 -nstep=1..2 \
+  -npreAdd=0..1 -checkTermination -threadSym -ncore=$(NCORE)
+BOUND_C = -hashKind=nd -valueBound=3 -nthread=1..2 -nstep=1..2 \
+  -npreAdd=0..1 -checkTermination -threadSym -ncore=$(NCORE) \
+  -hashRangeBound=2 -hashDomainBound=3
+BOUND_D = -hashKind=ident -valueBound=4 -nthread=1..3 -nstep=1..3 \
+  -npreAdd=0..1 -checkTermination -threadSym -ncore=$(NCORE)
+BOUND_E = -hashKind=ident -valueBound=5 -nthread=1..3 -nstep=1..4 \
+  -npreAdd=0..1 -checkTermination -threadSym -ncore=$(NCORE) \
+  -preemptionBound=2
 
 # Notes on the above bounds:
 # BOUND_A:

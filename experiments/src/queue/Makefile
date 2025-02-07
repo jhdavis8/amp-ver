@@ -18,7 +18,8 @@
 ROOT = ../..
 include $(ROOT)/common.mk
 
-all: UnboundedQueue LockFreeQueue BoundedQueue SynchronousQueue SynchronousDualQueue
+all: UnboundedQueue LockFreeQueue BoundedQueue SynchronousQueue \
+  SynchronousDualQueue
 
 UnboundedQueue: UnboundedQueue.cvl $(LOCK_INC) $(LOCK_SRC) \
   $(TID_INC) $(TID_SRC)
