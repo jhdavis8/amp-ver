@@ -1,8 +1,0 @@
-Create a file like this called ampver, make it executable and put it in your PATH:
-
-#! /bin/zsh
-CIVL=/Users/siegel/Documents/workspace/CIVL
-AMPVER=/Users/siegel/repos/amp-ver/java/bin
-VSL_DEPS=/opt/vsl-1.22
-java -Xmx15g -p $AMPVER/ampver:$CIVL/mods/dev.civl.abc:$CIVL/mods/dev.civl.gmc:$CIVL/mods/dev.civl.mc:$CIVL/mods/dev.civl.sarl:$VSL_DEPS/mods/antlr3:$VSL_DEPS/mods/antlr4 -m ampver/av.AMPVer $@
-
