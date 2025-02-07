@@ -15,8 +15,8 @@
 # but can be used to check correct behavior on any schedule, including
 # those that should get stuck.
 
-ROOT = ../..
-include $(ROOT)/common.mk
+EROOT = ../..
+include $(EROOT)/common.mk
 
 all: UnboundedQueue LockFreeQueue BoundedQueue SynchronousQueue \
   SynchronousDualQueue
@@ -49,7 +49,7 @@ SynchronousDualQueue: sdq1 sdq2
 # every case where the number of enqueues does not equal the number of
 # dequeues
 
-SDQ1_SRC = SynchronousDualQueue1.cvl $(AI_SRC) $(AR_SRC) $(TID_SRC)
+SDQ1_SRC = SynchronousDualQueueAlt.cvl $(AI_SRC) $(AR_SRC) $(TID_SRC)
 SDQ1_DEP = $(SDQ1_SRC) $(AI_INC) $(AR_INC)  $(TID_H)
 SDQ1_RUN = $(VERIFY) -fair -checkTermination=true \
   -checkMemoryLeak=false -D_SYNCHRONOUS_DUAL_QUEUE
@@ -78,7 +78,7 @@ sdq1_eed:  $(SDQ1_DEP)
 # SDQ2 has a mechanism to detect and recover when it gets stuck, using
 # a "non-progress detector"...
 
-SDQ2_SRC = SynchronousDualQueue2.cvl $(AI_SRC) $(AR_SRC) $(TID_SRC) $(NPD_SRC)
+SDQ2_SRC = SynchronousDualQueue.cvl $(AI_SRC) $(AR_SRC) $(TID_SRC) $(NPD_SRC)
 SDQ2_DEP = $(SDQ2_SRC) $(AI_INC) $(AR_INC)  $(TID_H) $(NPD_INC)
 SDQ2_RUN = $(VERIFY) -fair -checkDeadlock=absolute -checkTermination=true \
   -checkMemoryLeak=false -D_SYNCHRONOUS_DUAL_QUEUE

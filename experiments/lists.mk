@@ -5,8 +5,8 @@
 # Makefile for lists experiments.  Lists are used to implement the
 # set interface.
 
-ROOT = ..
-include $(ROOT)/experiments/common.mk
+EROOT=.
+include $(EROOT)/common.mk
 
 
 ## Common definitions

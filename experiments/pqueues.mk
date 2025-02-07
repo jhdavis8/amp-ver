@@ -4,8 +4,8 @@
 # Modified : 2025-01-16
 # Makefile for priority queues experiments.
 
-ROOT = ..
-include $(ROOT)/experiments/common.mk
+EROOT=.
+include $(EROOT)/common.mk
 
 
 ## Common definitions

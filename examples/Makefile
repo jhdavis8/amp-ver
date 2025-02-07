@@ -23,7 +23,7 @@ BoundedQueue: BoundedQueue.cvl
 
 # violation detected...
 SimpleTree: SimpleTree.cvl
-	$(COLLECT) -kind=pqueue -spec=nonblocking -property=quiescent \
+	-$(COLLECT) -kind=pqueue -spec=nonblocking -property=quiescent \
   -tmpDir=out/SimpleTree -nthread=2 -npreAdd=1 -nstep=3 -distinctPriorities \
   -DLOGRANGE=2 SimpleTree.cvl \
   $(UTIL)/AtomicInteger.cvl $(UTIL)/ArrayList.cvl $(UTIL)/Bin.cvl

@@ -16,6 +16,9 @@ bin/$(COLLECT_BIN): java/$(COLLECT_JAR) Makefile
 \$$@" >> bin/$(COLLECT_BIN)
 	chmod ugo+x bin/$(COLLECT_BIN)
 
+test:
+	$(MAKE) -C src/driver
+
 clean:
 	$(MAKE) -C java clean
 	rm -rf bin

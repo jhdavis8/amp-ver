@@ -4,8 +4,8 @@
 # Modified : 2025-01-17
 # Makefile for queue experiments.
 
-ROOT = ..
-include $(ROOT)/experiments/common.mk
+EROOT=.
+include $(EROOT)/common.mk
 
 
 ## Common definitions

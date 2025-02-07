@@ -4,8 +4,8 @@
 # Modified : 2025-01-16
 # This Makefile will perform a simple test for each data structure.
 
-ROOT = ../..
-include $(ROOT)/common.mk
+EROOT = ../..
+include $(EROOT)/common.mk
 
 all: SimpleLinear SimpleTree SkipQueue SkipQueuePatched FineGrainedHeap
 
@@ -17,7 +17,8 @@ SimpleLinear: SimpleLinear.cvl $(BIN_INC) $(BIN_SRC) \
 SimpleTree: SimpleTree.cvl $(BIN_INC) $(BIN_SRC) \
   $(ARRAYLIST_INC) $(ARRAYLIST_SRC) $(TID_INC) $(TID_SRC) \
   $(AI_INC) $(AI_SRC)
-	$(VERIFY) -DLOGRANGE=2 -checkTermination=true -checkMemoryLeak=true -D_SIMPLE_TREE \
+	$(VERIFY) -DLOGRANGE=2 -checkTermination=true \
+  -checkMemoryLeak=true -D_SIMPLE_TREE \
   SimpleTree.cvl $(BIN_SRC) $(ARRAYLIST_SRC) $(TID_SRC) $(AI_SRC)
 
 # non-termination (cycle) detected...

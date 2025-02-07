@@ -6,8 +6,8 @@
 # Makefile will perform simple tests on the list-based set
 # implementations in this directory.
 
-ROOT = ../..
-include $(ROOT)/common.mk
+EROOT = ../..
+include $(EROOT)/common.mk
 
 all: CoarseList FineList OptimisticList LazyList LockFreeList
 

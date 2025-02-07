@@ -4,8 +4,6 @@
 #
 # This is the Makefile for COLLECT experiments.
 # ---------------------------------------------------------------------------
-ROOT = ..
-include common.mk
 
 all:
 	$(MAKE) -f lists.mk list_A
@@ -26,11 +24,10 @@ all:
 	$(MAKE) -f hashsets.mk hashset_D
 
 test:
-	$(MAKE) -C $(DRIVER)
-	$(MAKE) -C $(QUEUE_DIR)
-	$(MAKE) -C $(SET_DIR)
-	$(MAKE) -C $(LIST_DIR)
-	$(MAKE) -C $(PQUEUE_DIR)
+	$(MAKE) -C src/queue
+	$(MAKE) -C src/hashset
+	$(MAKE) -C src/list
+	$(MAKE) -C src/pqueue
 
 config_A:
 	$(MAKE) -f lists.mk list_A
